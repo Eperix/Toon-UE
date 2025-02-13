@@ -1,0 +1,13 @@
+{
+	"manualInstall": true,
+	"requiresElevation": true,
+	"hidden": true,
+	"installCommand": {
+		"fileName": "HordeAgent.exe",
+		"arguments": ["setup", "install", "-RegisterForUninstall=false"]
+	},
+	"uninstallCommand": {
+		"fileName": "HordeAgent.exe",
+		"arguments": ["setup", "uninstall", "-UseRegistryPath=false"]
+	}
+}
