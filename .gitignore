@@ -1,0 +1,64 @@
+# Ignore all binary files
+Binaries/
+DerivedDataCache/
+Intermediate/
+Saved/
+Build/
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.suo
+*.user
+*.opensdf
+*.sdf
+*.log
+*.aps
+*.tlog
+*.pdb
+*.idb
+*.ilk
+*.obj
+*.iobj
+*.ipdb
+*.db
+*.opendb
+*.pch
+*.ilk
+*.metagen
+*.exp
+*.lib
+*.bsc
+*.cache
+*.automation
+*.dat
+
+# Ignore Visual Studio files
+.vs/
+.idea/
+*.DotSettings
+
+# Ignore MacOS specific files
+.DS_Store
+
+# Ignore Perforce files
+.p4ignore
+
+# Ignore any generated config files
+*.ini
+*.config
+*.generated.*
+
+# Ignore Blueprint and Asset backups
+*.backup
+
+# Ignore Logs
+Logs/
+*.log
+
+# Ignore any local or temporary files
+*~
+*.tmp
+*.temp
+
+# Ignore Unreal Engine crash reports
+CrashReport*

@@ -1,0 +1,22 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "{ABB6F691-452A-0DE0-D7F5-CC8D688EFD73}",
+	"Category": "",
+	"Description": "",
+	"Modules": [
+		{
+			"Name": "ToonProgramme",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "ModelingToolsEditorMode",
+			"Enabled": true,
+			"TargetAllowList": [
+				"Editor"
+			]
+		}
+	]
+}

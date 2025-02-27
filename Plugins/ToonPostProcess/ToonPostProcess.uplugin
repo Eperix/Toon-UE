@@ -1,0 +1,35 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "ToonPostProcess",
+	"Description": "Post Process For Toon Shadings",
+	"Category": "Rendering",
+	"CreatedBy": "Peky",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"EnabledByDefault": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "ToonPostProcess",
+			"Type": "Runtime",
+			"LoadingPhase": "PostConfigInit",
+			"AdditionalDependencies": [
+				"Engine"
+			],
+			"ShaderDirectory": "Shaders"
+		}
+	],
+	"Plugins": [
+	{
+		"Name": "Composure",
+		"Enabled": true
+	}
+]
+}

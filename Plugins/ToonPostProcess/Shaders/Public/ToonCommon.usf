@@ -1,0 +1,59 @@
+#include "/Engine/Public/Platform.ush"
+#include "/Engine/Private/MaterialTemplate.ush"
+#include "ToonTools.ush"
+
+float3 Outline(float AOStrenth)
+{
+	float2 uv = GetDefaultSceneTextureUV(Parameters, 0);
+	float2 pixelsize = View.ViewSizeAndInvSize.zw;
+
+	float2 offset[9]={
+		float2(-1, 1)*pixelsize,
+		float2( 0, 1)*pixelsize,
+		float2( 1, 1)*pixelsize,
+
+		float2(-1, 0)*pixelsize,
+		float2( 0, 0)*pixelsize,
+		float2( 1, 0)*pixelsize,
+
+		float2(-1,-1)*pixelsize,
+		float2( 0,-1)*pixelsize,
+		float2( 1,-1)*pixelsize,
+	};
+
+	// Sample
+	float d[9];
+	float3 n[9];
+	for(int i = 0; i < 9; i++){
+		d[i] = SceneTextureLookup(uv + offset[i], PPI_CustomStencil, false);
+		n[i] = SceneTextureLookup(uv + offset[i], PPI_WorldNormal, false);
+	}
+
+	// Depth
+	float SobelDepth = Sobel(d[0],d[1],d[2],d[3],d[4],d[5],d[6],d[7],d[8]);
+	float LapDepth = Laplacian(d[0],d[1],d[2],d[3],d[4],d[5],d[6],d[7],d[8]);
+
+	// Normal
+	float SobelNormal = Sobel(n[0],n[1],n[2],n[3],n[4],n[5],n[6],n[7],n[8]);
+	float LapNormal = Laplacian(n[0],n[1],n[2],n[3],n[4],n[5],n[6],n[7],n[8]);
+
+	float AO = SceneTextureLookup(uv, PPI_MaterialAO, false);
+	AO = step(AOStrenth, AO);
+	// Mask
+	float SobelDepthMask = saturate(1.8 - SobelDepth);
+	float LapDepthMask = saturate(1.8 - LapDepth);
+	float DepthMask = pow(min(SobelDepthMask, LapDepthMask), 8);
+
+	float SobelNormalMask = saturate(1.0 - SobelNormal);
+	float LapNormalMask = saturate(1.0 - LapNormal);
+	float NormalMask = max(SobelNormalMask, LapNormalMask);
+	NormalMask = lerp(NormalMask, 1, AO);
+
+
+	// Merge
+	float NormalDepthMask = min(NormalMask, DepthMask);
+
+	// Fade 
+	float depthFade;
+	return float3(0, 0, 0);
+}

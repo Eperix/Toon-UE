@@ -1,0 +1,52 @@
+﻿#ifndef TOONTOOLS_INCLUDED
+#define TOONTOOLS_INCLUDED
+
+float Sobel(float d0, float d1, float d2, float d3, float d4, float d5, float d6, float d7, float d8)
+{
+	const float GX = -d0 + d2 - 2*d3 + 2*d5 - d6 + d8;
+	const float GY = d0 + 2*d1 - d6 - 2*d7 + d8;
+	return length(float2(GX, GY));
+}
+
+float Sobel(float3 d0, float3 d1, float3 d2, float3 d3, float3 d4, float3 d5, float3 d6, float3 d7, float3 d8)
+{
+	float diff[9];
+	const float3 nCenter = d4; // 中心法线
+	diff[0] = 1.0 - dot(nCenter, d0);
+	diff[1] = 1.0 - dot(nCenter, d1);
+	diff[2] = 1.0 - dot(nCenter, d2);
+	diff[3] = 1.0 - dot(nCenter, d3);
+	diff[4] = 1.0 - dot(nCenter, d4);
+	diff[5] = 1.0 - dot(nCenter, d5);
+	diff[6] = 1.0 - dot(nCenter, d6);
+	diff[7] = 1.0 - dot(nCenter, d7);
+	diff[8] = 1.0 - dot(nCenter, d8);
+	
+	float gx = -diff[0] + diff[2] - 2*diff[3] + 2*diff[5] - diff[6] + diff[8];
+	float gy = diff[0] + 2*diff[1]+diff[2] - diff[6] - 2*diff[7]-diff[8];
+	return length(float2(gx, gy));
+}
+
+float Laplacian(float d0, float d1, float d2, float d3, float d4, float d5, float d6, float d7, float d8)
+{
+	return abs(d0 + d1 + d2 + d3 - 8.0*d4 + d5 + d6 + d7 + d8);
+}
+
+float Laplacian(float3 d0, float3 d1, float3 d2, float3 d3, float3 d4, float3 d5, float3 d6, float3 d7, float3 d8)
+{
+	float diff[9];
+	const float3 nCenter = d4; // 中心法线
+	diff[0] = 1.0 - dot(nCenter, d0);
+	diff[1] = 1.0 - dot(nCenter, d1);
+	diff[2] = 1.0 - dot(nCenter, d2);
+	diff[3] = 1.0 - dot(nCenter, d3);
+	diff[4] = 1.0 - dot(nCenter, d4);
+	diff[5] = 1.0 - dot(nCenter, d5);
+	diff[6] = 1.0 - dot(nCenter, d6);
+	diff[7] = 1.0 - dot(nCenter, d7);
+	diff[8] = 1.0 - dot(nCenter, d8);
+
+	return Laplacian(diff[0], diff[1], diff[2], diff[3], diff[4], diff[5], diff[6], diff[7], diff[8]);
+}
+
+#endif
