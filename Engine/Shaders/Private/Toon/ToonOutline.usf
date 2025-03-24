@@ -1,0 +1,43 @@
+﻿#include "../Common.ush"
+#include "/Engine/Generated/Material.ush"
+#include "/Engine/Generated/VertexFactory.ush"
+
+struct FSimpleMeshPassVSToPS
+{
+	FVertexFactoryInterpolantsVSToPS FactoryInterpolants;
+	float4 Position : SV_POSITION;
+};
+
+#if VERTEXSHADER
+void MainVS(FVertexFactoryInput Input, out FSimpleMeshPassVSToPS Output)
+{
+	ResolvedView = ResolveView();// view  
+	FVertexFactoryIntermediates VFIntermediates = GetVertexFactoryIntermediates(Input);  
+	float4 PosWS = VertexFactoryGetWorldPosition(Input, VFIntermediates);  
+	float3 NormalWS = VertexFactoryGetWorldNormal(Input, VFIntermediates);
+	
+	// TBN matrix local  
+	float3x3 TangentToLocal = VertexFactoryGetTangentToLocal(Input, VFIntermediates);  
+
+	FMaterialVertexParameters VertexParameters = GetMaterialVertexParameters(Input, VFIntermediates, PosWS.xyz, TangentToLocal);    
+	// PosWS.xyz += GetMaterialWorldPositionOffset(VertexParameters);  
+
+	float4 RasterizedWorldPosition = VertexFactoryGetRasterizedWorldPosition(Input, VFIntermediates, PosWS);  
+
+	Output.FactoryInterpolants = VertexFactoryGetInterpolantsVSToPS(Input, VFIntermediates, VertexParameters);
+	
+	// vertex position in clip space  
+	Output.Position = mul(RasterizedWorldPosition, ResolvedView.TranslatedWorldToClip);  
+	float2 ExtentDir = normalize(mul(float4(NormalWS, 1.0f), ResolvedView.TranslatedWorldToClip).xy);    
+	float Offset = clamp(0.0f, 0.5f, Output.Position.w * 1.0f * 0.01f);    
+	// TODO: Add custom vertex factory support for this  
+	// Offset *= VertexColor.a;
+	Output.Position.xy += ExtentDir * Offset;  
+}
+#endif
+
+void MainPS(FSimpleMeshPassVSToPS Input, out float4 OutColor : SV_Target0 )
+{
+	// OutColor = OutlineColor;
+	OutColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
+}

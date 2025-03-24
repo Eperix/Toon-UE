@@ -131,6 +131,14 @@ float4 CompositeReflections(float4 ReflectionInput, float2 BufferUV, float InRou
 
 float3 ReflectionEnvironment(FGBufferData GBuffer, float AmbientOcclusion, float2 BufferUV, float2 ScreenPosition, float4 SvPosition, float3 BentNormal, float3 SpecularColor, uint ShadingModelID)
 {
+	/** Start Peky Part **/
+	BRANCH
+	if ( GBuffer.ShadingModelID == SHADINGMODELID_TOON_DEFAULT || GBuffer.ShadingModelID == SHADINGMODELID_TOON_EYE
+		|| GBuffer.ShadingModelID == SHADINGMODELID_TOON_SKIN || GBuffer.ShadingModelID == SHADINGMODELID_TOON_HAIR)
+	{
+		return float3(0.0f, 0.0f, 0.0f);
+	}
+	// End Peky Part
 	float4 Color = float4(0, 0, 0, 1);
 
 	float IndirectIrradiance = GBuffer.IndirectIrradiance;
@@ -275,13 +283,6 @@ float3 ReflectionEnvironment(FGBufferData GBuffer, float AmbientOcclusion, float
 		Color.rgb *= EnvBRDF( SpecularColor, GBuffer.Roughness, NoV );
 		#endif
 	}
-	/** Start Peky Part **/
-	BRANCH
-	if ( GBuffer.ShadingModelID == SHADINGMODELID_TOON_DEFAULT)
-	{
-		return float3(0.0f, 0.0f, 0.0f);
-	}
-	/** End Peky Part **/
 	// Transform NaNs to black, transform negative colors to black.
 	return -min(-Color.rgb, 0.0);
 }
@@ -545,15 +546,14 @@ void ReflectionEnvironmentSkyLighting(
 #endif
 
 #if ENABLE_DYNAMIC_SKY_LIGHT
-
+	
 	BRANCH
 	if (!bUnlitMaterial) // Only light pixels marked as lit
 	{
 		float3 TranslatedWorldPosition = mul(float4(GetScreenPositionForProjectionType(ScreenPosition, GBuffer.Depth), GBuffer.Depth, 1), View.ScreenToTranslatedWorld).xyz;
 		const float CloudVolumetricAOShadow = GetCloudVolumetricAOShadow(TranslatedWorldPosition);
-
-		float3 SkyLighting = CloudVolumetricAOShadow * SkyLightDiffuse(GBuffer, AmbientOcclusion, BufferUV, ScreenPosition, BentNormal, DiffuseColor);
-
+		float3 SkyLighting = CloudVolumetricAOShadow * (GBuffer, AmbientOcclusion, BufferUV, ScreenPosition, BentNormal, DiffuseColor);
+		
 		FLightAccumulator LightAccumulator = (FLightAccumulator)0;
 		const bool bNeedsSeparateSubsurfaceLightAccumulation = UseSubsurfaceProfile(ShadingModelID);
 		LightAccumulator_Add(LightAccumulator, SkyLighting, SkyLighting, 1.0f, bNeedsSeparateSubsurfaceLightAccumulation);

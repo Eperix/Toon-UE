@@ -263,6 +263,8 @@ void FPixelInspectorDetailsCustomization::CustomizeDetails(IDetailLayoutBuilder&
 			// TODO:Set Inspector For Toon Shading
 		}
 		break;
+		default:
+			break;
 		/** End Peky Part **/
 	}
 }

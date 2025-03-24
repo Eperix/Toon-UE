@@ -351,14 +351,17 @@ FGBufferInfo RENDERCORE_API FetchLegacyGBufferInfo(const FGBufferParams& Params)
 		NormalGBufferFormatChannel = GBC_EncodeNormal_Normal_16_16_16;
 	}
 
-	const EGBufferType        DiffuseAndSpecularGBufferFormat  = bHighPrecisionGBuffers ? GBT_Float_16_16_16_16 : GBT_Unorm_8_8_8_8;
+	// Start Peky Part:Expand GBUFFERB to contain 16+MSM
+	// const EGBufferType        DiffuseAndSpecularGBufferFormat  = bHighPrecisionGBuffers ? GBT_Float_16_16_16_16 : GBT_Unorm_8_8_8_8;
+	const EGBufferType        DiffuseAndSpecularGBufferFormat  = GBT_Float_16_16_16_16;
 	const EGBufferCompression DiffuseGBufferChannel = bHighPrecisionGBuffers ? GBC_Raw_Float_16_16_16 : GBC_Raw_Unorm_8_8_8;
 	const EGBufferCompression SpecularGBufferChannel = bHighPrecisionGBuffers ? GBC_Raw_Float_16 : GBC_Raw_Unorm_8;
 
 	Info.Targets[0].Init(GBT_Unorm_11_11_10,  TEXT("Lighting"), false,  true,  true,  true);
 	Info.Targets[1].Init(NormalGBufferFormatTarget,TEXT("GBufferA"), false,  true,  true,  true);
 	Info.Targets[2].Init(DiffuseAndSpecularGBufferFormat,   TEXT("GBufferB"), false,  true,  true,  true);
-	
+
+	// End Peky Part
 	const bool bLegacyAlbedoSrgb = true;
 	Info.Targets[3].Init(DiffuseAndSpecularGBufferFormat,  TEXT("GBufferC"), bLegacyAlbedoSrgb && !bHighPrecisionGBuffers,  true,  true,  true);
 
@@ -448,14 +451,16 @@ FGBufferInfo RENDERCORE_API FetchLegacyGBufferInfo(const FGBufferParams& Params)
 	Info.Slots[GBS_Roughness].Packing[0] = FGBufferPacking(TargetGBufferB, 0, 1, 0, 0, 4);
 #endif
 
-	// pack it into bits [0:3] of alpha
-	Info.Slots[GBS_ShadingModelId] = FGBufferItem(GBS_ShadingModelId, GBC_Bits_4, GBCH_Both);
-	Info.Slots[GBS_ShadingModelId].Packing[0] = FGBufferPacking(TargetGBufferB, 0, 3, 0, 0, 4);
+	// Start Peky Part
+	// pack it into bits [0:7] of alpha
+	Info.Slots[GBS_ShadingModelId] = FGBufferItem(GBS_ShadingModelId, GBC_Bits_8, GBCH_Both);
+	Info.Slots[GBS_ShadingModelId].Packing[0] = FGBufferPacking(TargetGBufferB, 0, 3, 0, 0, 8);
 
-	// pack it into bits [4:7] of alpha
+	// pack it into bits [8:11] of alpha
 	Info.Slots[GBS_SelectiveOutputMask] = FGBufferItem(GBS_SelectiveOutputMask, GBC_Bits_4, GBCH_Both);
-	Info.Slots[GBS_SelectiveOutputMask].Packing[0] = FGBufferPacking(TargetGBufferB, 0, 3, 0, 4, 4);
-
+	Info.Slots[GBS_SelectiveOutputMask].Packing[0] = FGBufferPacking(TargetGBufferB, 0, 3, 0, 8, 4);
+	// End Peky Part
+	
 	{
 #if 1
 		EGBufferCompression BaseColorCompression = GBC_Invalid;

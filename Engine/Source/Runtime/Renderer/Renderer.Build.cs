@@ -47,7 +47,7 @@ public class Renderer : ModuleRules
 				"ImageWriteQueue",
 				"RHI",
 				"MaterialShaderQualitySettings",
-				"TraceLog",
+				"TraceLog", "DatasmithCore",
 			}
 		);
 

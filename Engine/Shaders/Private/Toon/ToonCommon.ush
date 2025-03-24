@@ -1,0 +1,62 @@
+﻿float ToonShadowMask(float Lambert, float AttenuationSpeed, float ShadowOffset = 0.5)
+{
+	return smoothstep(ShadowOffset - AttenuationSpeed, ShadowOffset + AttenuationSpeed, Lambert);
+}
+
+float CelShadowMask(float Lambert, float AttenuationSpeed)
+{
+	AttenuationSpeed *= 0.1f;
+	return smoothstep(0.5f - AttenuationSpeed, 0.5f + AttenuationSpeed, Lambert);
+}
+
+float GetToonSurfaceShadow(float Shadow, float ShadowAttenuationSpeed)
+{
+	return CelShadowMask(Shadow, ShadowAttenuationSpeed);
+}
+//皮肤shadow处理
+float3 LerpMultiFloat3(float3 Var1, float3 Var2, float3 Var3, float3 Var4, float S)
+{
+	S *= 3;
+	float3 Res;
+	Res = lerp(Var1, Var2, saturate(S));
+	S--;
+	Res = lerp(Res, Var3, saturate(S));
+	S--;
+	Res = lerp(Res, Var4, saturate(S));
+	return Res;
+}
+
+float3 GetSkinShadow(float Shadow, float3 Color0)
+{
+	float3 Color1 = Color0 * float3(0.5,0,0);
+	float3 Color2 = Color0 * float3(1.0, 0.5, 0);
+	return LerpMultiFloat3(0, Color1, Color2, 1, Shadow);
+}
+
+float3 ToonStep(float feather, float halfLambert, float threshold = 0.5f)
+{
+	return smoothstep(threshold - feather, threshold + feather, halfLambert);
+}
+
+float ToonFresnel(float3 N, float3 V, float Exponent, float BaseReflectionFraction = 0.0f)
+{
+	half NoV = max(0.0f, dot(N, V));
+	half Fresnel = pow(abs(1 - max(NoV, 0.0f)), Exponent);
+	Fresnel = Fresnel * (1 - BaseReflectionFraction) + BaseReflectionFraction;
+	return Fresnel;
+}
+
+float StrandSpecular(float3 T, float3 L, float3 V, half Exponent, half Scale = 1.0f )
+{
+	float3 H = normalize(V + L);
+	float ToH = dot(T, H);
+	float sinTH = sqrt(1.0 - ToH * ToH);
+
+	float dirAttenuation = smoothstep(-1.0, 0.0, ToH);
+	return dirAttenuation * pow(sinTH, Exponent) * Scale;
+}
+
+float3 ShiftTangent(float3 T, float3 N, half shift)
+{
+	return normalize(T + shift* N);
+}

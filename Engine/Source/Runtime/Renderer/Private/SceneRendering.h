@@ -1390,7 +1390,7 @@ public:
 	float AutoBeforeDOFTranslucencyBoundary;
 
 	/** Bitmask of all shading models used by primitives in this view */
-	uint16 ShadingModelMaskInView;
+	uint32 ShadingModelMaskInView;
 
 	/** Informations from the previous frame to use for this view. */
 	FPreviousViewInfo PrevViewInfo;
@@ -2817,7 +2817,13 @@ struct FFastVramConfig
 	void Update();
 	void OnCVarUpdated();
 	void OnSceneRenderTargetsAllocated();
-
+	
+	// Start Peky Part
+	ETextureCreateFlags ToonTextureA;
+	ETextureCreateFlags ToonTextureB;
+	ETextureCreateFlags ToonTextureC;
+	// End Peky Part
+	
 	ETextureCreateFlags GBufferA;
 	ETextureCreateFlags GBufferB;
 	ETextureCreateFlags GBufferC;
@@ -2868,6 +2874,7 @@ struct FFastVramConfig
 	ETextureCreateFlags ShadowPointLight;
 	ETextureCreateFlags ShadowPerObject;
 	ETextureCreateFlags ShadowCSM;
+	
 
 	// Buffers
 	EBufferUsageFlags DistanceFieldCulledObjectBuffers;

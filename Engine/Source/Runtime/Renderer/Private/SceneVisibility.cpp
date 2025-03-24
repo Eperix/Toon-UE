@@ -1631,6 +1631,10 @@ void FRelevancePacket::ComputeRelevance(FDynamicPrimitiveIndexList& DynamicPrimi
 								else // Regular shading path
 								{
 									DrawCommandPacket.AddCommandsForMesh(PrimitiveIndex, PrimitiveSceneInfo, StaticMeshRelevance, StaticMesh, CullingPayloadFlags, Scene, bCanCache, EMeshPass::BasePass);
+									// Start Peky Part
+									DrawCommandPacket.AddCommandsForMesh(PrimitiveIndex, PrimitiveSceneInfo, StaticMeshRelevance, StaticMesh, CullingPayloadFlags, Scene, bCanCache, EMeshPass::ToonMeshPass);
+									DrawCommandPacket.AddCommandsForMesh(PrimitiveIndex, PrimitiveSceneInfo, StaticMeshRelevance, StaticMesh, CullingPayloadFlags, Scene, bCanCache, EMeshPass::ToonOutlinePass);
+									// End Peky Part
 									MarkMask |= EMarkMaskBits::StaticMeshVisibilityMapMask;
 
 									if (StaticMeshRelevance.bUseSkyMaterial)
@@ -2293,6 +2297,15 @@ static void ComputeDynamicMeshRelevance(
 		{
 			PassMask.Set(EMeshPass::BasePass);
 			View.NumVisibleDynamicMeshElements[EMeshPass::BasePass] += NumElements;
+
+			// Start Peky Part
+			// Set pass mask to render ToonOutlinePass
+			PassMask.Set(EMeshPass::ToonMeshPass);
+			View.NumVisibleDynamicMeshElements[EMeshPass::ToonMeshPass] += NumElements;
+
+			PassMask.Set(EMeshPass::ToonOutlinePass);
+			View.NumVisibleDynamicMeshElements[EMeshPass::ToonOutlinePass] += NumElements;
+			// End Peky Part
 
 			if (ViewRelevance.bUsesSkyMaterial)
 			{

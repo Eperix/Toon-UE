@@ -82,4 +82,10 @@ enum ESceneTextureId : int
 	PPI_UserSceneTexture4 UMETA(Hidden),
 	PPI_UserSceneTexture5 UMETA(Hidden),
 	PPI_UserSceneTexture6 UMETA(Hidden),
+	
+	// Start Peky Part
+	PPI_ToonTextureA UMETA(DisplayName="ToonTextureA"),
+	PPI_ToonTextureB UMETA(DisplayName="ToonTextureB"),
+	PPI_ToonTextureC UMETA(DisplayName="ToonTextureC"),
+	// End Peky Part
 };

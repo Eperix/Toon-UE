@@ -30,7 +30,11 @@ FSceneTextureParameters GetSceneTextureParameters(FRDGBuilder& GraphBuilder, con
 	Parameters.GBufferDTexture = GetIfProduced(SceneTextures.GBufferD);
 	Parameters.GBufferETexture = GetIfProduced(SceneTextures.GBufferE);
 	Parameters.GBufferFTexture = GetIfProduced(SceneTextures.GBufferF, SystemTextures.MidGrey);
-
+	// Start Peky Part
+	Parameters.ToonTextureA = GetIfProduced(SceneTextures.ToonTextureA);
+	Parameters.ToonTextureB = GetIfProduced(SceneTextures.ToonTextureB);
+	Parameters.ToonTextureC = GetIfProduced(SceneTextures.ToonTextureC);
+	// End Peky Part
 	return Parameters;
 }
 
@@ -49,6 +53,13 @@ FSceneTextureParameters GetSceneTextureParameters(FRDGBuilder& GraphBuilder, TRD
 	Parameters.GBufferETexture = (*SceneTextureUniformBuffer)->GBufferETexture;
 	Parameters.GBufferFTexture = (*SceneTextureUniformBuffer)->GBufferFTexture;
 	Parameters.GBufferVelocityTexture = (*SceneTextureUniformBuffer)->GBufferVelocityTexture;
+
+	// Start Peky Part
+	Parameters.ToonTextureA = (*SceneTextureUniformBuffer)->ToonTextureA;
+	Parameters.ToonTextureB = (*SceneTextureUniformBuffer)->ToonTextureB;
+	Parameters.ToonTextureC = (*SceneTextureUniformBuffer)->ToonTextureC;
+	// End Peky Part
+	
 	return Parameters;
 }
 

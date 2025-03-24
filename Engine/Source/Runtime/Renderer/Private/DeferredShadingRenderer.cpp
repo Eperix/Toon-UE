@@ -2086,8 +2086,9 @@ void FDeferredShadingSceneRenderer::Render(FRDGBuilder& GraphBuilder)
 						SceneTextures.SetupMode |= ESceneTextureSetupMode::GBuffers;
 						SceneTextures.UniformBuffer = CreateSceneTextureUniformBuffer(GraphBuilder, &SceneTextures, FeatureLevel, SceneTextures.SetupMode);
 					}
+					
 				}
-
+				
 				CopySceneCaptureComponentToTarget(GraphBuilder, SceneTextures, CustomRenderPass->GetRenderTargetTexture(), ViewFamily, CustomRenderPassViews);
 
 				if (!SceneCaptureUserData.UserSceneTextureBaseColor.IsNone())
@@ -2229,7 +2230,7 @@ void FDeferredShadingSceneRenderer::Render(FRDGBuilder& GraphBuilder)
 			}
 
 			RenderBasePass(*this, GraphBuilder, Views, SceneTextures, DBufferTextures, BasePassDepthStencilAccess, /*ForwardScreenSpaceShadowMaskTexture=*/nullptr, InstanceCullingManager, bNaniteEnabled, Scene->NaniteShadingCommands[ENaniteMeshPass::BasePass], NaniteRasterResults);
-
+			
 			if (ShouldRenderSingleLayerWater(Views))
 			{
 				// Virtual shadow map uniforms need to be initialized with dummy data for water.  Their initialization
@@ -2239,7 +2240,8 @@ void FDeferredShadingSceneRenderer::Render(FRDGBuilder& GraphBuilder)
 				FSceneWithoutWaterTextures SceneWithoutWaterTextures;
 				RenderSingleLayerWater(GraphBuilder, Views, SceneTextures, SingleLayerWaterPrePassResult, /*bShouldRenderVolumetricCloud=*/false, SceneWithoutWaterTextures, LumenFrameTemporaries, /*bIsCameraUnderWater=*/false);
 			}
-
+			
+			
 			SceneTextures.SetupMode |= ESceneTextureSetupMode::GBuffers;
 			SceneTextures.UniformBuffer = CreateSceneTextureUniformBuffer(GraphBuilder, &SceneTextures, FeatureLevel, SceneTextures.SetupMode);
 
@@ -2610,6 +2612,12 @@ void FDeferredShadingSceneRenderer::Render(FRDGBuilder& GraphBuilder)
 			Substrate::AddSubstrateDBufferPass(GraphBuilder, SceneTextures, DBufferTextures, Views);
 		}
 
+		// Start Peky Part
+		// {
+		// 	RenderToonPass(GraphBuilder, SceneTextures);
+		// }
+		// End Peky Part
+		
 		// Copy lighting channels out of stencil before deferred decals which overwrite those values
 		TArray<FRDGTextureRef, TInlineAllocator<2>> NaniteShadingMask;
 		if (bNaniteEnabled && Views.Num() > 0)
@@ -2839,6 +2847,9 @@ void FDeferredShadingSceneRenderer::Render(FRDGBuilder& GraphBuilder)
 
 			RenderLights(GraphBuilder, SceneTextures, TranslucencyLightingVolumeTextures, LightingChannelsTexture, SortedLightSet);
 
+			// Start Peky Part
+			RenderToonOutlinePass(GraphBuilder, SceneTextures);
+			// End Peky Part
 			if (SortedLightSet.MegaLightsLightStart < SortedLightSet.SortedLights.Num())
 			{
 				RenderMegaLights(

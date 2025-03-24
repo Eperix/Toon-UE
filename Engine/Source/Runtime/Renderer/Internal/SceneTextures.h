@@ -148,6 +148,12 @@ struct FSceneTextures : public FMinimalSceneTextures
 	// Texture containing the screen space ambient occlusion result.
 	FRDGTextureRef ScreenSpaceAO{};
 
+	// Start Peky Part
+	FRDGTextureRef ToonTextureA {};
+	FRDGTextureRef ToonTextureB {};
+	FRDGTextureRef ToonTextureC {};
+	// End Peky Part
+	
 	// Texture used by the quad overdraw debug view mode when enabled.
 	FRDGTextureRef QuadOverdraw{};
 

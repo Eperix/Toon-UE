@@ -26,6 +26,7 @@ bool SupportsAnisotropicMaterials(ERHIFeatureLevel::Type FeatureLevel, EShaderPl
 		&& !Substrate::IsSubstrateEnabled(); // Substrate renders anisotropy surface natively, without extra pass.;
 }
 
+// Start Peky Part
 static bool IsAnisotropyPassCompatible(const EShaderPlatform Platform, FMaterialShaderParameters MaterialParameters)
 {
 	return 
@@ -33,8 +34,9 @@ static bool IsAnisotropyPassCompatible(const EShaderPlatform Platform, FMaterial
 		!Substrate::IsSubstrateEnabled() && // Substrate renders anisotropy surface natively, without extra pass.
 		MaterialParameters.bHasAnisotropyConnected &&
 		!IsTranslucentBlendMode(MaterialParameters) &&
-		MaterialParameters.ShadingModels.HasAnyShadingModel({ MSM_DefaultLit, MSM_ClearCoat });
+		MaterialParameters.ShadingModels.HasAnyShadingModel({ MSM_DefaultLit, MSM_ClearCoat, MSM_ToonHair, MSM_ToonDefault });
 }
+// End Peky Part
 
 class FAnisotropyVS : public FMeshMaterialShader
 {
@@ -135,10 +137,11 @@ bool GetAnisotropyPassShaders(
 	return true;
 }
 
+// Peky Part S
 static bool ShouldDraw(const FMaterial& Material, bool bMaterialUsesAnisotropy)
 {
 	const bool bIsNotTranslucent = IsOpaqueOrMaskedBlendMode(Material);
-	return (bMaterialUsesAnisotropy && bIsNotTranslucent && Material.GetShadingModels().HasAnyShadingModel({ MSM_DefaultLit, MSM_ClearCoat }));
+	return (bMaterialUsesAnisotropy && bIsNotTranslucent && Material.GetShadingModels().HasAnyShadingModel({ MSM_DefaultLit, MSM_ClearCoat, MSM_ToonHair, MSM_ToonDefault }));
 }
 
 void FAnisotropyMeshProcessor::AddMeshBatch(

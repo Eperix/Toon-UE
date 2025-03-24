@@ -10,7 +10,7 @@
 class FVisualizeShadingModelPS : public FGlobalShader
 {
 public:
-	static const uint32 ShadingModelCount = 16;
+	static const uint32 ShadingModelCount = 32;
 
 	DECLARE_GLOBAL_SHADER(FVisualizeShadingModelPS);
 	SHADER_USE_PARAMETER_STRUCT(FVisualizeShadingModelPS, FGlobalShader);

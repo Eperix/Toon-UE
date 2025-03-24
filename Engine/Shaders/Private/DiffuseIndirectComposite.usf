@@ -211,7 +211,7 @@ float3 MixSpecularAndRoughReflections(float InRoughness, bool bHasBackfaceDiffus
 	return AddContrastAndSpecularScale(Lighting);
 }
 
-float3 CombineRoughSpecular(FGBufferData GBuffer, bool bHasBackfaceDiffuse, float NoV, float4 RayTracedReflections, float3 RoughReflections, float3 SpecularColor, float3 EnvBRDF)
+float3 CombineRoughSpecular(FGBufferData GBuffer, bool bHasBackfaceDiffuse, float NoV, float4 RayTracedReflections, float3 RoughReflections, float3 SpecularColor, float3 InEnvBRDF)
 {
 	float3 Lighting;
 	
@@ -221,7 +221,7 @@ float3 CombineRoughSpecular(FGBufferData GBuffer, bool bHasBackfaceDiffuse, floa
 	}
 	else
 	{
-		Lighting = MixSpecularAndRoughReflections(GBuffer.Roughness, bHasBackfaceDiffuse, RayTracedReflections, RoughReflections) * EnvBRDF;
+		Lighting = MixSpecularAndRoughReflections(GBuffer.Roughness, bHasBackfaceDiffuse, RayTracedReflections, RoughReflections) * InEnvBRDF;
 	}
 	return Lighting;
 }
@@ -565,7 +565,7 @@ void MainPS(
 					// Add subsurface energy to diffuse
 					DiffuseColor += SubsurfaceColor;
 				}
-
+				
 				if (GBuffer.ShadingModelID == SHADINGMODELID_CLOTH)
 				{
 					float3 ClothFuzz = ExtractSubsurfaceColor(GBuffer);
@@ -580,7 +580,6 @@ void MainPS(
 				float3 EnvBRDFValue = EnvBRDF(SpecularColor, GBuffer.Roughness, NoV);
 				float EnergyPreservationFactor = 1.0;
 			#endif
-
 				IndirectLighting.Diffuse = (DiffuseIndirectLighting * DiffuseColor + BackfaceDiffuseIndirectLighting) * Occlusion.DiffuseOcclusion * EnergyPreservationFactor;
 				IndirectLighting.Transmission = 0;
 
@@ -588,7 +587,7 @@ void MainPS(
 					RoughSpecularIndirectLighting *= Occlusion.SpecularOcclusion;
 					IndirectLighting.Specular = CombineRoughSpecular(GBuffer, HasBackfaceDiffuse(Material), NoV, SpecularIndirectLighting, RoughSpecularIndirectLighting, SpecularColor, EnvBRDFValue);
 				#else
-					IndirectLighting.Specular = AddContrastAndSpecularScale(SpecularIndirectLighting.xyz) * EnvBRDFValue;
+				IndirectLighting.Specular = AddContrastAndSpecularScale(SpecularIndirectLighting.xyz) * EnvBRDFValue;
 				#endif
 			}
 			}

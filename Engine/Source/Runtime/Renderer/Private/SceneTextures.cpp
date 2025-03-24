@@ -21,6 +21,7 @@
 #include "PostProcess/PostProcessAmbientOcclusionMobile.h"
 #include "PostProcess/PostProcessPixelProjectedReflectionMobile.h"
 #include "IHeadMountedDisplayModule.h"
+#include "ToonPassRendering.h"
 #include "Substrate/Substrate.h"
 #include "VisualizeTexture.h"
 
@@ -672,6 +673,12 @@ void FSceneTextures::InitializeViewFamily(FRDGBuilder& GraphBuilder, FViewFamily
 		// Screen Space Ambient Occlusion
 		SceneTextures.ScreenSpaceAO = CreateScreenSpaceAOTexture(GraphBuilder, ViewFamily.GetFeatureLevel(), Config.Extent);
 
+		// Start Peky Part
+		// SceneTextures.ToonTextureA = CreateToonTexture(GraphBuilder, Config.Extent, 0);
+		// SceneTextures.ToonTextureB = CreateToonTexture(GraphBuilder, Config.Extent, 1);
+		// SceneTextures.ToonTextureC = CreateToonTexture(GraphBuilder, Config.Extent, 2);
+		// End Peky Part
+		
 		// Small Depth
 		const FIntPoint SmallDepthExtent = GetDownscaledExtent(Config.Extent, Config.SmallDepthDownsampleFactor);
 		const FRDGTextureDesc SmallDepthDesc(FRDGTextureDesc::Create2D(SmallDepthExtent, PF_DepthStencil, FClearValueBinding::None, TexCreate_DepthStencilTargetable | TexCreate_ShaderResource));
@@ -1044,6 +1051,12 @@ void SetupSceneTextureUniformParameters(
 	SceneTextureParameters.GBufferFTexture = SystemTextures.MidGrey;
 	SceneTextureParameters.GBufferVelocityTexture = SystemTextures.Black;
 	SceneTextureParameters.ScreenSpaceAOTexture = GetScreenSpaceAOFallback(SystemTextures);
+	// Start Peky Part
+	SceneTextureParameters.ToonTextureA = SystemTextures.Black;
+	SceneTextureParameters.ToonTextureB = SystemTextures.Black;
+	SceneTextureParameters.ToonTextureC = SystemTextures.Black;
+	// End Peky Part
+	
 	SceneTextureParameters.CustomDepthTexture = SystemTextures.DepthDummy;
 	SceneTextureParameters.CustomStencilTexture = SystemTextures.StencilDummySRV;
 
@@ -1104,6 +1117,23 @@ void SetupSceneTextureUniformParameters(
 		{
 			SceneTextureParameters.ScreenSpaceAOTexture = SceneTextures->ScreenSpaceAO;
 		}
+
+		// Start Peky Part
+		if (EnumHasAnyFlags(SetupMode, ESceneTextureSetupMode::ToonTextureA) && HasBeenProduced(SceneTextures->ToonTextureA))
+		{
+			SceneTextureParameters.ToonTextureA = SceneTextures->ToonTextureA;
+		}
+		if (EnumHasAnyFlags(SetupMode, ESceneTextureSetupMode::ToonTextureB) && HasBeenProduced(SceneTextures->ToonTextureB))
+		{
+			SceneTextureParameters.ToonTextureB = SceneTextures->ToonTextureB;
+		}
+		if (EnumHasAnyFlags(SetupMode, ESceneTextureSetupMode::ToonTextureC) && HasBeenProduced(SceneTextures->ToonTextureC))
+		{
+			SceneTextureParameters.ToonTextureC = SceneTextures->ToonTextureC;
+		}
+		
+		
+		// End Peky Part
 
 		if (EnumHasAnyFlags(SetupMode, ESceneTextureSetupMode::CustomDepth))
 		{

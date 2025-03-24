@@ -12,6 +12,7 @@
 #include "HairBsdf.ush"
 #include "ShadingEnergyConservation.ush"
 #include "ParticipatingMediaCommon.ush"
+#include "Toon/ToonCommon.ush"
 #include "ColorSpace.ush"
 
 #ifndef HAIR_BSDF_BACKLIT
@@ -637,7 +638,7 @@ FDirectLighting ClearCoatBxDF( FGBufferData GBuffer, half3 N, half3 V, half3 L, 
 		float3 RefractedSpecular = FresnelCoeff * Transmission * F_Bot;
 		Lighting.Specular += CommonSpecular * lerp(DefaultSpecular, RefractedSpecular, ClearCoat);
 	}
-
+	
 	return Lighting;
 }
 
@@ -974,38 +975,86 @@ FDirectLighting PreintegratedSkinBxDF( FGBufferData GBuffer, half3 N, half3 V, h
 /** Start Peky Part **/
 FDirectLighting ToonDefaultBxDF( FGBufferData GBuffer, half3 N, half3 V, half3 L, float Falloff, float NoL, FAreaLight AreaLight, FShadowTerms Shadow )
 {
-	//并不是真正光源颜色
-	//真正的光源颜色在DeferredLightingCommon.ush中通过LightAccumulator_AddSplit()叠加
-	float3 LightColor = AreaLight.FalloffColor * Falloff;
-	//解GBuffer
-	float SpecularRange 	= GBuffer.Metallic;
-	float SpecularIntensity = GBuffer.Specular;
-	float ShadowThreshold 	= GBuffer.Roughness;
-	float InnerLine 	= GBuffer.CustomData.a;
-	float3 SSSColor	 	= ExtractSubsurfaceColor(GBuffer); //解码SSS
-	//明暗颜色
-	float3 BrightColor = GBuffer.BaseColor;
-	float3 ShadowColor = GBuffer.BaseColor * SSSColor;
-	//加粗内描边
-	if (InnerLine < 0.8f)
-	{
-		InnerLine *= 0.5f;
-	}
-	float3 InnerLineColor = float3(InnerLine, InnerLine, InnerLine);
+	half3 X = GBuffer.WorldTangent;
+	half3 Y = normalize(cross(N, X));
+	BxDFContext Context;
+	Init(Context, N, X, Y, V, L);
+	SphereMaxNoH(Context, AreaLight.SphereSinAlpha, true);
 
-	half3 H = normalize(V + L);
-	float NoH = saturate(dot(N, H));
-	//阴影区计算
-	float IsShadow = step(ShadowThreshold, NoL * Shadow.SurfaceShadow);
-	//光照计算
+	// 解GBuffer
+	float SpecularOffset = GBuffer.Metallic;
+	float SpecularRange = (GBuffer.CustomData.a - 0.5 ) * 2;
+	float ShadowRange = GBuffer.Specular;
+	float ShadowOffset = (GBuffer.Roughness - 0.5) * 2;
+	float3 EnvColor = ExtractSubsurfaceColor(GBuffer);
+	float3 LightColor = AreaLight.FalloffColor * Falloff;
+	float3 ShadowColor = EnvColor * GBuffer.BaseColor;
+
+	// 阴影计算
+	float ShadowMask = ToonShadowMask(saturate(Context.NoL + ShadowOffset), ShadowRange);
+	
+	// Rim边缘光计算, SpecularLambert计算
+	// float RimFactor = 1.0 - saturate(Context.NoV);
+	// float RimMask = smoothstep(0.8, 0.9, RimFactor) * ShadowMask;
+	// float3 RimLight = RimMask * GBuffer.SpecularColor * 0.5;
+	// float3 RimLight = RimMask * float3(1, 1, 1) * 0.5;
+	
 	FDirectLighting Lighting;
-	Lighting.Diffuse = InnerLineColor * LightColor * Diffuse_Lambert(lerp(ShadowColor, BrightColor, IsShadow));
-	Lighting.Specular = LightColor * BrightColor * IsShadow * InnerLineColor * step(0.2f, SpecularRange * pow(NoH, SpecularIntensity));
+	Lighting.Diffuse = LightColor * Diffuse_Lambert(lerp(ShadowColor, GBuffer.BaseColor, ShadowMask));
+	Lighting.Specular = LightColor * ShadowMask * step(0.5 + SpecularOffset, pow(saturate(Context.NoH), 1000 * SpecularRange));
+	Lighting.Transmission = 0;
+	
+	return Lighting;
+}
+
+FDirectLighting  ToonHairBxDF( FGBufferData GBuffer, half3 N, half3 V, half3 L, float Falloff, float NoL, FAreaLight AreaLight, FShadowTerms Shadow )
+{
+	float TShift = GBuffer.Metallic;
+	half3 X = GBuffer.WorldTangent;
+	half3 Y = normalize(cross(N, X));
+	Y = ShiftTangent(Y, N, TShift);
+
+	BxDFContext Context;
+	Init(Context, N, X, Y, V, L);
+	SphereMaxNoH(Context, AreaLight.SphereSinAlpha, true);
+
+	float ShadowAttenuation = GBuffer.Specular;
+	float ShadowOffset = (GBuffer.Roughness - 0.5) * 2;
+	
+	half NoLOffset = saturate(ceil(NoL));
+	
+	float3 LightColor = AreaLight.FalloffColor * Falloff;
+	float3 EnvColor = ExtractSubsurfaceColor(GBuffer);
+	float3 ShadowColor = GBuffer.BaseColor * EnvColor;
+	float ShadowMask = ToonShadowMask(saturate(Context.NoL + ShadowOffset), ShadowAttenuation);
+
+	// Rim边缘光计算, SpecularLambert计算
+	// float RimFactor = 1.0 - saturate(Context.NoV);
+	// float RimMask = smoothstep(0.8, 0.9, RimFactor) * (1.0 - ShadowMask);
+	// float3 RimLight = RimMask * GBuffer.SpecularColor * 0.5;
+	// float3 RimLight = RimMask * float3(1, 1, 1) * 0.5;
+	
+	float SpecularRange = GBuffer.CustomData.a * 1000;
+	float AnisotropySpecular = saturate(lerp(ShadowColor, StrandSpecular(Y, L, V, SpecularRange, 1.0), ShadowMask));
+
+	FDirectLighting Lighting;
+	Lighting.Diffuse = LightColor * Diffuse_Lambert(lerp(ShadowColor, GBuffer.BaseColor, ShadowMask));  
+
+	Lighting.Specular = LightColor * AnisotropySpecular * NoLOffset;
 	Lighting.Transmission = 0;
 	return Lighting;
 }
-/** End Peky Part **/
 
+FDirectLighting  ToonEyeBxDF( FGBufferData GBuffer, half3 N, half3 V, half3 L, float Falloff, float NoL, FAreaLight AreaLight, FShadowTerms Shadow )
+{
+	FDirectLighting Lighting;
+	return ToonDefaultBxDF(GBuffer, N, V, L, Falloff, NoL, AreaLight, Shadow);
+}
+FDirectLighting  ToonSkinBxDF( FGBufferData GBuffer, half3 N, half3 V, half3 L, float Falloff, float NoL, FAreaLight AreaLight, FShadowTerms Shadow )
+{
+	FDirectLighting Lighting;
+	return ToonDefaultBxDF(GBuffer, N, V, L, Falloff, NoL, AreaLight, Shadow);
+}
 FDirectLighting IntegrateBxDF( FGBufferData GBuffer, half3 N, half3 V, half3 L, float Falloff, half NoL, FAreaLight AreaLight, FShadowTerms Shadow )
 {
 	switch( GBuffer.ShadingModelID )
@@ -1032,10 +1081,18 @@ FDirectLighting IntegrateBxDF( FGBufferData GBuffer, half3 N, half3 V, half3 L, 
 			return EyeBxDF( GBuffer, N, V, L, Falloff, NoL, AreaLight, Shadow );
 		case SHADINGMODELID_TOON_DEFAULT:
 			return ToonDefaultBxDF( GBuffer, N, V, L, Falloff, NoL, AreaLight, Shadow );
+		case SHADINGMODELID_TOON_HAIR:
+			return ToonHairBxDF( GBuffer, N, V, L, Falloff, NoL, AreaLight, Shadow );
+		case SHADINGMODELID_TOON_SKIN:
+			return ToonSkinBxDF( GBuffer, N, V, L, Falloff, NoL, AreaLight, Shadow );
+		case SHADINGMODELID_TOON_EYE:
+			return ToonEyeBxDF( GBuffer, N, V, L, Falloff, NoL, AreaLight, Shadow );
 		default:
 			return (FDirectLighting)0;
 	}
 }
+
+/** End Peky Part **/
 
 FDirectLighting EvaluateBxDF( FGBufferData GBuffer, half3 N, half3 V, half3 L, float NoL, FShadowTerms Shadow )
 {

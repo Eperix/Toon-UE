@@ -128,16 +128,12 @@ float3 SkyLightDiffuse(FGBufferData GBuffer, float AmbientOcclusion, float2 Buff
 	
 	/** Start Peky Part **/
 	BRANCH
-	if(GBuffer.ShadingModelID == SHADINGMODELID_TOON_DEFAULT)
+	if(GBuffer.ShadingModelID == SHADINGMODELID_TOON_DEFAULT || GBuffer.ShadingModelID == SHADINGMODELID_TOON_SKIN
+		|| GBuffer.ShadingModelID == SHADINGMODELID_TOON_EYE || GBuffer.ShadingModelID == SHADINGMODELID_TOON_HAIR)
 	{
-		float InnerLine = GBuffer.CustomData.a;
-		if (InnerLine < 0.8f)
-		{
-			InnerLine *= 0.5f;
-		}
-		float3 InnerLineColor = float3(InnerLine, InnerLine, InnerLine);
-		Lighting = InnerLineColor * GBuffer.BaseColor * View.SkyLightColor.rgb * 0.05f; //削弱天光影响 
-		return Lighting;
+		float3 SubsurfaceColor = ExtractSubsurfaceColor(GBuffer);
+		DiffuseColor += SubsurfaceColor;
+		Lighting += float3(0, 0, 0);
 	}
 	/** End Peky Part **/
 	

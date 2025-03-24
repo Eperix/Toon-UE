@@ -180,7 +180,6 @@ void ApplyContactShadowWithShadowTerms(
 	if (ShadingModelID == SHADINGMODELID_EYE)
 	{
 		ContactShadowLength = 0.5;
-		
 	}
 
 #if MATERIAL_CONTACT_SHADOWS
@@ -355,9 +354,27 @@ FLightAccumulator AccumulateDynamicLighting(
 		Shadow.TransmissionShadow = 1;
 		Shadow.TransmissionThickness = 1;
 		Shadow.HairTransmittance.OpaqueVisibility = 1;
+
+		FShadowTerms ToonShadow;
+		ToonShadow.SurfaceShadow = AmbientOcclusion;
+		ToonShadow.TransmissionShadow = 1;
+		ToonShadow.TransmissionThickness = 1;
+		ToonShadow.HairTransmittance.OpaqueVisibility = 1;
+
+		// Start Peky Part, Toon Shadow
 		const float ContactShadowOpacity = GBuffer.CustomData.a;
-		GetShadowTerms(GBuffer.Depth, GBuffer.PrecomputedShadowFactors, GBuffer.ShadingModelID, ContactShadowOpacity,
-			LightData, TranslatedWorldPosition, L, LightAttenuation, Dither, Shadow);
+		BRANCH
+		if (GBuffer.ShadingModelID == SHADINGMODELID_TOON_DEFAULT || GBuffer.ShadingModelID == SHADINGMODELID_TOON_EYE
+		|| GBuffer.ShadingModelID == SHADINGMODELID_TOON_SKIN || GBuffer.ShadingModelID == SHADINGMODELID_TOON_HAIR)
+		{
+			GetShadowTerms(GBuffer.Depth, GBuffer.PrecomputedShadowFactors, GBuffer.ShadingModelID, ContactShadowOpacity,
+			LightData, TranslatedWorldPosition, L, LightAttenuation, Dither, ToonShadow);
+		}
+		else
+		{
+			GetShadowTerms(GBuffer.Depth, GBuffer.PrecomputedShadowFactors, GBuffer.ShadingModelID, ContactShadowOpacity,
+            LightData, TranslatedWorldPosition, L, LightAttenuation, Dither, Shadow);
+		}
 		SurfaceShadow = Shadow.SurfaceShadow;
 
 		LightAccumulator.EstimatedCost += 0.3f;		// add the cost of getting the shadow terms
@@ -394,11 +411,11 @@ FLightAccumulator AccumulateDynamicLighting(
 		LightAccumulator_AddSplit( LightAccumulator, Lighting.Diffuse, Lighting.Specular, Lighting.Diffuse, MaskedLightColor * Shadow.SurfaceShadow, bNeedsSeparateSubsurfaceLightAccumulation );
 		LightAccumulator_AddSplit( LightAccumulator, Lighting.Transmission, 0.0f, Lighting.Transmission, MaskedLightColor * Shadow.TransmissionShadow, bNeedsSeparateSubsurfaceLightAccumulation );
 #else // SHADING_PATH_MOBILE
+		
 		BRANCH
 		if( Shadow.SurfaceShadow + Shadow.TransmissionShadow > 0 )
 		{
 			const bool bNeedsSeparateSubsurfaceLightAccumulation = UseSubsurfaceProfile(GBuffer.ShadingModelID);
-
 		#if NON_DIRECTIONAL_DIRECT_LIGHTING
 			float Lighting;
 
@@ -417,9 +434,10 @@ FLightAccumulator AccumulateDynamicLighting(
 
 			float3 LightingDiffuse = Diffuse_Lambert( GBuffer.DiffuseColor ) * Lighting;
 			LightAccumulator_AddSplit(LightAccumulator, LightingDiffuse, 0.0f, 0, MaskedLightColor * Shadow.SurfaceShadow, bNeedsSeparateSubsurfaceLightAccumulation);
+			// Shadow For Light
 		#else
 			FDirectLighting Lighting;
-
+			
 			if (LightData.bRectLight)
 			{
 				FRect Rect = GetRect( ToLight, LightData );
@@ -428,7 +446,9 @@ FLightAccumulator AccumulateDynamicLighting(
 				#if REFERENCE_QUALITY
 					Lighting = IntegrateBxDF( GBuffer, N, V, Rect, Shadow, SourceTexture, SVPos );
 				#else
-					Lighting = IntegrateBxDF( GBuffer, N, V, Rect, Shadow, SourceTexture);
+				BRANCH
+				Lighting = IntegrateBxDF( GBuffer, N, V, Rect, Shadow, SourceTexture);
+
 				#endif
 			}
 			else
@@ -438,7 +458,9 @@ FLightAccumulator AccumulateDynamicLighting(
 				#if REFERENCE_QUALITY
 					Lighting = IntegrateBxDF( GBuffer, N, V, Capsule, Shadow, SVPos );
 				#else
+				BRANCH
 					Lighting = IntegrateBxDF( GBuffer, N, V, Capsule, Shadow, LightData.bInverseSquared );
+
 				#endif
 			}
 
@@ -448,10 +470,8 @@ FLightAccumulator AccumulateDynamicLighting(
 		#if USE_LIGHT_FUNCTION_ATLAS
 			MaskedLightColor *= GetLocalLightFunctionCommon(TranslatedWorldPosition, LightData.LightFunctionAtlasLightIndex);
 		#endif
-
 			LightAccumulator_AddSplit( LightAccumulator, Lighting.Diffuse, Lighting.Specular, Lighting.Diffuse, MaskedLightColor * Shadow.SurfaceShadow, bNeedsSeparateSubsurfaceLightAccumulation );
 			LightAccumulator_AddSplit( LightAccumulator, Lighting.Transmission, 0.0f, Lighting.Transmission, MaskedLightColor * Shadow.TransmissionShadow, bNeedsSeparateSubsurfaceLightAccumulation );
-
 			LightAccumulator.EstimatedCost += 0.4f;		// add the cost of the lighting computations (should sum up to 1 form one light)
 		#endif
 		}

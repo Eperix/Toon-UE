@@ -2827,7 +2827,20 @@ void FHLSLMaterialTranslator::GetMaterialEnvironment(EShaderPlatform InPlatform,
 		{
 			OutEnvironment.SetDefine(TEXT("MATERIAL_SHADINGMODEL_TOON_DEFAULT"), TEXT("1"));
 		}
+		if (EnvironmentDefines->HasShadingModel(MSM_ToonHair))
+		{
+			OutEnvironment.SetDefine(TEXT("MATERIAL_SHADINGMODEL_TOON_HAIR"), TEXT("1"));
+		}
+		if (EnvironmentDefines->HasShadingModel(MSM_ToonSkin))
+		{
+			OutEnvironment.SetDefine(TEXT("MATERIAL_SHADINGMODEL_TOON_SKIN"), TEXT("1"));
+		}
+		if (EnvironmentDefines->HasShadingModel(MSM_ToonEye))
+		{
+			OutEnvironment.SetDefine(TEXT("MATERIAL_SHADINGMODEL_TOON_EYE"), TEXT("1"));
+		}
 		/** End Peky Part **/
+		
 		if (EnvironmentDefines->bDisableForwardLocalLights)
 		{
 			OutEnvironment.SetDefine(TEXT("DISABLE_FORWARD_LOCAL_LIGHTS"), TEXT("1"));
@@ -8048,6 +8061,10 @@ int32 FHLSLMaterialTranslator::SceneTextureLookup(int32 ViewportUV, uint32 InSce
 	{
 		return LookUp;
 	}
+	// Start Peky Part
+
+	// End Peky Part
+	
 }
 
 int32 FHLSLMaterialTranslator::GetSceneTextureViewSize(int32 SceneTextureId, bool InvProperty)

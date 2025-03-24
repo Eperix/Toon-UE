@@ -280,24 +280,26 @@ float Decode71(float Scalar, out uint Mask)
 
 	return (Scalar - 0.5f * Mask) * 2.0f;
 }
-
+// Start Peky Part
 float EncodeShadingModelIdAndSelectiveOutputMask(uint ShadingModelId, uint SelectiveOutputMask)
 {
 	uint Value = (ShadingModelId & SHADINGMODELID_MASK) | SelectiveOutputMask;
-	return (float)Value / (float)0xFF;
+	// return (float)Value / (float)0xFF;
+	return (float)Value / (float)0xFFFF;
 }
 
 uint DecodeShadingModelId(float InPackedChannel)
 {
-	return ((uint)round(InPackedChannel * (float)0xFF)) & SHADINGMODELID_MASK;
+	// return ((uint)round(InPackedChannel * (float)0xFF)) & SHADINGMODELID_MASK;
+	return ((uint)round(InPackedChannel * (float)0xFFFF)) & SHADINGMODELID_MASK;
 }
 
 uint DecodeSelectiveOutputMask(float InPackedChannel)
 {
-	return ((uint)round(InPackedChannel * (float)0xFF)) & ~SHADINGMODELID_MASK;
+	// return ((uint)round(InPackedChannel * (float)0xFF)) & ~SHADINGMODELID_MASK;
+	return ((uint)round(InPackedChannel * (float)0xFFFF)) & ~SHADINGMODELID_MASK;
 }
 
-/** Start Peky Part **/
 bool IsSubsurfaceModel(int ShadingModel)
 {
 	return ShadingModel == SHADINGMODELID_SUBSURFACE 
@@ -306,7 +308,12 @@ bool IsSubsurfaceModel(int ShadingModel)
 		|| ShadingModel == SHADINGMODELID_TWOSIDED_FOLIAGE
 		|| ShadingModel == SHADINGMODELID_HAIR
 		|| ShadingModel == SHADINGMODELID_EYE
-		|| ShadingModel == SHADINGMODELID_TOON_DEFAULT;
+	// S Peky Part
+		|| ShadingModel == SHADINGMODELID_TOON_DEFAULT
+		|| ShadingModel == SHADINGMODELID_TOON_HAIR
+		|| ShadingModel == SHADINGMODELID_TOON_SKIN
+		|| ShadingModel == SHADINGMODELID_TOON_EYE;
+	// E Peky Part
 }
 
 bool UseSubsurfaceProfile(int ShadingModel)
@@ -324,7 +331,10 @@ bool HasCustomGBufferData(int ShadingModelID)
 		|| ShadingModelID == SHADINGMODELID_HAIR
 		|| ShadingModelID == SHADINGMODELID_CLOTH
 		|| ShadingModelID == SHADINGMODELID_EYE
-		|| ShadingModelID == SHADINGMODELID_TOON_DEFAULT;
+		|| ShadingModelID == SHADINGMODELID_TOON_DEFAULT
+		|| ShadingModelID == SHADINGMODELID_TOON_HAIR
+		|| ShadingModelID == SHADINGMODELID_TOON_SKIN
+		|| ShadingModelID == SHADINGMODELID_TOON_EYE;
 }
 /** End Peky Part **/
 
@@ -746,8 +756,20 @@ FGBufferData MobileDecodeGBuffer(half4 InGBufferA, half4 InGBufferB, half4 InGBu
 
 	// derived from BaseColor, Metalness, Specular
 	{
-		GBuffer.SpecularColor = ComputeF0(GBuffer.Specular, GBuffer.BaseColor, GBuffer.Metallic);
-		GBuffer.DiffuseColor = GBuffer.BaseColor - GBuffer.BaseColor * GBuffer.Metallic;
+		// Start Peky Part, Metallic Correct
+		BRANCH
+		if (GBuffer.ShadingModelID == SHADINGMODELID_TOON_DEFAULT || GBuffer.ShadingModelID == SHADINGMODELID_TOON_EYE
+			|| GBuffer.ShadingModelID == SHADINGMODELID_TOON_SKIN|| GBuffer.ShadingModelID == SHADINGMODELID_TOON_HAIR)
+		{
+			GBuffer.SpecularColor = ComputeF0(GBuffer.Specular, GBuffer.BaseColor, 0);
+			GBuffer.DiffuseColor = GBuffer.BaseColor;
+		}
+		else
+		{
+			GBuffer.SpecularColor = ComputeF0(GBuffer.Specular, GBuffer.BaseColor, GBuffer.Metallic);
+			GBuffer.DiffuseColor = GBuffer.BaseColor - GBuffer.BaseColor * GBuffer.Metallic;
+		}
+		// End Peky Part
 	}
 	return GBuffer;
 }
@@ -1004,7 +1026,7 @@ FGBufferData DecodeGBufferData(
 	GBuffer.StoredBaseColor = GBuffer.BaseColor;
 	GBuffer.StoredMetallic = GBuffer.Metallic;
 	GBuffer.StoredSpecular = GBuffer.Specular;
-
+	
 	FLATTEN
 	if( GBuffer.ShadingModelID == SHADINGMODELID_EYE )
 	{
@@ -1016,14 +1038,25 @@ FGBufferData DecodeGBufferData(
 
 	// derived from BaseColor, Metalness, Specular
 	{
-		GBuffer.SpecularColor = ComputeF0(GBuffer.Specular, GBuffer.BaseColor, GBuffer.Metallic);
 
-		if (UseSubsurfaceProfile(GBuffer.ShadingModelID))
+		// Start Peky Part, Metallic Correct
+		BRANCH
+		if (GBuffer.ShadingModelID == SHADINGMODELID_TOON_DEFAULT || GBuffer.ShadingModelID == SHADINGMODELID_TOON_EYE
+			|| GBuffer.ShadingModelID == SHADINGMODELID_TOON_SKIN|| GBuffer.ShadingModelID == SHADINGMODELID_TOON_HAIR)
 		{
-			AdjustBaseColorAndSpecularColorForSubsurfaceProfileLighting(GBuffer.BaseColor, GBuffer.SpecularColor, GBuffer.Specular, bChecker);
+			GBuffer.SpecularColor = ComputeF0(GBuffer.Specular, GBuffer.BaseColor, 0);
+			GBuffer.DiffuseColor = GBuffer.BaseColor;
 		}
-
-		GBuffer.DiffuseColor = GBuffer.BaseColor - GBuffer.BaseColor * GBuffer.Metallic;
+		else
+		{
+			GBuffer.SpecularColor = ComputeF0(GBuffer.Specular, GBuffer.BaseColor, GBuffer.Metallic);
+			if (UseSubsurfaceProfile(GBuffer.ShadingModelID))
+			{
+				AdjustBaseColorAndSpecularColorForSubsurfaceProfileLighting(GBuffer.BaseColor, GBuffer.SpecularColor, GBuffer.Specular, bChecker);
+			}
+			GBuffer.DiffuseColor = GBuffer.BaseColor - GBuffer.BaseColor * GBuffer.Metallic;
+		}
+		// End Peky Part
 
 		#if USE_DEVELOPMENT_SHADERS
 		{
@@ -1142,7 +1175,7 @@ FGBufferData GetGBufferDataFromSceneTextures(float2 UV, bool bGetNormalizedNorma
 #endif
 }
 
-/** Returns the light channel mask that should be executed for this pixel. */
+/** GBufferurns the light channel mask that should be executed for this pixel. */
 uint GetSceneLightingChannel(uint2 PixelCoord)
 {
 	BRANCH

@@ -608,6 +608,28 @@ static void GetMaterialEnvironment(EShaderPlatform InPlatform,
 
 			bMaterialRequestsDualSourceBlending = true;
 		}
+		/** Start Peky Part **/
+		if (ShadingModels.HasShadingModel(MSM_ToonDefault))
+		{
+			OutEnvironment.SetDefine(TEXT("MATERIAL_SHADINGMODEL_TOON_DEFAULT"), TEXT("1"));
+			NumSetMaterials++;
+		}
+		if (ShadingModels.HasShadingModel(MSM_ToonHair))
+		{
+			OutEnvironment.SetDefine(TEXT("MATERIAL_SHADINGMODEL_TOON_HAIR"), TEXT("1"));
+			NumSetMaterials++;
+		}
+		if (ShadingModels.HasShadingModel(MSM_ToonSkin))
+		{
+			OutEnvironment.SetDefine(TEXT("MATERIAL_SHADINGMODEL_TOON_SKIN"), TEXT("1"));
+			NumSetMaterials++;
+		}
+		if (ShadingModels.HasShadingModel(MSM_ToonEye))
+		{
+			OutEnvironment.SetDefine(TEXT("MATERIAL_SHADINGMODEL_TOON_EYE"), TEXT("1"));
+			NumSetMaterials++;
+		}
+		/** End Peky Part **/
 
 		if (ShadingModels.HasShadingModel(MSM_SingleLayerWater) && FDataDrivenShaderPlatformInfo::GetRequiresDisableForwardLocalLights(InPlatform))
 		{
@@ -622,7 +644,7 @@ static void GetMaterialEnvironment(EShaderPlatform InPlatform,
 			// Value must match SINGLE_LAYER_WATER_SHADING_QUALITY_MOBILE_WITH_DEPTH_TEXTURE in SingleLayerWaterCommon.ush!
 			OutEnvironment.SetDefine(TEXT("SINGLE_LAYER_WATER_SHADING_QUALITY"), TEXT("1"));
 		}
-
+		
 		if (NumSetMaterials == 1)
 		{
 			OutEnvironment.SetDefine(TEXT("MATERIAL_SINGLE_SHADINGMODEL"), TEXT("1"));

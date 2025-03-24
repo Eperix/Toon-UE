@@ -311,6 +311,7 @@
 #include "Serialization/ShaderKeyGenerator.h"
 #include "SubstrateMaterial.h"
 #include "PostProcess/PostProcessMaterialInputs.h"
+#include "Materials/MaterialExpressionToonMaterialOutput.h"
 #else
 #include "Materials/MaterialExpressionVertexInterpolator.h"
 #include "Materials/MaterialParameterCollection.h"
@@ -28099,4 +28100,80 @@ FString UMaterialExpressionFirstPersonOutput::GetDisplayName() const
 	return TEXT("First Person Output");
 }
 
+// Start Peky Part
+	UMaterialExpressionToonMaterialOutput::UMaterialExpressionToonMaterialOutput(const FObjectInitializer& ObjectInitializer)
+		: Super(ObjectInitializer)
+{
+	// Structure to hold one-time initialization
+	// 节点的分类
+	struct FConstructorStatics
+	{
+		FText NAME_Toon;
+		FConstructorStatics()
+			: NAME_Toon(LOCTEXT("Toon", "Toon"))
+		{
+		}
+	};
+	static FConstructorStatics ConstructorStatics;
+
+#if WITH_EDITORONLY_DATA
+	MenuCategories.Add(ConstructorStatics.NAME_Toon);
+#endif
+
+#if WITH_EDITOR
+	Outputs.Reset();
+#endif
+}
+
+#if WITH_EDITOR
+
+
+	int32 UMaterialExpressionToonMaterialOutput::Compile(class FMaterialCompiler* Compiler, int32 OutputIndex)
+{
+	int32 CodeInput = INDEX_NONE;
+
+	// const bool bStrata = Strata::IsStrataEnabled();
+
+	// 这里会在BasePixelShader.usf.里生成一个获取针脚属性的函数
+	// 如获取第一个针脚的数据使用函数GetToonMaterialOutput0(MaterialParameters)
+	// Generates function names GetToonMaterialOutput{index} used in BasePixelShader.usf.
+	if (OutputIndex == 0)
+	{
+		CodeInput = ToonDataA.IsConnected() ? ToonDataA.Compile(Compiler) : Compiler->Constant3(0.f, 0.f, 0.f);
+	}
+	if (OutputIndex == 1)
+	{
+		CodeInput = ToonDataB.IsConnected() ? ToonDataB.Compile(Compiler) : Compiler->Constant3(0.f, 0.f, 0.f);
+	}
+	if (OutputIndex == 2)
+	{
+		CodeInput = ToonDataC.IsConnected() ? ToonDataC.Compile(Compiler) : Compiler->Constant3(0.f, 0.f, 0.f);
+	}
+	
+
+	return Compiler->CustomOutput(this, OutputIndex, CodeInput);
+}
+
+	void UMaterialExpressionToonMaterialOutput::GetCaption(TArray<FString>& OutCaptions) const
+{
+	OutCaptions.Add(FString(TEXT("Toon Material")));
+}
+
+#endif // WITH_EDITOR
+
+	int32 UMaterialExpressionToonMaterialOutput::GetNumOutputs() const
+{
+	return 3;
+}
+
+	FString UMaterialExpressionToonMaterialOutput::GetFunctionName() const
+{
+	return TEXT("GetToonMaterialOutput");
+}
+
+	FString UMaterialExpressionToonMaterialOutput::GetDisplayName() const
+{
+	return TEXT("Toon Material");
+}
+// End Peky Part
 #undef LOCTEXT_NAMESPACE

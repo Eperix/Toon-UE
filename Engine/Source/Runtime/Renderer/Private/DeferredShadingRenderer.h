@@ -433,6 +433,11 @@ public:
 		const FBuildHZBAsyncComputeParams* BuildHZBAsyncComputeParams,
 		Froxel::FRenderer& FroxelRenderer);
 
+	// Start Peky Part
+	void RenderToonPass(FRDGBuilder& GraphBuilder, const FSceneTextures& SceneTextures);
+	void RenderToonOutlinePass(FRDGBuilder& GraphBuilder, FSceneTextures& SceneTextures);
+	// End Peky Part
+
 	bool RenderHzb(FRDGBuilder& GraphBuilder, FRDGTextureRef SceneDepthTexture, const FBuildHZBAsyncComputeParams* AsyncComputeParams, Froxel::FRenderer& FroxelRenderer);
 
 	/** Renders the view family. */

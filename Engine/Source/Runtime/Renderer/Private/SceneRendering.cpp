@@ -568,6 +568,11 @@ FASTVRAM_CVAR(VolumetricFog, 1);
 FASTVRAM_CVAR(SeparateTranslucency, 0); 
 FASTVRAM_CVAR(SeparateTranslucencyModulate, 0);
 FASTVRAM_CVAR(ScreenSpaceAO,0);
+// Start Peky Part
+FASTVRAM_CVAR(ToonTextureA, 0);
+FASTVRAM_CVAR(ToonTextureB, 0);
+FASTVRAM_CVAR(ToonTextureC, 0);
+// End Peky Part
 FASTVRAM_CVAR(SSR, 0);
 FASTVRAM_CVAR(DBufferA, 0);
 FASTVRAM_CVAR(DBufferB, 0);
@@ -771,12 +776,18 @@ void FFastVramConfig::Update()
 	bDirty |= UpdateTextureFlagFromCVar(CVarFastVRam_ShadowPerObject, ShadowPerObject);
 	bDirty |= UpdateTextureFlagFromCVar(CVarFastVRam_ShadowCSM, ShadowCSM);
 	bDirty |= UpdateTextureFlagFromCVar(CVarFastVRam_PostProcessMaterial, PostProcessMaterial);
+	// Start Peky Part
+	bDirty |= UpdateTextureFlagFromCVar(CVarFastVRam_ToonTextureA, ToonTextureA);
+	bDirty |= UpdateTextureFlagFromCVar(CVarFastVRam_ToonTextureB, ToonTextureB);
+	bDirty |= UpdateTextureFlagFromCVar(CVarFastVRam_ToonTextureC, ToonTextureC);
+	// End Peky Part
 
 	bDirty |= UpdateBufferFlagFromCVar(CVarFastVRam_DistanceFieldCulledObjectBuffers, DistanceFieldCulledObjectBuffers);
 	bDirty |= UpdateBufferFlagFromCVar(CVarFastVRam_DistanceFieldTileIntersectionResources, DistanceFieldTileIntersectionResources);
 	bDirty |= UpdateBufferFlagFromCVar(CVarFastVRam_DistanceFieldAOScreenGridResources, DistanceFieldAOScreenGridResources);
 	bDirty |= UpdateBufferFlagFromCVar(CVarFastVRam_ForwardLightingCullingResources, ForwardLightingCullingResources);
 	bDirty |= UpdateBufferFlagFromCVar(CVarFastVRam_GlobalDistanceFieldCullGridBuffers, GlobalDistanceFieldCullGridBuffers);
+	
 
 	// When Substrate is enable, remove Scene color from fast VRAM to leave space for material buffer which has more impact on performance
 	if (Substrate::IsSubstrateEnabled() && !IsForwardShadingEnabled(GMaxRHIShaderPlatform))

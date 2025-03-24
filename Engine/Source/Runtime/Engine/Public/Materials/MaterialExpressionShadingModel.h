@@ -34,7 +34,9 @@ class UMaterialExpressionShadingModel : public UMaterialExpression
 	virtual bool GenerateHLSLExpression(FMaterialHLSLGenerator& Generator, UE::HLSLTree::FScope& Scope, int32 OutputIndex, UE::HLSLTree::FExpression const*& OutExpression) const override;
 #endif
 public:
-	UPROPERTY(EditAnywhere, Category=ShadingModel,  meta=(ValidEnumValues="MSM_DefaultLit, MSM_Subsurface, MSM_PreintegratedSkin, MSM_ClearCoat, MSM_SubsurfaceProfile, MSM_TwoSidedFoliage, MSM_Hair, MSM_Cloth, MSM_Eye", ShowAsInputPin = "Primary"))
+	// Start Peky Part
+	UPROPERTY(EditAnywhere, Category=ShadingModel,  meta=(ValidEnumValues="MSM_DefaultLit, MSM_Subsurface, MSM_PreintegratedSkin, MSM_ClearCoat, MSM_SubsurfaceProfile, MSM_TwoSidedFoliage, MSM_Hair, MSM_Cloth, MSM_Eye, MSM_ToonDefault, MSM_ToonHair, MSM_ToonSkin, MSM_ToonEye", ShowAsInputPin = "Primary"))
 	TEnumAsByte<enum EMaterialShadingModel> ShadingModel = MSM_DefaultLit;
+	// End Peky Part
 	//~ End UMaterialExpression Interface
 };

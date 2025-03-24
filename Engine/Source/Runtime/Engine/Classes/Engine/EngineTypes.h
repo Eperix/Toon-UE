@@ -665,7 +665,10 @@ enum EMaterialShadingModel : int
 	MSM_ThinTranslucent			UMETA(DisplayName="Thin Translucent"),
 	MSM_Strata					UMETA(DisplayName="Substrate", Hidden),
 	/** Start Peky Part **/
-	MSM_ToonDefault				UMETA(DisplayName="ToonDefault"),
+	MSM_ToonDefault				UMETA(DisplayName="Toon Default"),
+	MSM_ToonHair				UMETA(DisplayName="Toon Hair"),
+	MSM_ToonSkin				UMETA(DisplayName="Toon Skin"),
+	MSM_ToonEye					UMETA(DisplayName="Toon Eye"),
 	/** End Peky Part **/
 	/** Number of unique shading models. */
 	MSM_NUM						UMETA(Hidden),
@@ -675,7 +678,7 @@ enum EMaterialShadingModel : int
 	MSM_MAX
 };
 
-static_assert(MSM_NUM <= 16, "Do not exceed 16 shading models without expanding FMaterialShadingModelField to support uint32 instead of uint16!");
+static_assert(MSM_NUM <= 256, "Do not exceed 16 shading models without expanding FMaterialShadingModelField to support uint32 instead of uint16!");
 
 /** Wrapper for a bitfield of shading models. A material contains one of these to describe what possible shading models can be used by that material. */
 USTRUCT()
@@ -687,8 +690,8 @@ public:
 	FMaterialShadingModelField() {}
 	FMaterialShadingModelField(EMaterialShadingModel InShadingModel)		{ AddShadingModel(InShadingModel); }
 
-	void AddShadingModel(EMaterialShadingModel InShadingModel)				{ check(InShadingModel < MSM_NUM); ShadingModelField |= (1 << (uint16)InShadingModel); }
-	void RemoveShadingModel(EMaterialShadingModel InShadingModel)			{ ShadingModelField &= ~(1 << (uint16)InShadingModel); }
+	void AddShadingModel(EMaterialShadingModel InShadingModel)				{ check(InShadingModel < MSM_NUM); ShadingModelField |= (1 << (uint32)InShadingModel); }
+	void RemoveShadingModel(EMaterialShadingModel InShadingModel)			{ ShadingModelField &= ~(1 << (uint32)InShadingModel); }
 	void ClearShadingModels()												{ ShadingModelField = 0; }
 
 	// Check if any of the given shading models are present
@@ -704,13 +707,13 @@ public:
 		return false; 
 	}
 
-	bool HasShadingModel(EMaterialShadingModel InShadingModel) const		{ return (ShadingModelField & (1 << (uint16)InShadingModel)) != 0; }
-	bool HasOnlyShadingModel(EMaterialShadingModel InShadingModel) const	{ return ShadingModelField == (1 << (uint16)InShadingModel); }
+	bool HasShadingModel(EMaterialShadingModel InShadingModel) const		{ return (ShadingModelField & (1 << (uint32)InShadingModel)) != 0; }
+	bool HasOnlyShadingModel(EMaterialShadingModel InShadingModel) const	{ return ShadingModelField == (1 << (uint32)InShadingModel); }
 	bool IsUnlit() const													{ return HasShadingModel(MSM_Unlit); }
 	bool IsLit() const														{ return !IsUnlit(); }
 	bool IsValid() const													{ return (ShadingModelField > 0) && (ShadingModelField < (1 << MSM_NUM)); }
-	uint16 GetShadingModelField() const										{ return ShadingModelField; }
-	void SetShadingModelField(uint16 InShadingModelField)					{ ShadingModelField = InShadingModelField; }
+	uint32 GetShadingModelField() const										{ return ShadingModelField; }
+	void SetShadingModelField(uint32 InShadingModelField)					{ ShadingModelField = InShadingModelField; }
 	int32 CountShadingModels() const										{ return FMath::CountBits(ShadingModelField); }
 	EMaterialShadingModel GetFirstShadingModel() const						{ check(IsValid()); return (EMaterialShadingModel)FMath::CountTrailingZeros(ShadingModelField); }
 
@@ -719,7 +722,7 @@ public:
 
 private:
 	UPROPERTY()
-	uint16 ShadingModelField = 0;
+	uint32 ShadingModelField = 0;
 };
 
 /**

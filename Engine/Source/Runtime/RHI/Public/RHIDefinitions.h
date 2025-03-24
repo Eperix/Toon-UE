@@ -1102,9 +1102,10 @@ enum class ETextureCreateFlags : uint64
 
 	/** Don't lump this texture with streaming memory when tracking total texture allocation sizes */
 	ForceIntoNonStreamingMemoryTracking = 1ull << 39,
-
+	
 	/** Textures marked with this are meant to be immediately evicted after creation for intentionally crashing the GPU with a page fault. */
 	Invalid                           = 1ull << 40,
+
 };
 ENUM_CLASS_FLAGS(ETextureCreateFlags);
 
