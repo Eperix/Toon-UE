@@ -2534,6 +2534,12 @@ void FDeferredShadingSceneRenderer::Render(FRDGBuilder& GraphBuilder)
 			// VisualizeVirtualShadowMap TODO
 		}
 
+		// Start Peky Part
+		{
+			RenderToonPass(GraphBuilder, SceneTextures);
+		}
+		// End Peky Part
+
 		FRDGTextureRef ExposureIlluminanceSetup = nullptr;
 		if (!bHasRayTracedOverlay)
 		{
@@ -2611,12 +2617,6 @@ void FDeferredShadingSceneRenderer::Render(FRDGBuilder& GraphBuilder)
 			Substrate::AddSubstrateMaterialClassificationPass(GraphBuilder, SceneTextures, DBufferTextures, Views);
 			Substrate::AddSubstrateDBufferPass(GraphBuilder, SceneTextures, DBufferTextures, Views);
 		}
-
-		// Start Peky Part
-		// {
-		// 	RenderToonPass(GraphBuilder, SceneTextures);
-		// }
-		// End Peky Part
 		
 		// Copy lighting channels out of stencil before deferred decals which overwrite those values
 		TArray<FRDGTextureRef, TInlineAllocator<2>> NaniteShadingMask;

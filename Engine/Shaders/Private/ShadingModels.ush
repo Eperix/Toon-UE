@@ -975,35 +975,45 @@ FDirectLighting PreintegratedSkinBxDF( FGBufferData GBuffer, half3 N, half3 V, h
 /** Start Peky Part **/
 FDirectLighting ToonDefaultBxDF( FGBufferData GBuffer, half3 N, half3 V, half3 L, float Falloff, float NoL, FAreaLight AreaLight, FShadowTerms Shadow )
 {
+#if GBUFFER_HAS_TANGENT
 	half3 X = GBuffer.WorldTangent;
 	half3 Y = normalize(cross(N, X));
+#else
+	half3 X = 0;
+	half3 Y = 0;
+#endif
+	
 	BxDFContext Context;
 	Init(Context, N, X, Y, V, L);
 	SphereMaxNoH(Context, AreaLight.SphereSinAlpha, true);
+	Context.NoV = saturate(abs(Context.NoV) + 0.00001);
+	float SpecularOffset = GBuffer.Specular;
+	SpecularOffset = (SpecularOffset - 1) * -0.25;
+	float SpecularRange = saturate(GBuffer.Metallic - 0.5);
+	float3 ShadowColor = 0;
+	ShadowColor = GBuffer.BaseColor * ShadowColor;
 
-	// 解GBuffer
-	float SpecularOffset = GBuffer.Metallic;
-	float SpecularRange = (GBuffer.CustomData.a - 0.5 ) * 2;
-	float ShadowRange = GBuffer.Specular;
-	float ShadowOffset = (GBuffer.Roughness - 0.5) * 2;
-	float3 EnvColor = ExtractSubsurfaceColor(GBuffer);
-	float3 LightColor = AreaLight.FalloffColor * Falloff;
-	float3 ShadowColor = EnvColor * GBuffer.BaseColor;
+	float offset = GBuffer.CustomData.a;
+	float SoftScatterStrength = 0;
 
-	// 阴影计算
-	float ShadowMask = ToonShadowMask(saturate(Context.NoL + ShadowOffset), ShadowRange);
-	
-	// Rim边缘光计算, SpecularLambert计算
-	// float RimFactor = 1.0 - saturate(Context.NoV);
-	// float RimMask = smoothstep(0.8, 0.9, RimFactor) * ShadowMask;
-	// float3 RimLight = RimMask * GBuffer.SpecularColor * 0.5;
-	// float3 RimLight = RimMask * float3(1, 1, 1) * 0.5;
-	
+	offset = offset * 2 - 1;
+	half3 H = normalize(V + L);
+	float NoH = saturate(dot(N, H));
+	NoL=dot(N,L)*2-2;
+	half NoLOffset = NoL+saturate(GBuffer.CustomData.a)*4;
+
 	FDirectLighting Lighting;
-	Lighting.Diffuse = LightColor * Diffuse_Lambert(lerp(ShadowColor, GBuffer.BaseColor, ShadowMask));
-	Lighting.Specular = LightColor * ShadowMask * step(0.5 + SpecularOffset, pow(saturate(Context.NoH), 1000 * SpecularRange));
-	Lighting.Transmission = 0;
-	
+	Lighting.Diffuse = AreaLight.FalloffColor * ((smoothstep(-SpecularRange, SpecularRange, NoLOffset)) * Falloff) * Diffuse_Lambert(GBuffer.DiffuseColor) * 2.2;
+
+	float InScatter = pow(saturate(dot(L, -V)), 12) * lerp(3, .1f, 1);
+	float NormalContribution = saturate(dot(N, H));
+	float BackScatter = GBuffer.GBufferAO * NormalContribution / (PI * 2);
+	Lighting.Specular = ToonStep(SpecularRange, (saturate(D_GGX(SpecularOffset, NoH)))) * (AreaLight.FalloffColor * GBuffer.SpecularColor * Falloff * 8);
+	float3 TransmissionSoft = AreaLight.FalloffColor * (Falloff * lerp(BackScatter, 1, InScatter)) * ShadowColor * SoftScatterStrength;
+	float3 ShadowLightener = 0;
+	ShadowLightener = (saturate(smoothstep(0, 1, saturate(1 - NoLOffset))) * ShadowColor * 0.1);
+
+	Lighting.Transmission = (ShadowLightener + TransmissionSoft) * Falloff;
 	return Lighting;
 }
 
@@ -1018,7 +1028,7 @@ FDirectLighting  ToonHairBxDF( FGBufferData GBuffer, half3 N, half3 V, half3 L, 
 	Init(Context, N, X, Y, V, L);
 	SphereMaxNoH(Context, AreaLight.SphereSinAlpha, true);
 
-	float ShadowAttenuation = GBuffer.Specular;
+	float ShadowRange = GBuffer.Specular;
 	float ShadowOffset = (GBuffer.Roughness - 0.5) * 2;
 	
 	half NoLOffset = saturate(ceil(NoL));
@@ -1026,13 +1036,7 @@ FDirectLighting  ToonHairBxDF( FGBufferData GBuffer, half3 N, half3 V, half3 L, 
 	float3 LightColor = AreaLight.FalloffColor * Falloff;
 	float3 EnvColor = ExtractSubsurfaceColor(GBuffer);
 	float3 ShadowColor = GBuffer.BaseColor * EnvColor;
-	float ShadowMask = ToonShadowMask(saturate(Context.NoL + ShadowOffset), ShadowAttenuation);
-
-	// Rim边缘光计算, SpecularLambert计算
-	// float RimFactor = 1.0 - saturate(Context.NoV);
-	// float RimMask = smoothstep(0.8, 0.9, RimFactor) * (1.0 - ShadowMask);
-	// float3 RimLight = RimMask * GBuffer.SpecularColor * 0.5;
-	// float3 RimLight = RimMask * float3(1, 1, 1) * 0.5;
+	float ShadowMask = ToonShadowMask(saturate(Context.NoL + ShadowOffset), ShadowRange);
 	
 	float SpecularRange = GBuffer.CustomData.a * 1000;
 	float AnisotropySpecular = saturate(lerp(ShadowColor, StrandSpecular(Y, L, V, SpecularRange, 1.0), ShadowMask));

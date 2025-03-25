@@ -1,4 +1,7 @@
-﻿float ToonShadowMask(float Lambert, float AttenuationSpeed, float ShadowOffset = 0.5)
+﻿#pragma once
+
+
+float ToonShadowMask(float Lambert, float AttenuationSpeed, float ShadowOffset = 0.5)
 {
 	return smoothstep(ShadowOffset - AttenuationSpeed, ShadowOffset + AttenuationSpeed, Lambert);
 }
@@ -36,6 +39,12 @@ float3 GetSkinShadow(float Shadow, float3 Color0)
 float3 ToonStep(float feather, float halfLambert, float threshold = 0.5f)
 {
 	return smoothstep(threshold - feather, threshold + feather, halfLambert);
+}
+
+half ToonStepHalf(float halfLambert, float smoothness = 0.001f, float threshold = 0.5f)
+{
+	smoothness = max(smoothness, 0.001f);
+	return smoothstep(threshold - smoothness, threshold + smoothness, halfLambert);
 }
 
 float ToonFresnel(float3 N, float3 V, float Exponent, float BaseReflectionFraction = 0.0f)

@@ -1,46 +1,46 @@
-﻿#include "../Common.ush"  
-#include "/Engine/Generated/Material.ush"  
-#include "/Engine/Generated/VertexFactory.ush"  
+﻿#include "../Common.ush"
+#include "/Engine/Generated/Material.ush"
+#include "/Engine/Generated/VertexFactory.ush"
+
 
 struct FSimpleMeshPassVSToPS
 {
 	FVertexFactoryInterpolantsVSToPS FactoryInterpolants;
-	float4 SvPosition : SV_POSITION;
+	float4 Position : SV_POSITION;
 };
-#if VERTEXSHADER
+
+
+float3 InputColor;
+
 void MainVS(
 	FVertexFactoryInput Input,
 	out FSimpleMeshPassVSToPS Output)
 {
-	ResolvedView = ResolveView();
+
 	float4 ClipSpacePosition;
 	
+	ResolvedView = ResolveView();
+
 	FVertexFactoryIntermediates VFIntermediates = GetVertexFactoryIntermediates(Input);
+
 	float4 WorldPos = VertexFactoryGetWorldPosition(Input, VFIntermediates);
-	// float3 WorldNormal = VertexFactoryGetWorldNormal(Input, VFIntermediates);
-	//
+	float3 WorldNormal = VertexFactoryGetWorldNormal(Input, VFIntermediates);
+
 	float3x3 TangentToLocal = VertexFactoryGetTangentToLocal(Input, VFIntermediates);
-	//
+
 	FMaterialVertexParameters VertexParameters = GetMaterialVertexParameters(Input, VFIntermediates, WorldPos.xyz, TangentToLocal);
-	// WorldPos.xyz += GetMaterialWorldPositionOffset(VertexParameters);
-	//
+	WorldPos.xyz += GetMaterialWorldPositionOffset(VertexParameters);
+
 	float4 RasterizedWorldPosition = VertexFactoryGetRasterizedWorldPosition(Input, VFIntermediates, WorldPos);
 	ClipSpacePosition = mul(RasterizedWorldPosition, ResolvedView.TranslatedWorldToClip);
-	Output.SvPosition = INVARIANT(ClipSpacePosition);
+	Output.Position = INVARIANT(ClipSpacePosition);
 	Output.FactoryInterpolants = VertexFactoryGetInterpolantsVSToPS(Input, VFIntermediates, VertexParameters);
 }
-#endif
-void MainPS(
-	FSimpleMeshPassVSToPS In,
-	out float4 OutColor1 : SV_Target0,
-	out float4 OutColor2 : SV_Target1,
-	out float4 OutColor3 : SV_Target2)
-{
-	float3 Color1 = float3(1.0, 0.0, 0.0);
-	float3 Color2 = float3(0.0, 1.0, 0.0);
-	float3 Color3 = float3(0.0, 0.0, 1.0);
 
-	OutColor1 = float4(Color1, 1.0);
-	OutColor2 = float4(Color2, 1.0);
-	OutColor3 = float4(Color3, 1.0);
+void MainPS(
+	FSimpleMeshPassVSToPS Input,
+	out float4 OutColor : SV_Target0)
+{
+	float3 Color = float3(1.0, 0.0, 0.0);
+	OutColor = float4(Color, 1.0);
 }
