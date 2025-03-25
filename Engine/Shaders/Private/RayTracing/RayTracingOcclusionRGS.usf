@@ -335,6 +335,11 @@ struct FOcclusionShadingParameters
 	bool bIsHairStrands;
 	bool bIsSubsurface;
 	bool bHasSubsurfaceProfile;
+	// Start Peky Part
+	// Toon RayTracing Shadow
+	bool bIsToon;
+	FToonBuffer ToonBuffer;
+	// End Peky Part
 };
 
 FOcclusionResult ComputeOcclusion(
@@ -468,41 +473,58 @@ FOcclusionResult ComputeOcclusion(
 		uint RayFlagsForOpaque = bAcceptFirstHit != 0 ? RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH : 0;
 
 		FMinimalPayload MinimalPayload;
-		const bool NeedToTraceTranslucentShadow = TranslucentShadow == 1 && MaxTranslucencyHitCount != 0;
+
+		// Start Peky Part
+		// Toon RayTracing Shadow
+		if (ShadingDesc.bIsToon)
+		{
+#if !SUBSTRATE_ENABLED
+			FToonPayloadData ToonPayloadData = (FToonPayloadData)0;
+			ToonPayloadData.SetSelfID(ShadingDesc.ToonBuffer.SelfID);
+			ToonPayloadData.SetShadowCastFlag(ShadingDesc.ToonBuffer.ShadowCastFlag);
+			ToonPayloadData.SetObjectID(ShadingDesc.ToonBuffer.ObjectID);
+			ToonPayloadData.SetToonModel(ShadingDesc.ToonBuffer.ToonModel);
+			MinimalPayload = TraceToonVisibilityRay(TLAS, RayFlags | RayFlagsForOpaque, RaytracingMask, Ray, ToonPayloadData);
+#endif
+		}
+		else
+		{
+			const bool NeedToTraceTranslucentShadow = TranslucentShadow == 1 && MaxTranslucencyHitCount != 0;
 
 #if AVOID_SELF_INTERSECTION_TRACE
-		{
-			FRayDesc EpsilonRay = Ray;
-			EpsilonRay.TMax = AvoidSelfIntersectionTraceDistance;
-
-			if (Ray.TMax > Ray.TMin)
 			{
+				FRayDesc EpsilonRay = Ray;
+				EpsilonRay.TMax = AvoidSelfIntersectionTraceDistance;
+
+				if (Ray.TMax > Ray.TMin)
+				{
+					MinimalPayload = TraceVisibilityRay(
+						TLAS,
+						RayFlags | RayFlagsForOpaque | RAY_FLAG_CULL_BACK_FACING_TRIANGLES,
+						RaytracingMask,
+						EpsilonRay);
+				}
+			}
+
+			if (!MinimalPayload.IsHit())
+			{
+				Ray.TMin = max(Ray.TMin, AvoidSelfIntersectionTraceDistance);
+
 				MinimalPayload = TraceVisibilityRay(
 					TLAS,
-					RayFlags | RayFlagsForOpaque | RAY_FLAG_CULL_BACK_FACING_TRIANGLES,
+					RayFlags | RayFlagsForOpaque,
 					RaytracingMask,
-					EpsilonRay);
+					Ray);
 			}
-		}
-
-		if (!MinimalPayload.IsHit())
-		{
-			Ray.TMin = max(Ray.TMin, AvoidSelfIntersectionTraceDistance);
-
+#else
 			MinimalPayload = TraceVisibilityRay(
 				TLAS,
 				RayFlags | RayFlagsForOpaque,
 				RaytracingMask,
 				Ray);
-		}
-#else
-		MinimalPayload = TraceVisibilityRay(
-			TLAS,
-			RayFlags | RayFlagsForOpaque,
-			RaytracingMask,
-			Ray);
 #endif
-
+		}
+		// End Peky Part
 		#if USE_HAIR_LIGHTING
 		if (!ShadingDesc.bIsHairStrands && bUseHairVoxel)
 		{
@@ -786,6 +808,11 @@ RAY_TRACING_ENTRY_RAYGEN_OR_INLINE(Occlusion)
 		#else
 		{
 			FGBufferData GBufferData = GetGBufferDataFromSceneTexturesLoad(PixelCoord);
+			// Start Peky Part
+			// Toon RayTracing Shadow
+			ShadingParameters.ToonBuffer = GBufferData.ToonBuffer;
+			ShadingParameters.bIsToon = GBufferData.ShadingModelID == SHADINGMODELID_TOON_DEFAULT;
+			// End Peky Part
 			ShadingParameters.bIsValid = GBufferData.ShadingModelID != SHADINGMODELID_UNLIT;
 			ShadingParameters.bIsHair = GBufferData.ShadingModelID == SHADINGMODELID_HAIR;
 			ShadingParameters.bIsSubsurface = GBufferData.ShadingModelID == SHADINGMODELID_SUBSURFACE;

@@ -661,17 +661,14 @@ RAY_TRACING_ENTRY_ANY_HIT(MaterialAHS,
 	FPackedMaterialClosestHitPayload, PackedPayload,
 	FRayTracingIntersectionAttributes, Attributes)
 {
-	// Start Peky Part
-	// Bind AnyHitShader For Toon
-#if MATERIAL_SHADINGMODEL_TOON_DEFAULT
-	IgnoreHit();
-#endif
-	// End Peky Part
 #if USE_MATERIAL_ANY_HIT_SHADER
-
-#if MATERIALBLENDING_SOLID
+	
+	// Start Peky Part
+	// Bind AnyHitShader For Toon Shadow
+#if MATERIALBLENDING_SOLID && !MATERIAL_SHADINGMODEL_TOON_DEFAULT
 	// Continue traversal by simply returning from this shader
 	// Usually this path is inactive because opaque materials don't have AHS bound
+	// End Peky Part
 	return;
 #else
 	// All other blending modes _might_ need material evaluation - so we need
@@ -698,7 +695,7 @@ RAY_TRACING_ENTRY_ANY_HIT(MaterialAHS,
 #endif  // !MATERIALBLENDING_MASKED
 
 	// If we got here -- we have a reason to evaluate the material -- do the setup 
-
+	
 	GlobalTextureMipBias = PackedPayload.GetMipBias();
 
 	ResolvedView = ResolveView();
@@ -746,6 +743,51 @@ RAY_TRACING_ENTRY_ANY_HIT(MaterialAHS,
 	}
 #endif // !MATERIALBLENDING_MASKED
 
+	// Start Peky Part
+	// 当发射源是Toon时才做特殊处理
+#if !STRARA_ENABLED && MATERIALSHADINGMODEL_TOON_DEFAULT
+	if (PackedPayload.GetShadingModelID() != SHADINGMODELID_TOON)
+	{
+		return;
+	}
+	FToonPayloadData = RayGenToonPayload = (FToonPayloadData)0;
+	FToonPayloadData HitToonPayload = (FToonPayloadData)0;
+	RayGenToonPayload.ToonData = PackedPayload.PackedCustomData;
+#ifdef  HAVE_GetToonMaterialOutput0
+	float4 ToonBufferA = float4(GetToonMaterialOutput0(MaterialParameters), 0);
+	HitToonPayload = GetToonPayloadDataFromBuffer(ToonBufferA);
+#endif
+	
+	// 使用了SCF_DISABLEALLTOON的话，不投影到任何Toon材质上
+	if(HitToonPayload.GetShadowCastFlag() & SCF_DISABLEALLTOON)
+	{
+		IgnoreHit();
+	}
+	
+	// 判断是否同一个Actor
+	bool IsSelfActor = HitToonPayload.GetObjectID() == RayGenToonPayload.GetObjectID();
+	if(IsSelfActor)
+	{
+		if (HitToonPayload.GetShadowCastFlag() & SCF_DISABLEONTOON)
+		{
+			IgnoreHit();
+		}
+		// 消除自阴影
+		if (HitToonPayload.GetShadowCastFlag() & SCF_DISABLEONSELF && RayGenToonPayload.GetSelfID() == HitToonPayload.GetSelfID())
+		{
+			IgnoreHit();
+		}
+		if (HitToonPayload.GetShadowCastFlag() & SCF_DISABLEONFACE && RayGenToonPayload.GetToonModel() == TOONMODEL_FACE)
+		{
+			IgnoreHit();
+		}
+		if (HitToonPayload.GetShadowCastFlag() & SCF_DISABLEONEYE && RayGenToonPayload.GetToonModel() == TOONMODEL_EYE)
+		{
+			IgnoreHit();
+		}
+	}
+	// End Peky Part
+#endif
 #endif // !MATERIALBLENDING_SOLID && !MATERIALBLENDING_ALPHAHOLDOUT && !MATERIALBLENDING_ADDITIVE
 
 #endif // USE_MATERIAL_ANY_HIT_SHADER

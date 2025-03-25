@@ -18,6 +18,7 @@
 #include "../ShadingCommon.ush"
 #include "../OctahedralCommon.ush"
 #include "../SceneData.ush"
+#include "../Toon/ToonCommon.ush"
 #include "../Common.ush"
 
 #include "/Engine/Shared/RayTracingDefinitions.h"
@@ -914,6 +915,10 @@ struct FPackedMaterialClosestHitPayload : FMinimalPayload
 	float GetRoughness()     { return f16tof32(MetallicAndSpecularAndRoughness >> 16); }
 	float GetIor()           { return f16tof32(IorAndShadingModelIDAndBlendingModeAndPrimitiveLightingChannelMask); }
 	uint GetShadingModelID() { return (IorAndShadingModelIDAndBlendingModeAndPrimitiveLightingChannelMask >> 16) & 0xF; }
+	// Start Peky Part
+	// Toon RayTracing Shadow
+	void SetShadingModelID(uint ShadingModelID){ IorAndShadingModelIDAndBlendingModeAndFlagsAndPrimitiveLightingChannelMask |= (ShadingModelID & 0xF) << 16;}
+	// End Peky Part
 	uint GetBlendingMode()   { return (IorAndShadingModelIDAndBlendingModeAndPrimitiveLightingChannelMask >> 20) & 0x7; }
 	uint GetFlags()          { return FlagsAndMipBias & 0xFF; }
 	void SetFlags(uint Flags) { FlagsAndMipBias |= (Flags & 0xFF); }
@@ -1180,6 +1185,27 @@ FMinimalPayload TraceVisibilityRay(
 
 	return MinimalPayload;
 }
+// Start Peky Part
+// Toon RayTracing Shadow
+#if !SUBSTRATE_ENABLED
+FMinimalPayload TraceVisibilityRay(in RaytracingAccelerationStructure TLAS,
+	in uint RayFlags,
+	in uint InstanceInclusionMask,
+	in FRayDesc Ray,
+	in FToonPayloadData ToonPayloadData)
+{
+	FPackedMaterialClosestHitPayload PackedPayload = (FPackedMaterialClosestHitPayload)0;
+	PackedPayload.SetFlags(RAY_TRACING_PAYLOAD_INPUT_FLAG_SHADOW_RAY);
+	
+	PackedPayload.PackedCustomData = ToonPayloadData.ToonData;
+	PackedPayload.SetShadingModelID(SHADINGMODELID_TOON_DEFAULT);
+	TraceVisibilityRayPacked(PackedPayload, TLAS, RayFlags, InstanceInclusionMask, Ray);
+
+	FMinimalPayload MinimalPayload = (FMinimalPayload)0;
+	MinimalPayload.HitT = PackedPayload.HitT;
+	return MinimalPayload;
+}	
+#endif
 
 #if !COMPUTESHADER
 
@@ -1368,4 +1394,4 @@ uint GetGPUSceneInstanceIndex(uint PrimitiveIndex, uint InstanceIndex)
 #endif
 }
 
-#endif // RAYTRACINGCOMMON_USH_INCLUDED // Workarround for UE-66460
+#endif // RAYTRACINGCOMMON_USH_INCLUDED // Workarround for UE-6646
