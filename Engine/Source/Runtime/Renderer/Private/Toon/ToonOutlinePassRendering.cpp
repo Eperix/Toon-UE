@@ -242,8 +242,8 @@ FRegisterPassProcessorCreateFunction RegisterToonOutlineMeshPass(
 	EMeshPass::ToonOutlinePass,  
 	EMeshPassFlags::CachedMeshCommands | EMeshPassFlags::MainView  
 );
-DECLARE_STATS_GROUP(TEXT("ParallelCommandListMarkers"), STATGROUP_ParallelCommandListMarkers, STATCAT_Advanced); 
-DECLARE_CYCLE_STAT(TEXT("ToonOutlinePass"), STAT_CLP_ToonOutlinePass, STATGROUP_ParallelCommandListMarkers);  
+ 
+DECLARE_CYCLE_STAT(TEXT("ToonOutlinePass"), STAT_CLP_ToonOutlinePass, STATGROUP_SceneRendering);  
 
 BEGIN_SHADER_PARAMETER_STRUCT(FToonOutlineMeshPassParameters, )  
     SHADER_PARAMETER_STRUCT_REF(FViewUniformShaderParameters, View)  

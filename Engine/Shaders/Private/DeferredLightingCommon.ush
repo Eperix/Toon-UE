@@ -465,7 +465,6 @@ FLightAccumulator AccumulateDynamicLighting(
 				#if REFERENCE_QUALITY
 					Lighting = IntegrateBxDF( GBuffer, N, V, Rect, Shadow, SourceTexture, SVPos );
 				#else
-				BRANCH
 				Lighting = IntegrateBxDF( GBuffer, N, V, Rect, Shadow, SourceTexture);
 
 				#endif
@@ -477,7 +476,6 @@ FLightAccumulator AccumulateDynamicLighting(
 				#if REFERENCE_QUALITY
 					Lighting = IntegrateBxDF( GBuffer, N, V, Capsule, Shadow, SVPos );
 				#else
-				BRANCH
 					Lighting = IntegrateBxDF( GBuffer, N, V, Capsule, Shadow, LightData.bInverseSquared );
 
 				#endif

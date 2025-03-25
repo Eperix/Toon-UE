@@ -20,17 +20,17 @@ IMPLEMENT_MATERIAL_SHADER_TYPE(, FToonPassPS, TEXT("/Engine/Private/Toon/ToonSha
 FRDGTextureDesc GetToonBufferTextureDesc(FIntPoint Extent, ETextureCreateFlags CreateFlags)
 {
 	//输入的参数：
-	//Extent：贴图尺寸；PF_B8G8R8A8：贴图格式，表示RGBA各个通道均为8bit
+	//Extent：贴图尺寸；PF_B8G8R8A8_UINT：贴图格式，表示RGBA各个通道均为8bit uint
 	//FClearValueBinding::Black:清除值，表示清除贴图时将其清除为黑色
 	//TexCreate_UAV：Unordered Access View，允许在着色器中进行随机读写操作
 	//TexCreate_RenderTargetable：表示纹理可作为渲染目标使用
 	//TexCreate_ShaderResource：表示纹理可作为着色器资源，可以在着色器中进行采样等操作
-	return FRDGTextureDesc(FRDGTextureDesc::Create2D(Extent, PF_B8G8R8A8, FClearValueBinding::Black, TexCreate_UAV | TexCreate_RenderTargetable | TexCreate_ShaderResource | CreateFlags));
+	return FRDGTextureDesc(FRDGTextureDesc::Create2D(Extent, PF_R8G8B8A8_UINT, FClearValueBinding::Black, TexCreate_UAV | TexCreate_RenderTargetable | TexCreate_ShaderResource | CreateFlags));
 }
 // Toon Buffer step 5-3
-FRDGTextureRef CreateToonBufferTexture(FRDGBuilder& GraphBuilder, FIntPoint Extent, ETextureCreateFlags CreateFlags)
+FRDGTextureRef CreateToonBufferTexture(FRDGBuilder& GraphBuilder, FIntPoint Extent, ETextureCreateFlags CreateFlags, const TCHAR* Name)
 {	
-	return GraphBuilder.CreateTexture(GetToonBufferTextureDesc(Extent, CreateFlags), TEXT("TBufferA"));
+	return GraphBuilder.CreateTexture(GetToonBufferTextureDesc(Extent, CreateFlags), Name);
 }
 
  //------------------------------------------- Mesh Pass Processor-------------------------------------------------
@@ -170,8 +170,8 @@ FRegisterPassProcessorCreateFunction RegisterToonPass(&CreateToonPassProcessor, 
 
 //------------------FRegisterPassProcessorCreateFunction---------------
 
-DECLARE_STATS_GROUP(TEXT("ParallelCommandListMarkers"), STATGROUP_ParallelCommandListMarkers, STATCAT_Advanced); 
-DECLARE_CYCLE_STAT(TEXT("ToonPass"), STAT_CLP_ToonPass, STATGROUP_ParallelCommandListMarkers);
+
+DECLARE_CYCLE_STAT(TEXT("ToonPass"), STAT_CLP_ToonPass, STATGROUP_SceneRendering);
 
 BEGIN_SHADER_PARAMETER_STRUCT(FToonMeshPassParameters, )
     SHADER_PARAMETER_STRUCT_REF(FViewUniformShaderParameters, View)
@@ -187,9 +187,9 @@ FToonMeshPassParameters* GetToonPassParameters(FRDGBuilder& GraphBuilder, const 
 	if (!HasBeenProduced(SceneTextures.ToonTextureA))
 	{
 		const FSceneTexturesConfig& Config = View.GetSceneTexturesConfig();
-		SceneTextures.ToonTextureA = CreateToonBufferTexture(GraphBuilder, Config.Extent, GFastVRamConfig.ToonTextureA);
-		SceneTextures.ToonTextureB = CreateToonBufferTexture(GraphBuilder, Config.Extent, GFastVRamConfig.ToonTextureB);
-		SceneTextures.ToonTextureC = CreateToonBufferTexture(GraphBuilder, Config.Extent, GFastVRamConfig.ToonTextureC);
+		SceneTextures.ToonTextureA = CreateToonBufferTexture(GraphBuilder, Config.Extent, GFastVRamConfig.ToonTextureA, TEXT("TBufferA"));
+		SceneTextures.ToonTextureB = CreateToonBufferTexture(GraphBuilder, Config.Extent, GFastVRamConfig.ToonTextureB, TEXT("TBufferB"));
+		SceneTextures.ToonTextureC = CreateToonBufferTexture(GraphBuilder, Config.Extent, GFastVRamConfig.ToonTextureC, TEXT("TBufferC"));
 	}
 	// 设置RenderTarget
     PassParameters->RenderTargets[0] = FRenderTargetBinding(SceneTextures.ToonTextureA, ERenderTargetLoadAction::EClear);

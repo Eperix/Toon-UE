@@ -35,29 +35,29 @@ void MainVS(
 
 void MainPS(
 	FSimpleMeshPassVSToPS Input,
-	out float4 OutColor1 : SV_Target0,
-	out float4 OutColor2 : SV_Target1,
-	out float4 OutColor3 : SV_Target2)
+	out uint4 OutColor1 : SV_Target0,
+	out uint4 OutColor2 : SV_Target1,
+	out uint4 OutColor3 : SV_Target2)
 {
 	// 获取像素的材质参数(此处的材质就是材质辑器编辑出来的材质).
 	FMaterialPixelParameters MaterialParameters = GetMaterialPixelParameters(Input.FactoryInterpolants, Input.Position);
 	// FPixelMaterialInputs用于获取材质编辑器的针脚
 	// FPixelMaterialInputs PixelMaterialInputs;
-	float3 Color1 = float3(0.0, 0.0, 0.0);
-	float3 Color2 = float3(0.0, 0.0, 0.0);
-	float3 Color3 = float3(0.0, 0.0, 0.0);
+	uint4 Color1 = 0;
+	uint4 Color2 = 0;
+	uint4 Color3 = 0;
 #ifdef  HAVE_GetToonMaterialOutput0
-	Color1 = LWCToFloat(GetToonMaterialOutput0(MaterialParameters));
+	Color1.rgb = GetToonMaterialOutput0(MaterialParameters);
 #endif
 #ifdef  HAVE_GetToonMaterialOutput1
-	Color2 = LWCToFloat(GetToonMaterialOutput1(MaterialParameters));
+	Color2.rgb = GetToonMaterialOutput1(MaterialParameters);
 #endif
 #ifdef  HAVE_GetToonMaterialOutput2
-	Color3 = LWCToFloat(GetToonMaterialOutput2(MaterialParameters));
+	Color3.rgb = GetToonMaterialOutput2(MaterialParameters);
 #endif
-	
-	//float3 Color = float3(0.0, 0.0, 0.0);
-	OutColor1 = float4(Color1, 1.0);
-	OutColor2 = float4(Color2, 1.0);
-	OutColor3 = float4(Color3, 1.0);
+
+	OutColor1 = Color1;
+	OutColor2 = Color2;
+	OutColor3 = Color3;
+
 }

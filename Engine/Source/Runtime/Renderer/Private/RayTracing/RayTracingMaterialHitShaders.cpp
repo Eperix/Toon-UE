@@ -145,7 +145,14 @@ public:
 		}
 
 		static FShaderPlatformCachedIniValue<int32> CVarCompileMaterialAHS(TEXT("r.RayTracing.CompileMaterialAHS"));
-		const bool bWantAnyHitShader = ((CVarCompileMaterialAHS.Get(Parameters.Platform) != 0) && (Parameters.MaterialParameters.bIsMasked || IsTranslucentOnlyBlendMode(Parameters.MaterialParameters)));
+		// Start Peky Part
+		// Toon Bind Any Hit Shaders
+		const bool bWantAnyHitShader = (GCompileRayTracingMaterialAHS &&
+			(Parameters.MaterialParameters.bIsMasked ||
+			IsTranslucentOnlyBlendMode(Parameters.MaterialParameters) ||
+			Parameters.MaterialParameters.ShadingModels.HasShadingModel(MSM_ToonDefault)));
+		// End Peky Part
+		// const bool bWantAnyHitShader = ((CVarCompileMaterialAHS.Get(Parameters.Platform) != 0) && (Parameters.MaterialParameters.bIsMasked || IsTranslucentOnlyBlendMode(Parameters.MaterialParameters)));
 		const bool bSupportProceduralPrimitive = Parameters.VertexFactoryType->SupportsRayTracingProceduralPrimitive() && FDataDrivenShaderPlatformInfo::GetSupportsRayTracingProceduralPrimitive(Parameters.Platform);
 
 		return IsSupportedVertexFactoryType(Parameters.VertexFactoryType)
@@ -330,7 +337,11 @@ static bool GetMaterialHitShader(const FMaterial& RESTRICT MaterialResource, con
 	FMaterialShaderTypes ShaderTypes;
 	const FVertexFactoryType* VFType = VertexFactory->GetType();
 	const bool bUseIntersectionShader = VFType->HasFlags(EVertexFactoryFlags::SupportsRayTracingProceduralPrimitive) && FDataDrivenShaderPlatformInfo::GetSupportsRayTracingProceduralPrimitive(GMaxRHIShaderPlatform);
-	const bool UseAnyHitShader = (MaterialResource.IsMasked() || IsTranslucentOnlyBlendMode(MaterialResource)) && GCompileRayTracingMaterialAHS;
+	// Start Peky Part
+	// Toon Bind Any Hit Shaders
+	const bool UseAnyHitShader = (MaterialResource.IsMasked() || IsTranslucentOnlyBlendMode(MaterialResource)
+		|| MaterialResource.GetShadingModels().HasShadingModel(MSM_ToonDefault)) && GCompileRayTracingMaterialAHS;
+	// const bool UseAnyHitShader = (MaterialResource.IsMasked() || IsTranslucentOnlyBlendMode(MaterialResource)) && GCompileRayTracingMaterialAHS;
 
 	GetMaterialHitShader_AnyHit_Intersection_TextureLOD<LightMapPolicyType>(ShaderTypes, UseAnyHitShader, bUseIntersectionShader, UseTextureLod);
 

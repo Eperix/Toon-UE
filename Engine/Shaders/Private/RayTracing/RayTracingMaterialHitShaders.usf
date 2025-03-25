@@ -661,6 +661,12 @@ RAY_TRACING_ENTRY_ANY_HIT(MaterialAHS,
 	FPackedMaterialClosestHitPayload, PackedPayload,
 	FRayTracingIntersectionAttributes, Attributes)
 {
+	// Start Peky Part
+	// Bind AnyHitShader For Toon
+#if MATERIAL_SHADINGMODEL_TOON_DEFAULT
+	IgnoreHit();
+#endif
+	// End Peky Part
 #if USE_MATERIAL_ANY_HIT_SHADER
 
 #if MATERIALBLENDING_SOLID

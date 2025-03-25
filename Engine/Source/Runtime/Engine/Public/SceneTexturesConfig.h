@@ -27,9 +27,9 @@ BEGIN_GLOBAL_SHADER_PARAMETER_STRUCT(FSceneTextureUniformParameters, ENGINE_API)
 	SHADER_PARAMETER_RDG_TEXTURE(Texture2D, GBufferVelocityTexture)
 
 	// Start Peky Part
-	SHADER_PARAMETER_RDG_TEXTURE(Texture2D, ToonTextureA)
-	SHADER_PARAMETER_RDG_TEXTURE(Texture2D, ToonTextureB)
-	SHADER_PARAMETER_RDG_TEXTURE(Texture2D, ToonTextureC)
+	SHADER_PARAMETER_RDG_TEXTURE(Texture2D<uint4>, ToonTextureA)
+	SHADER_PARAMETER_RDG_TEXTURE(Texture2D<uint4>, ToonTextureB)
+	SHADER_PARAMETER_RDG_TEXTURE(Texture2D<uint4>, ToonTextureC)
 	// End Peky Part
 
 	// SSAO
