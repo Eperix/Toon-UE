@@ -429,7 +429,7 @@ FLightAccumulator AccumulateDynamicLighting(
 					float NoL = (dot(N, L) + 1) / 2;
 					float NoLOffset = saturate(NoL + ShadowOffset);
 					float LightAttenuationOffset = saturate( Shadow.SurfaceShadow + ShadowOffset);
-					float ToonSurfaceShadow = smoothstep(0.5 - TerminatorRange, 0.5 + ShadowRange, LightAttenuationOffset);
+					float ToonSurfaceShadow = smoothstep(0.5 - ShadowRange, 0.5 + ShadowRange, LightAttenuationOffset);
 
 					ToonAttenuation = smoothstep(0.5 - ShadowRange, 0.5 + ShadowRange, NoLOffset) * ToonSurfaceShadow;
 				}

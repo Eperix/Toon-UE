@@ -2,15 +2,11 @@
 #include "/Engine/Generated/Material.ush"
 #include "/Engine/Generated/VertexFactory.ush"
 
-
 struct FSimpleMeshPassVSToPS
 {
 	FVertexFactoryInterpolantsVSToPS FactoryInterpolants;
 	float4 Position : SV_POSITION;
 };
-
-
-float3 InputColor;
 
 void MainVS(
 	FVertexFactoryInput Input,
@@ -44,7 +40,7 @@ void MainPS(
 	out float4 OutColor3 : SV_Target2)
 {
 	// 获取像素的材质参数(此处的材质就是材质辑器编辑出来的材质).
-	FMaterialPixelParameters MaterialParameters = GetMaterialPixelParameters(In.FactoryInterpolants, In.SvPosition);
+	FMaterialPixelParameters MaterialParameters = GetMaterialPixelParameters(Input.FactoryInterpolants, Input.Position);
 	// FPixelMaterialInputs用于获取材质编辑器的针脚
 	// FPixelMaterialInputs PixelMaterialInputs;
 	float3 Color1 = float3(0.0, 0.0, 0.0);

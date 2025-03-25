@@ -12,8 +12,8 @@
 // TEXT("/Engine/Private/Toon/ToonPassShader.usf"):我们使用的shader路径
 // TEXT("MainPS"):shader的入口函数名
 // SF_Pixel:shader的类型，Vertex shader、Pixel shader或者compute shader
-IMPLEMENT_MATERIAL_SHADER_TYPE(, FToonPassVS, TEXT("/Engine/Private/Toon/ToonPassShader.usf"), TEXT("MainVS"), SF_Vertex);
-IMPLEMENT_MATERIAL_SHADER_TYPE(, FToonPassPS, TEXT("/Engine/Private/Toon/ToonPassShader.usf"), TEXT("MainPS"), SF_Pixel);
+IMPLEMENT_MATERIAL_SHADER_TYPE(, FToonPassVS, TEXT("/Engine/Private/Toon/ToonShaders.usf"), TEXT("MainVS"), SF_Vertex);
+IMPLEMENT_MATERIAL_SHADER_TYPE(, FToonPassPS, TEXT("/Engine/Private/Toon/ToonShaders.usf"), TEXT("MainPS"), SF_Pixel);
 
 //--------------------------------------------Toon Buffer Texture---------------------------------------------
 // Toon Buffer step 5-2
@@ -171,7 +171,7 @@ FRegisterPassProcessorCreateFunction RegisterToonPass(&CreateToonPassProcessor, 
 //------------------FRegisterPassProcessorCreateFunction---------------
 
 DECLARE_STATS_GROUP(TEXT("ParallelCommandListMarkers"), STATGROUP_ParallelCommandListMarkers, STATCAT_Advanced); 
-DECLARE_CYCLE_STAT(TEXT("ToonMeshPass"), STAT_CLP_ToonMeshPass, STATGROUP_ParallelCommandListMarkers);
+DECLARE_CYCLE_STAT(TEXT("ToonPass"), STAT_CLP_ToonPass, STATGROUP_ParallelCommandListMarkers);
 
 BEGIN_SHADER_PARAMETER_STRUCT(FToonMeshPassParameters, )
     SHADER_PARAMETER_STRUCT_REF(FViewUniformShaderParameters, View)

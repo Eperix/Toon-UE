@@ -175,7 +175,7 @@ bool FToonOutlinePassProcessor::Process(
         FMaterialShaders Shaders;  
         if (!MaterialResource.TryGetShaders(ShaderTypes, VertexFactoryType, Shaders))  
         {          
-            UE_LOG(LogShaders, Warning, TEXT("Shader Not Found in Outline Shaders"));  
+            // UE_LOG(LogShaders, Warning, TEXT("Shader Not Found in Outline Shaders"));  
             return false;  
         }  
        Shaders.TryGetVertexShader(ToonOutlinePassShader.VertexShader);  

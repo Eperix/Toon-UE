@@ -1017,7 +1017,7 @@ FDirectLighting ToonDefaultBxDF( FGBufferData GBuffer, half3 N, half3 V, half3 L
 	return Lighting;
 }
 
-FDirectLighting  ToonHairBxDF( FGBufferData GBuffer, half3 N, half3 V, half3 L, float Falloff, float NoL, FAreaLight AreaLight, FShadowTerms Shadow )
+FDirectLighting ToonHairBxDF( FGBufferData GBuffer, half3 N, half3 V, half3 L, float Falloff, float NoL, FAreaLight AreaLight, FShadowTerms Shadow )
 {
 	float TShift = GBuffer.Metallic;
 	half3 X = GBuffer.WorldTangent;

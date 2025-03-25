@@ -674,9 +674,9 @@ void FSceneTextures::InitializeViewFamily(FRDGBuilder& GraphBuilder, FViewFamily
 		SceneTextures.ScreenSpaceAO = CreateScreenSpaceAOTexture(GraphBuilder, ViewFamily.GetFeatureLevel(), Config.Extent);
 
 		// Start Peky Part
-		SceneTextures.ToonTextureA = CreateToonTexture(GraphBuilder, Config.Extent, 0);
-		SceneTextures.ToonTextureB = CreateToonTexture(GraphBuilder, Config.Extent, 1);
-		SceneTextures.ToonTextureC = CreateToonTexture(GraphBuilder, Config.Extent, 2);
+		SceneTextures.ToonTextureA = CreateToonBufferTexture(GraphBuilder, Config.Extent, GFastVRamConfig.ToonTextureA);
+		SceneTextures.ToonTextureB = CreateToonBufferTexture(GraphBuilder, Config.Extent, GFastVRamConfig.ToonTextureB);
+		SceneTextures.ToonTextureC = CreateToonBufferTexture(GraphBuilder, Config.Extent, GFastVRamConfig.ToonTextureC);
 		// End Peky Part
 		
 		// Small Depth
