@@ -2,7 +2,14 @@
 
 /*=============================================================================
 	SceneRendering.h: Scene rendering definitions.
-=============================================================================*/
+=================================================================float3 Color1 = float3(1.0, 0.0, 0.0);
+	float3 Color2 = float3(0.0, 1.0, 0.0);
+	float3 Color3 = float3(0.0, 0.0, 1.0);
+	
+	//float3 Color = float3(0.0, 0.0, 0.0);
+	OutColor1 = float4(Color1, 1.0);
+	OutColor2 = float4(Color2, 1.0);
+	OutColor3 = float4(Color3, 1.0);============*/
 
 #pragma once
 

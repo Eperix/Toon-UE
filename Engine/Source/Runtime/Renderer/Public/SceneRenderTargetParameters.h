@@ -45,12 +45,13 @@ enum class ESceneTextureSetupMode : uint32
 	GBufferF		= 1 << 8,
 	SSAO			= 1 << 9,
 	CustomDepth		= 1 << 10,
-	// Start Peky Part
+	// Start Peky Part, 同步SetupMode
 	ToonTextureA 	= 1 << 11,
 	ToonTextureB 	= 1 << 12,
 	ToonTextureC	= 1 << 13,
 	GBuffers		= GBufferA | GBufferB | GBufferC | GBufferD | GBufferE | GBufferF,
-	All				= SceneColor | SceneDepth | SceneVelocity | GBuffers | SSAO | CustomDepth | ToonTextureA | ToonTextureB | ToonTextureC,
+	All				= SceneColor | SceneDepth | SceneVelocity | GBuffers | SSAO | CustomDepth,
+	ToonBuffers		= ToonTextureA | ToonTextureB | ToonTextureC,
 	// End Peky Part
 };
 ENUM_CLASS_FLAGS(ESceneTextureSetupMode);

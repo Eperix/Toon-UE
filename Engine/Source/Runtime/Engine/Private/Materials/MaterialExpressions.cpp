@@ -28101,8 +28101,8 @@ FString UMaterialExpressionFirstPersonOutput::GetDisplayName() const
 }
 
 // Start Peky Part
-	UMaterialExpressionToonMaterialOutput::UMaterialExpressionToonMaterialOutput(const FObjectInitializer& ObjectInitializer)
-		: Super(ObjectInitializer)
+UMaterialExpressionToonMaterialOutput::UMaterialExpressionToonMaterialOutput(const FObjectInitializer& ObjectInitializer)
+: Super(ObjectInitializer)
 {
 	// Structure to hold one-time initialization
 	// 节点的分类

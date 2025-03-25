@@ -568,7 +568,7 @@ FASTVRAM_CVAR(VolumetricFog, 1);
 FASTVRAM_CVAR(SeparateTranslucency, 0); 
 FASTVRAM_CVAR(SeparateTranslucencyModulate, 0);
 FASTVRAM_CVAR(ScreenSpaceAO,0);
-// Start Peky Part
+// Start Peky Part, 用于创建控制台变量Console Variable
 FASTVRAM_CVAR(ToonTextureA, 0);
 FASTVRAM_CVAR(ToonTextureB, 0);
 FASTVRAM_CVAR(ToonTextureC, 0);
@@ -776,7 +776,7 @@ void FFastVramConfig::Update()
 	bDirty |= UpdateTextureFlagFromCVar(CVarFastVRam_ShadowPerObject, ShadowPerObject);
 	bDirty |= UpdateTextureFlagFromCVar(CVarFastVRam_ShadowCSM, ShadowCSM);
 	bDirty |= UpdateTextureFlagFromCVar(CVarFastVRam_PostProcessMaterial, PostProcessMaterial);
-	// Start Peky Part
+	// Start Peky Part, 通过CVarFastVRam来更新TextureCreateFlags
 	bDirty |= UpdateTextureFlagFromCVar(CVarFastVRam_ToonTextureA, ToonTextureA);
 	bDirty |= UpdateTextureFlagFromCVar(CVarFastVRam_ToonTextureB, ToonTextureB);
 	bDirty |= UpdateTextureFlagFromCVar(CVarFastVRam_ToonTextureC, ToonTextureC);

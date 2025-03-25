@@ -107,5 +107,5 @@ public:
 
 //Shader End
 
-FRDGTextureDesc CreateToonTextureDesc(ERHIFeatureLevel::Type FeatureLevel, FIntPoint Extent);
-FRDGTextureRef CreateToonTexture(FRDGBuilder& GraphBuilder, FIntPoint Extent, uint8 Index);
+FRDGTextureDesc GetToonBufferTextureDesc(FIntPoint Extent, ETextureCreateFlags CreateFlags);
+FRDGTextureRef CreateToonBufferTexture(FRDGBuilder& GraphBuilder, FIntPoint Extent, ETextureCreateFlags CreateFlags);

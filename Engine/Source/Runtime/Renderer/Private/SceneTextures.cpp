@@ -674,9 +674,9 @@ void FSceneTextures::InitializeViewFamily(FRDGBuilder& GraphBuilder, FViewFamily
 		SceneTextures.ScreenSpaceAO = CreateScreenSpaceAOTexture(GraphBuilder, ViewFamily.GetFeatureLevel(), Config.Extent);
 
 		// Start Peky Part
-		// SceneTextures.ToonTextureA = CreateToonTexture(GraphBuilder, Config.Extent, 0);
-		// SceneTextures.ToonTextureB = CreateToonTexture(GraphBuilder, Config.Extent, 1);
-		// SceneTextures.ToonTextureC = CreateToonTexture(GraphBuilder, Config.Extent, 2);
+		SceneTextures.ToonTextureA = CreateToonTexture(GraphBuilder, Config.Extent, 0);
+		SceneTextures.ToonTextureB = CreateToonTexture(GraphBuilder, Config.Extent, 1);
+		SceneTextures.ToonTextureC = CreateToonTexture(GraphBuilder, Config.Extent, 2);
 		// End Peky Part
 		
 		// Small Depth
@@ -1118,7 +1118,7 @@ void SetupSceneTextureUniformParameters(
 			SceneTextureParameters.ScreenSpaceAOTexture = SceneTextures->ScreenSpaceAO;
 		}
 
-		// Start Peky Part
+		// Start Peky Part,当Pass有对应的SetupMode时，将SceneTexture中的ToonTexture绑定
 		if (EnumHasAnyFlags(SetupMode, ESceneTextureSetupMode::ToonTextureA) && HasBeenProduced(SceneTextures->ToonTextureA))
 		{
 			SceneTextureParameters.ToonTextureA = SceneTextures->ToonTextureA;
@@ -1131,8 +1131,6 @@ void SetupSceneTextureUniformParameters(
 		{
 			SceneTextureParameters.ToonTextureC = SceneTextures->ToonTextureC;
 		}
-		
-		
 		// End Peky Part
 
 		if (EnumHasAnyFlags(SetupMode, ESceneTextureSetupMode::CustomDepth))

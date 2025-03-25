@@ -15,6 +15,23 @@
 IMPLEMENT_MATERIAL_SHADER_TYPE(, FToonPassVS, TEXT("/Engine/Private/Toon/ToonPassShader.usf"), TEXT("MainVS"), SF_Vertex);
 IMPLEMENT_MATERIAL_SHADER_TYPE(, FToonPassPS, TEXT("/Engine/Private/Toon/ToonPassShader.usf"), TEXT("MainPS"), SF_Pixel);
 
+//--------------------------------------------Toon Buffer Texture---------------------------------------------
+// Toon Buffer step 5-2
+FRDGTextureDesc GetToonBufferTextureDesc(FIntPoint Extent, ETextureCreateFlags CreateFlags)
+{
+	//输入的参数：
+	//Extent：贴图尺寸；PF_B8G8R8A8：贴图格式，表示RGBA各个通道均为8bit
+	//FClearValueBinding::Black:清除值，表示清除贴图时将其清除为黑色
+	//TexCreate_UAV：Unordered Access View，允许在着色器中进行随机读写操作
+	//TexCreate_RenderTargetable：表示纹理可作为渲染目标使用
+	//TexCreate_ShaderResource：表示纹理可作为着色器资源，可以在着色器中进行采样等操作
+	return FRDGTextureDesc(FRDGTextureDesc::Create2D(Extent, PF_B8G8R8A8, FClearValueBinding::Black, TexCreate_UAV | TexCreate_RenderTargetable | TexCreate_ShaderResource | CreateFlags));
+}
+// Toon Buffer step 5-3
+FRDGTextureRef CreateToonBufferTexture(FRDGBuilder& GraphBuilder, FIntPoint Extent, ETextureCreateFlags CreateFlags)
+{	
+	return GraphBuilder.CreateTexture(GetToonBufferTextureDesc(Extent, CreateFlags), TEXT("TBufferA"));
+}
 
  //------------------------------------------- Mesh Pass Processor-------------------------------------------------
 
@@ -167,9 +184,18 @@ FToonMeshPassParameters* GetToonPassParameters(FRDGBuilder& GraphBuilder, const 
     FToonMeshPassParameters* PassParameters = GraphBuilder.AllocParameters<FToonMeshPassParameters>();
     PassParameters->View = View.ViewUniformBuffer;
 
+	if (!HasBeenProduced(SceneTextures.ToonTextureA))
+	{
+		const FSceneTexturesConfig& Config = View.GetSceneTexturesConfig();
+		SceneTextures.ToonTextureA = CreateToonBufferTexture(GraphBuilder, Config.Extent, GFastVRamConfig.ToonTextureA);
+		SceneTextures.ToonTextureB = CreateToonBufferTexture(GraphBuilder, Config.Extent, GFastVRamConfig.ToonTextureB);
+		SceneTextures.ToonTextureC = CreateToonBufferTexture(GraphBuilder, Config.Extent, GFastVRamConfig.ToonTextureC);
+	}
 	// 设置RenderTarget
-    PassParameters->RenderTargets[0] = FRenderTargetBinding(SceneTextures.Color.Target, ERenderTargetLoadAction::ELoad);
-    // PassParameters->RenderTargets.DepthStencil = FDepthStencilBinding(SceneTextures.Depth.Target, ERenderTargetLoadAction::ELoad, ERenderTargetLoadAction::ELoad, FExclusiveDepthStencil::DepthWrite_StencilWrite);
+    PassParameters->RenderTargets[0] = FRenderTargetBinding(SceneTextures.ToonTextureA, ERenderTargetLoadAction::EClear);
+    PassParameters->RenderTargets[1] = FRenderTargetBinding(SceneTextures.ToonTextureB, ERenderTargetLoadAction::EClear);
+    PassParameters->RenderTargets[2] = FRenderTargetBinding(SceneTextures.ToonTextureC, ERenderTargetLoadAction::EClear);
+    PassParameters->RenderTargets.DepthStencil = FDepthStencilBinding(SceneTextures.Depth.Target, ERenderTargetLoadAction::ELoad, ERenderTargetLoadAction::ELoad, FExclusiveDepthStencil::DepthWrite_StencilWrite);
 
     return PassParameters;
 }
