@@ -2826,9 +2826,9 @@ struct FFastVramConfig
 	void OnSceneRenderTargetsAllocated();
 	
 	// Start Peky Part
-	ETextureCreateFlags ToonTextureA;
-	ETextureCreateFlags ToonTextureB;
-	ETextureCreateFlags ToonTextureC;
+	ETextureCreateFlags TBufferA;
+	ETextureCreateFlags TBufferB;
+	ETextureCreateFlags TBufferC;
 	// End Peky Part
 	
 	ETextureCreateFlags GBufferA;

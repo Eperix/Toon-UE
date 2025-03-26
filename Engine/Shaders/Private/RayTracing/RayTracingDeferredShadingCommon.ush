@@ -16,10 +16,10 @@ FGBufferData GetGBufferDataFromSceneTexturesLoad(uint2 PixelCoord, bool bGetNorm
 	float4 GBufferF = GBufferFTexture.Load(int3(PixelCoord, 0));
 	// Start Peky Part
 	// Sample ToonBuffer
-	uint4 ToonBufferA = ToonBufferA.Load(int3(PixelCoord, 0));
-	uint4 ToonBufferB = ToonBufferB.Load(int3(PixelCoord, 0));
-	uint4 ToonBufferC = ToonBufferC.Load(int3(PixelCoord, 0));
-
+	uint4 TBufferA = TBufferATexture.Load(int3(PixelCoord, 0));
+	uint4 TBufferB = TBufferBTexture.Load(int3(PixelCoord, 0));
+	uint4 TBufferC = TBufferCTexture.Load(int3(PixelCoord, 0));
+	// End Peky PArt
 #if GBUFFER_HAS_VELOCITY
 	float4 GBufferVelocity = GBufferVelocityTexture.Load(int3(PixelCoord, 0));
 #else
@@ -34,7 +34,7 @@ FGBufferData GetGBufferDataFromSceneTexturesLoad(uint2 PixelCoord, bool bGetNorm
 	float SceneDepth = ConvertFromDeviceZ(DeviceZ);
 
 	return DecodeGBufferData(GBufferA, GBufferB, GBufferC, GBufferD, GBufferE, GBufferF,
-		ToonBufferA, ToonBufferB, ToonBufferC,
+		TBufferA, TBufferB, TBufferC,
 		GBufferVelocity, CustomNativeDepth, CustomStencil, SceneDepth, bGetNormalizedNormal, CheckerFromPixelPos(PixelCoord));
 	// return DecodeGBufferData(GBufferA, GBufferB, GBufferC, GBufferD, GBufferE, GBufferF, GBufferVelocity, CustomNativeDepth, CustomStencil, SceneDepth, bGetNormalizedNormal, CheckerFromPixelPos(PixelCoord));
 }

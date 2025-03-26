@@ -668,15 +668,15 @@ RAY_TRACING_ENTRY_ANY_HIT(MaterialAHS,
 #if MATERIALBLENDING_SOLID && !MATERIAL_SHADINGMODEL_TOON_DEFAULT
 	// Continue traversal by simply returning from this shader
 	// Usually this path is inactive because opaque materials don't have AHS bound
-	// End Peky Part
 	return;
 #else
 	// All other blending modes _might_ need material evaluation - so we need
 	// to generate some code
 
-#if MATERIALBLENDING_MASKED
+#if MATERIALBLENDING_MASKED || MATERIAL_SHADINGMODEL_TOON_DEFAULT
 	// NOTE: Masked mode execute always - regardless of ray flags
 	// This ensures that both material rays and shadow rays "see" the same thing
+	// End Peky Part
 #else
 	// For any other blending models, we have a few options:
 	if (PackedPayload.IsIgnoreTranslucentMaterials())
@@ -745,8 +745,8 @@ RAY_TRACING_ENTRY_ANY_HIT(MaterialAHS,
 
 	// Start Peky Part
 	// 当发射源是Toon时才做特殊处理
-#if !STRARA_ENABLED && MATERIALSHADINGMODEL_TOON_DEFAULT
-	if (PackedPayload.GetShadingModelID() != SHADINGMODELID_TOON)
+#if !SUBSTRATE_ENABLED && MATERIALSHADINGMODEL_TOON_DEFAULT
+	if (PackedPayload.GetShadingModelID() != SHADINGMODELID_TOON_DEFAULT)
 	{
 		return;
 	}

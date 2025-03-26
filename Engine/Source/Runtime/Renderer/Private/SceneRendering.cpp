@@ -569,9 +569,9 @@ FASTVRAM_CVAR(SeparateTranslucency, 0);
 FASTVRAM_CVAR(SeparateTranslucencyModulate, 0);
 FASTVRAM_CVAR(ScreenSpaceAO,0);
 // Start Peky Part, 用于创建控制台变量Console Variable
-FASTVRAM_CVAR(ToonTextureA, 0);
-FASTVRAM_CVAR(ToonTextureB, 0);
-FASTVRAM_CVAR(ToonTextureC, 0);
+FASTVRAM_CVAR(TBufferA, 0);
+FASTVRAM_CVAR(TBufferB, 0);
+FASTVRAM_CVAR(TBufferC, 0);
 // End Peky Part
 FASTVRAM_CVAR(SSR, 0);
 FASTVRAM_CVAR(DBufferA, 0);
@@ -777,9 +777,9 @@ void FFastVramConfig::Update()
 	bDirty |= UpdateTextureFlagFromCVar(CVarFastVRam_ShadowCSM, ShadowCSM);
 	bDirty |= UpdateTextureFlagFromCVar(CVarFastVRam_PostProcessMaterial, PostProcessMaterial);
 	// Start Peky Part, 通过CVarFastVRam来更新TextureCreateFlags
-	bDirty |= UpdateTextureFlagFromCVar(CVarFastVRam_ToonTextureA, ToonTextureA);
-	bDirty |= UpdateTextureFlagFromCVar(CVarFastVRam_ToonTextureB, ToonTextureB);
-	bDirty |= UpdateTextureFlagFromCVar(CVarFastVRam_ToonTextureC, ToonTextureC);
+	bDirty |= UpdateTextureFlagFromCVar(CVarFastVRam_TBufferA, TBufferA);
+	bDirty |= UpdateTextureFlagFromCVar(CVarFastVRam_TBufferB, TBufferB);
+	bDirty |= UpdateTextureFlagFromCVar(CVarFastVRam_TBufferC, TBufferC);
 	// End Peky Part
 
 	bDirty |= UpdateBufferFlagFromCVar(CVarFastVRam_DistanceFieldCulledObjectBuffers, DistanceFieldCulledObjectBuffers);

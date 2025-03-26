@@ -474,6 +474,8 @@ FOcclusionResult ComputeOcclusion(
 
 		FMinimalPayload MinimalPayload;
 
+		const bool NeedToTraceTranslucentShadow = TranslucentShadow == 1 && MaxTranslucencyHitCount != 0;
+		
 		// Start Peky Part
 		// Toon RayTracing Shadow
 		if (ShadingDesc.bIsToon)
@@ -489,7 +491,6 @@ FOcclusionResult ComputeOcclusion(
 		}
 		else
 		{
-			const bool NeedToTraceTranslucentShadow = TranslucentShadow == 1 && MaxTranslucencyHitCount != 0;
 
 #if AVOID_SELF_INTERSECTION_TRACE
 			{

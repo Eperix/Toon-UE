@@ -43,9 +43,9 @@ Texture2D GBufferFTexture;
 
 // Start Peky Part
 // Toon Buffer And Sampler
-Texture2D<uint4> ToonBufferA;
-Texture2D<uint4> ToonBufferB;
-Texture2D<uint4> ToonBufferC;
+Texture2D<uint4> TBufferATexture;
+Texture2D<uint4> TBufferBTexture;
+Texture2D<uint4> TBufferCTexture;
 
 Texture2D<uint> SceneLightingChannels;
 
@@ -57,9 +57,9 @@ Texture2D<uint> SceneLightingChannels;
 #define GBufferETextureSampler GlobalPointClampedSampler
 #define GBufferFTextureSampler GlobalPointClampedSampler
 #define GBufferVelocityTextureSampler GlobalPointClampedSampler
-#define ToonBufferASampler GlobalPointClampedSampler
-#define ToonBufferBSampler GlobalPointClampedSampler
-#define ToonBufferCSampler GlobalPointClampedSampler
+#define TBufferATextureSampler GlobalPointClampedSampler
+#define TBufferBTextureSampler GlobalPointClampedSampler
+#define TBufferCTextureSampler GlobalPointClampedSampler
 // End Peky Part
 
 float SampleDeviceZFromSceneTextures(float2 UV)
@@ -1121,7 +1121,7 @@ FGBufferData DecodeGBufferData(float4 InGBufferA,
 	BRANCH
 	if (GBufferData.ShadingModelID == SHADINGMODELID_TOON_DEFAULT)
 	{
-		GBufferData.ToonBuffer = DecodeToonBuffer(InTBufferA, InTBufferB, InTBufferC);
+		GBufferData.ToonBuffer = DecodeToonDataFromBuffer(InTBufferA, InTBufferB, InTBufferC, InGBufferD);
 	}
 	return GBufferData;
 }
@@ -1246,6 +1246,12 @@ FGBufferData GetGBufferData(float2 UV, bool bGetNormalizedNormal = true)
 	int2 IntUV = (int2)trunc(UV * View.BufferSizeAndInvSize.xy * View.BufferToSceneTextureScale.xy);
 	uint CustomStencil = SceneTexturesStruct.CustomStencilTexture.Load(int3(IntUV, 0)) STENCIL_COMPONENT_SWIZZLE;
 
+	// Start Peky Part
+	// 获取ToonBuffer，但一般不会走这个分支
+	uint4 TBufferA = SceneTexturesStruct.TBufferATexture.Load(int3(IntUV, 0));
+	uint4 TBufferB = SceneTexturesStruct.TBufferBTexture.Load(int3(IntUV, 0));
+	uint4 TBufferC = SceneTexturesStruct.TBufferCTexture.Load(int3(IntUV, 0));
+	// End Peky Part
 	#if ALLOW_STATIC_LIGHTING
 		float4 GBufferE = Texture2DSampleLevel(SceneTexturesStruct.GBufferETexture, SceneTexturesStruct_GBufferETextureSampler, UV, 0);
 	#else
@@ -1261,8 +1267,11 @@ FGBufferData GetGBufferData(float2 UV, bool bGetNormalizedNormal = true)
 	#endif
 
 	float SceneDepth = CalcSceneDepth(UV);
-	
-	return DecodeGBufferData(GBufferA, GBufferB, GBufferC, GBufferD, GBufferE, GBufferF, GBufferVelocity, CustomNativeDepth, CustomStencil, SceneDepth, bGetNormalizedNormal, CheckerFromSceneColorUV(UV));
+
+	return DecodeGBufferData(GBufferA, GBufferB, GBufferC, GBufferD, GBufferE, GBufferF,
+		TBufferA, TBufferB, TBufferC,
+		GBufferVelocity, CustomNativeDepth, CustomStencil, SceneDepth, bGetNormalizedNormal, CheckerFromSceneColorUV(UV));
+	// return DecodeGBufferData(GBufferA, GBufferB, GBufferC, GBufferD, GBufferE, GBufferF, GBufferVelocity, CustomNativeDepth, CustomStencil, SceneDepth, bGetNormalizedNormal, CheckerFromSceneColorUV(UV));
 #endif
 }
 

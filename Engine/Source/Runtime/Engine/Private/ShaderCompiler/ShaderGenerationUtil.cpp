@@ -18,6 +18,7 @@
 #include "ShaderCompilerDefinitions.h"
 #include "ShaderMaterial.h"
 
+
 static TAutoConsoleVariable<int32> CVarShaderUseGBufferRefactor(
 	TEXT("r.Shaders.UseGBufferRefactor"),
 	0,
@@ -1397,6 +1398,113 @@ static FString CreateGBufferDecodeFunctionDirect(const FGBufferInfo& BufferInfo)
 	return FullStr;
 }
 
+// Start Peky Part
+// Toon Buffer
+// 用于生成DecodeGBufferDataDirect的重载函数
+static FString GBufferDecodeFunctionDirectOverride(const FGBufferInfo& BufferInfo)
+{
+	FString FullStr;
+
+	//------------------------------------------------函数头--------------------------------------------------
+	FullStr += TEXT("FGBufferData  DecodeGBufferDataDirect(");
+	bool bFirst = true;
+	for (int32 Index = 0; Index < FGBufferInfo::MaxTargets; Index++)
+	{
+		const EGBufferType Target = BufferInfo.Targets[Index].TargetType;
+
+		if (Target != GBT_Invalid && Index != 0)
+		{
+			if (bFirst)
+			{
+				bFirst = false;
+			}
+			else
+			{
+				FullStr += TEXT(",\n\t");
+			}
+
+			int32 NumChan = GetTargetNumChannels(Target);
+			FString TypeName = GetFloatType(NumChan);
+			FString CurrLine = FString::Printf(TEXT("%s InMRT%d"),
+				TypeName.GetCharArray().GetData(),
+				Index);
+
+			FullStr += CurrLine;
+		}
+	}
+	if (!bFirst)
+	{
+		FullStr += TEXT(",\n\t\t");
+	}
+	// 参数中加入TBuffer
+	FullStr += TEXT(" \n\tuint4 InTBufferA,");
+	FullStr += TEXT(" \n\tuint4 InTBufferB,");
+	FullStr += TEXT(" \n\tuint4 InTBufferC,");
+	FullStr += TEXT(" \n\tfloat CustomNativeDepth");
+	FullStr += TEXT(",\n\tfloat4 AnisotropicData");
+	FullStr += TEXT(",\n\tuint CustomStencil");
+	FullStr += TEXT(",\n\tfloat SceneDepth");
+	FullStr += TEXT(",\n\tbool bGetNormalizedNormal");
+	FullStr += TEXT(",\n\tbool bChecker)\n");
+
+	FullStr += TEXT("{\n");
+
+	//------------------------------------------------函数Body--------------------------------------------------
+
+	// 先使用默认的DecodeGBufferDataDirect函数
+	FullStr += TEXT("\tFGBufferData Ret = DecodeGBufferDataDirect(");
+	bFirst = true;
+	for (int32 Index = 0; Index < FGBufferInfo::MaxTargets; Index++)
+	{
+		const EGBufferType Target = BufferInfo.Targets[Index].TargetType;
+
+		if (Target != GBT_Invalid && Index != 0)
+		{
+			if (bFirst)
+			{
+				bFirst = false;
+			}
+			else
+			{
+				FullStr += TEXT(",\n\t\t");
+			}
+
+			int32 NumChan = GetTargetNumChannels(Target);
+			FString CurrLine = FString::Printf(TEXT("InMRT%d"),
+				Index);
+
+			FullStr += CurrLine;
+		}
+	}
+
+	if (!bFirst)
+	{
+		FullStr += TEXT(",\n\t\t");
+	}
+	
+	FullStr += TEXT(" \n\t\tCustomNativeDepth");
+	FullStr += TEXT(",\n\t\tAnisotropicData");
+	FullStr += TEXT(",\n\t\tCustomStencil");
+	FullStr += TEXT(",\n\t\tSceneDepth");
+	FullStr += TEXT(",\n\t\tbGetNormalizedNormal");
+	FullStr += TEXT(",\n\t\tbChecker);\n");
+
+	//使用DecodeToonDataFromBuffer解码Toon部分
+	FullStr += TEXT(" \n\tif (Ret.ShadingModelID == SHADINGMODELID_TOON_DEFAULT)");
+	FullStr += TEXT(" \n\t{");
+	FullStr += TEXT(" \n\t\tRet.ToonBuffer = DecodeToonDataFromBuffer(InTBufferA, InTBufferB, InTBufferC, InMRT4);");
+	FullStr += TEXT(" \n\t}");
+
+	//------------------------------------------------Return-----------------------------------------------
+	FullStr += TEXT("\n");
+	FullStr += TEXT("\treturn Ret;\n");
+
+	FullStr += TEXT("}\n");
+	FullStr += TEXT("\n");
+	
+	return FullStr;
+}
+// End Peky Part
 
 enum EGBufferDecodeType
 {
@@ -1453,6 +1561,12 @@ static FString CreateGBufferDecodeFunctionVariation(const FGBufferInfo& BufferIn
 
 		FullStr += FString::Printf(TEXT("\tfloat SceneDepth = CalcSceneDepth(%s);\n"), CoordName.GetCharArray().GetData());
 		FullStr += TEXT("\tfloat4 AnisotropicData = Texture2DSampleLevel(SceneTexturesStruct.GBufferFTexture, SceneTexturesStruct_GBufferFTextureSampler, UV, 0).xyzw;\n");
+		// Start Peky Part
+		// Toon Buffer
+		FullStr += TEXT("\tuint4 TBufferA = SceneTexturesStruct.TBufferATexture.Load(int3(IntUV, 0));\n");
+		FullStr += TEXT("\tuint4 TBufferB = SceneTexturesStruct.TBufferBTexture.Load(int3(IntUV, 0));\n");
+		FullStr += TEXT("\tuint4 TBufferC = SceneTexturesStruct.TBufferCTexture.Load(int3(IntUV, 0));\n");
+		// End Peky Part
 	}
 	else if (DecodeType == CoordUInt)
 	{
@@ -1594,6 +1708,15 @@ static FString CreateGBufferDecodeFunctionVariation(const FGBufferInfo& BufferIn
 	{
 		FullStr += TEXT(",\n\t\t");
 	}
+	// Start Peky Part
+	// Toon Buffer
+	if (DecodeType == CoordUV)
+	{
+		FullStr += TEXT(" \n\t\tTBufferA,");
+		FullStr += TEXT(" \n\t\tTBufferB,");
+		FullStr += TEXT(" \n\t\tTBufferC,");
+	}
+	// End Peky Part
 	FullStr += TEXT(" \n\t\tCustomNativeDepth");
 	FullStr += TEXT(",\n\t\tAnisotropicData");
 	FullStr += TEXT(",\n\t\tCustomStencil");
@@ -2199,6 +2322,11 @@ void FShaderCompileUtilities::WriteGBufferInfoAutogen(EShaderPlatform TargetPlat
 			OutputFileData += TEXT("\n");
 
 			OutputFileData += CreateGBufferDecodeFunctionDirect(BufferInfo);
+
+			// Start Peky Part
+			// Toon Buffer
+			OutputFileData += GBufferDecodeFunctionDirectOverride(BufferInfo);
+			// End Peky Part
 
 			OutputFileData += TEXT("\n");
 			//OutputFileData += TEXT("#if SHADING_PATH_DEFERRED\n");

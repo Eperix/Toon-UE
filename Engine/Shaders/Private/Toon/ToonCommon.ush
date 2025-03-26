@@ -22,6 +22,9 @@ struct FToonBuffer
 	uint ShadowCastFlag; // ToonBufferA.b (5)
 	
 };
+// Encode / Decode Helper
+// float all in 0 ~ 1
+uint GetBitsMaxValue(int Bits = 8) {return (1L << Bits) - 1;}
 // Toon自定义Payload
 struct FToonPayloadData
 {
@@ -52,10 +55,6 @@ FToonPayloadData GetToonPayloadDataFromBuffer(float4 ToonBufferA)
 	Out.SetToonModel((ToonBufferABit.b >> 5) & GetBitsMaxValue(3));
 	return Out;
 }
-
-// Encode / Decode Helper
-// float all in 0 ~ 1
-uint GetBitsMaxValue(int Bits = 8) {return (1L << Bits) - 1;}
 
 float EncodeUintToFloat(uint Src, int BitSrc = 8)
 {

@@ -674,9 +674,9 @@ void FSceneTextures::InitializeViewFamily(FRDGBuilder& GraphBuilder, FViewFamily
 		SceneTextures.ScreenSpaceAO = CreateScreenSpaceAOTexture(GraphBuilder, ViewFamily.GetFeatureLevel(), Config.Extent);
 
 		// Start Peky Part
-		SceneTextures.ToonTextureA = CreateToonBufferTexture(GraphBuilder, Config.Extent, GFastVRamConfig.ToonTextureA, TEXT("TBufferA"));
-		SceneTextures.ToonTextureB = CreateToonBufferTexture(GraphBuilder, Config.Extent, GFastVRamConfig.ToonTextureB, TEXT("TBufferB"));
-		SceneTextures.ToonTextureC = CreateToonBufferTexture(GraphBuilder, Config.Extent, GFastVRamConfig.ToonTextureC, TEXT("TBufferC"));
+		SceneTextures.TBufferA = CreateToonBufferTexture(GraphBuilder, Config.Extent, GFastVRamConfig.TBufferA, TEXT("TBufferA"));
+		SceneTextures.TBufferB = CreateToonBufferTexture(GraphBuilder, Config.Extent, GFastVRamConfig.TBufferB, TEXT("TBufferB"));
+		SceneTextures.TBufferC = CreateToonBufferTexture(GraphBuilder, Config.Extent, GFastVRamConfig.TBufferC, TEXT("TBufferC"));
 		// End Peky Part
 		
 		// Small Depth
@@ -1052,9 +1052,9 @@ void SetupSceneTextureUniformParameters(
 	SceneTextureParameters.GBufferVelocityTexture = SystemTextures.Black;
 	SceneTextureParameters.ScreenSpaceAOTexture = GetScreenSpaceAOFallback(SystemTextures);
 	// Start Peky Part
-	SceneTextureParameters.ToonTextureA = SystemTextures.Black;
-	SceneTextureParameters.ToonTextureB = SystemTextures.Black;
-	SceneTextureParameters.ToonTextureC = SystemTextures.Black;
+	SceneTextureParameters.TBufferATexture = SystemTextures.Black;
+	SceneTextureParameters.TBufferBTexture = SystemTextures.Black;
+	SceneTextureParameters.TBufferCTexture = SystemTextures.Black;
 	// End Peky Part
 	
 	SceneTextureParameters.CustomDepthTexture = SystemTextures.DepthDummy;
@@ -1119,17 +1119,17 @@ void SetupSceneTextureUniformParameters(
 		}
 
 		// Start Peky Part,当Pass有对应的SetupMode时，将SceneTexture中的ToonTexture绑定
-		if (EnumHasAnyFlags(SetupMode, ESceneTextureSetupMode::ToonTextureA) && HasBeenProduced(SceneTextures->ToonTextureA))
+		if (EnumHasAnyFlags(SetupMode, ESceneTextureSetupMode::TBufferA) && HasBeenProduced(SceneTextures->TBufferA))
 		{
-			SceneTextureParameters.ToonTextureA = SceneTextures->ToonTextureA;
+			SceneTextureParameters.TBufferATexture = SceneTextures->TBufferA;
 		}
-		if (EnumHasAnyFlags(SetupMode, ESceneTextureSetupMode::ToonTextureB) && HasBeenProduced(SceneTextures->ToonTextureB))
+		if (EnumHasAnyFlags(SetupMode, ESceneTextureSetupMode::TBufferB) && HasBeenProduced(SceneTextures->TBufferB))
 		{
-			SceneTextureParameters.ToonTextureB = SceneTextures->ToonTextureB;
+			SceneTextureParameters.TBufferBTexture = SceneTextures->TBufferB;
 		}
-		if (EnumHasAnyFlags(SetupMode, ESceneTextureSetupMode::ToonTextureC) && HasBeenProduced(SceneTextures->ToonTextureC))
+		if (EnumHasAnyFlags(SetupMode, ESceneTextureSetupMode::TBufferC) && HasBeenProduced(SceneTextures->TBufferC))
 		{
-			SceneTextureParameters.ToonTextureC = SceneTextures->ToonTextureC;
+			SceneTextureParameters.TBufferCTexture = SceneTextures->TBufferC;
 		}
 		// End Peky Part
 

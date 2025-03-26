@@ -917,7 +917,7 @@ struct FPackedMaterialClosestHitPayload : FMinimalPayload
 	uint GetShadingModelID() { return (IorAndShadingModelIDAndBlendingModeAndPrimitiveLightingChannelMask >> 16) & 0xF; }
 	// Start Peky Part
 	// Toon RayTracing Shadow
-	void SetShadingModelID(uint ShadingModelID){ IorAndShadingModelIDAndBlendingModeAndFlagsAndPrimitiveLightingChannelMask |= (ShadingModelID & 0xF) << 16;}
+	void SetShadingModelID(uint ShadingModelID){ IorAndShadingModelIDAndBlendingModeAndPrimitiveLightingChannelMask |= (ShadingModelID & 0xF) << 16;}
 	// End Peky Part
 	uint GetBlendingMode()   { return (IorAndShadingModelIDAndBlendingModeAndPrimitiveLightingChannelMask >> 20) & 0x7; }
 	uint GetFlags()          { return FlagsAndMipBias & 0xFF; }
@@ -1188,7 +1188,8 @@ FMinimalPayload TraceVisibilityRay(
 // Start Peky Part
 // Toon RayTracing Shadow
 #if !SUBSTRATE_ENABLED
-FMinimalPayload TraceVisibilityRay(in RaytracingAccelerationStructure TLAS,
+FMinimalPayload TraceToonVisibilityRay(
+	in RaytracingAccelerationStructure TLAS,
 	in uint RayFlags,
 	in uint InstanceInclusionMask,
 	in FRayDesc Ray,
@@ -1204,7 +1205,7 @@ FMinimalPayload TraceVisibilityRay(in RaytracingAccelerationStructure TLAS,
 	FMinimalPayload MinimalPayload = (FMinimalPayload)0;
 	MinimalPayload.HitT = PackedPayload.HitT;
 	return MinimalPayload;
-}	
+}
 #endif
 
 #if !COMPUTESHADER

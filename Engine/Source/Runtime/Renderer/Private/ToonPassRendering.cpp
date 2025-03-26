@@ -184,17 +184,17 @@ FToonMeshPassParameters* GetToonPassParameters(FRDGBuilder& GraphBuilder, const 
     FToonMeshPassParameters* PassParameters = GraphBuilder.AllocParameters<FToonMeshPassParameters>();
     PassParameters->View = View.ViewUniformBuffer;
 
-	if (!HasBeenProduced(SceneTextures.ToonTextureA))
+	if (!HasBeenProduced(SceneTextures.TBufferA))
 	{
 		const FSceneTexturesConfig& Config = View.GetSceneTexturesConfig();
-		SceneTextures.ToonTextureA = CreateToonBufferTexture(GraphBuilder, Config.Extent, GFastVRamConfig.ToonTextureA, TEXT("TBufferA"));
-		SceneTextures.ToonTextureB = CreateToonBufferTexture(GraphBuilder, Config.Extent, GFastVRamConfig.ToonTextureB, TEXT("TBufferB"));
-		SceneTextures.ToonTextureC = CreateToonBufferTexture(GraphBuilder, Config.Extent, GFastVRamConfig.ToonTextureC, TEXT("TBufferC"));
+		SceneTextures.TBufferA = CreateToonBufferTexture(GraphBuilder, Config.Extent, GFastVRamConfig.TBufferA, TEXT("TBufferA"));
+		SceneTextures.TBufferB = CreateToonBufferTexture(GraphBuilder, Config.Extent, GFastVRamConfig.TBufferB, TEXT("TBufferB"));
+		SceneTextures.TBufferC = CreateToonBufferTexture(GraphBuilder, Config.Extent, GFastVRamConfig.TBufferC, TEXT("TBufferC"));
 	}
 	// 设置RenderTarget
-    PassParameters->RenderTargets[0] = FRenderTargetBinding(SceneTextures.ToonTextureA, ERenderTargetLoadAction::EClear);
-    PassParameters->RenderTargets[1] = FRenderTargetBinding(SceneTextures.ToonTextureB, ERenderTargetLoadAction::EClear);
-    PassParameters->RenderTargets[2] = FRenderTargetBinding(SceneTextures.ToonTextureC, ERenderTargetLoadAction::EClear);
+    PassParameters->RenderTargets[0] = FRenderTargetBinding(SceneTextures.TBufferA, ERenderTargetLoadAction::EClear);
+    PassParameters->RenderTargets[1] = FRenderTargetBinding(SceneTextures.TBufferB, ERenderTargetLoadAction::EClear);
+    PassParameters->RenderTargets[2] = FRenderTargetBinding(SceneTextures.TBufferC, ERenderTargetLoadAction::EClear);
     PassParameters->RenderTargets.DepthStencil = FDepthStencilBinding(SceneTextures.Depth.Target, ERenderTargetLoadAction::ELoad, ERenderTargetLoadAction::ELoad, FExclusiveDepthStencil::DepthWrite_StencilWrite);
 
     return PassParameters;
