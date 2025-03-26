@@ -8,6 +8,8 @@
 #include "RayTracingDebugUtils.ush"
 #include "RayTracingHitGroupCommon.ush"
 
+// Start Peky Part
+// Hit Stats Lack Permutation0: Primitive
 RAY_TRACING_ENTRY_ANY_HIT(RayTracingDebugHitStatsAHS,
 	FRayTracingDebugPayload, Payload,
 	FRayTracingIntersectionAttributes, Attributes)
@@ -15,10 +17,11 @@ RAY_TRACING_ENTRY_ANY_HIT(RayTracingDebugHitStatsAHS,
 	const uint Index = InstanceIndex();
 	
 	const uint GPUSceneInstanceId = GetInstanceUserData();
-	const FInstanceSceneData InstanceSceneData = GetInstanceSceneData(GPUSceneInstanceId, Scene.GPUScene.InstanceDataSOAStride);
+	// TODO: Debug This API
+	// const FInstanceSceneData InstanceSceneData = GetInstanceSceneData(GPUSceneInstanceId, Scene.GPUScene.InstanceDataSOAStride);
 	
-	RayTracingDebugHitStatsUniformBuffer.HitStatsOutput[Index].PrimitiveID = InstanceSceneData.PrimitiveId;
-	InterlockedAdd(RayTracingDebugHitStatsUniformBuffer.HitStatsOutput[Index].Count, 1);
+	// RayTracingDebugHitStatsUniformBuffer.HitStatsOutput[Index].PrimitiveID = InstanceSceneData.PrimitiveId;
+	// InterlockedAdd(RayTracingDebugHitStatsUniformBuffer.HitStatsOutput[Index].Count, 1);
 }
 
 RAY_TRACING_ENTRY_CLOSEST_HIT(RayTracingDebugHitStatsCHS,
@@ -26,3 +29,4 @@ RAY_TRACING_ENTRY_CLOSEST_HIT(RayTracingDebugHitStatsCHS,
 	FRayTracingIntersectionAttributes, Attributes)
 {
 }
+// End Peky Part

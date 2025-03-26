@@ -21,7 +21,7 @@
 #include "PostProcess/PostProcessAmbientOcclusionMobile.h"
 #include "PostProcess/PostProcessPixelProjectedReflectionMobile.h"
 #include "IHeadMountedDisplayModule.h"
-#include "ToonPassRendering.h"
+#include "Toon/ToonBasePassRendering.h"
 #include "Substrate/Substrate.h"
 #include "VisualizeTexture.h"
 

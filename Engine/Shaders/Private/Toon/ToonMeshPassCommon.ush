@@ -1,0 +1,10 @@
+﻿#pragma once
+
+#include "/Engine/Generated/Material.ush"
+#include "/Engine/Generated/VertexFactory.ush"
+
+struct FSimpleMeshPassVSToPS
+{
+	FVertexFactoryInterpolantsVSToPS FactoryInterpolants;
+	float4 SvPosition : SV_POSITION;
+};

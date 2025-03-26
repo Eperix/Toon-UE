@@ -132,6 +132,7 @@ float4 CompositeReflections(float4 ReflectionInput, float2 BufferUV, float InRou
 float3 ReflectionEnvironment(FGBufferData GBuffer, float AmbientOcclusion, float2 BufferUV, float2 ScreenPosition, float4 SvPosition, float3 BentNormal, float3 SpecularColor, uint ShadingModelID)
 {
 	/** Start Peky Part **/
+	// Remove Toon Shading
 	BRANCH
 	if ( GBuffer.ShadingModelID == SHADINGMODELID_TOON_DEFAULT || GBuffer.ShadingModelID == SHADINGMODELID_TOON_EYE
 		|| GBuffer.ShadingModelID == SHADINGMODELID_TOON_SKIN || GBuffer.ShadingModelID == SHADINGMODELID_TOON_HAIR)
@@ -553,7 +554,16 @@ void ReflectionEnvironmentSkyLighting(
 		float3 TranslatedWorldPosition = mul(float4(GetScreenPositionForProjectionType(ScreenPosition, GBuffer.Depth), GBuffer.Depth, 1), View.ScreenToTranslatedWorld).xyz;
 		const float CloudVolumetricAOShadow = GetCloudVolumetricAOShadow(TranslatedWorldPosition);
 		float3 SkyLighting = CloudVolumetricAOShadow * SkyLightDiffuse(GBuffer, AmbientOcclusion, BufferUV, ScreenPosition, BentNormal, DiffuseColor);
-		
+
+		// Start Peky Part
+		// Remove Toon Shading
+		// 在这里计算SkyLight
+		// 当开启Lumen的时候这个Pass并不会绘制
+		if (GBuffer.ShadingModelID == SHADINGMODELID_TOON)
+		{
+			SkyLighting = float3(0.0,0.0,0.0);
+		}
+		// End Peky Part
 		FLightAccumulator LightAccumulator = (FLightAccumulator)0;
 		const bool bNeedsSeparateSubsurfaceLightAccumulation = UseSubsurfaceProfile(ShadingModelID);
 		LightAccumulator_Add(LightAccumulator, SkyLighting, SkyLighting, 1.0f, bNeedsSeparateSubsurfaceLightAccumulation);
@@ -562,11 +572,15 @@ void ReflectionEnvironmentSkyLighting(
 
 #endif // ENABLE_DYNAMIC_SKY_LIGHT 
 
+	// Start Peky Part
+	// Remove Toon Shading
+	// 计算SkyLight镜面反射部分
 	BRANCH
-	if (!bUnlitMaterial && ShadingModelID != SHADINGMODELID_HAIR)
+	if (!bUnlitMaterial && ShadingModelID != SHADINGMODELID_HAIR && ShadingModelID != SHADINGMODELID_TOON_DEFAULT)
 	{
 		OutColor.xyz += ReflectionEnvironment(GBuffer, AmbientOcclusion, BufferUV, ScreenPosition, SvPosition, BentNormal, SpecularColor, ShadingModelID);
 	}
+	// End Peky Part
 
 #endif // SUBSTRATE_ENABLED
 }

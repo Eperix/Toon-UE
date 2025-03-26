@@ -1632,7 +1632,7 @@ void FRelevancePacket::ComputeRelevance(FDynamicPrimitiveIndexList& DynamicPrimi
 								{
 									DrawCommandPacket.AddCommandsForMesh(PrimitiveIndex, PrimitiveSceneInfo, StaticMeshRelevance, StaticMesh, CullingPayloadFlags, Scene, bCanCache, EMeshPass::BasePass);
 									// Start Peky Part
-									DrawCommandPacket.AddCommandsForMesh(PrimitiveIndex, PrimitiveSceneInfo, StaticMeshRelevance, StaticMesh, CullingPayloadFlags, Scene, bCanCache, EMeshPass::ToonMeshPass);
+									DrawCommandPacket.AddCommandsForMesh(PrimitiveIndex, PrimitiveSceneInfo, StaticMeshRelevance, StaticMesh, CullingPayloadFlags, Scene, bCanCache, EMeshPass::ToonBasePass);
 									DrawCommandPacket.AddCommandsForMesh(PrimitiveIndex, PrimitiveSceneInfo, StaticMeshRelevance, StaticMesh, CullingPayloadFlags, Scene, bCanCache, EMeshPass::ToonOutlinePass);
 									// End Peky Part
 									MarkMask |= EMarkMaskBits::StaticMeshVisibilityMapMask;
@@ -2300,8 +2300,8 @@ static void ComputeDynamicMeshRelevance(
 
 			// Start Peky Part
 			// Set pass mask to render ToonOutlinePass
-			PassMask.Set(EMeshPass::ToonMeshPass);
-			View.NumVisibleDynamicMeshElements[EMeshPass::ToonMeshPass] += NumElements;
+			PassMask.Set(EMeshPass::ToonBasePass);
+			View.NumVisibleDynamicMeshElements[EMeshPass::ToonBasePass] += NumElements;
 
 			PassMask.Set(EMeshPass::ToonOutlinePass);
 			View.NumVisibleDynamicMeshElements[EMeshPass::ToonOutlinePass] += NumElements;

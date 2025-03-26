@@ -1,13 +1,5 @@
 ﻿#include "../Common.ush"
-#include "/Engine/Generated/Material.ush"
-#include "/Engine/Generated/VertexFactory.ush"
-#include "ToonMaterialParameterCommon.ush"
-
-struct FSimpleMeshPassVSToPS
-{
-	FVertexFactoryInterpolantsVSToPS FactoryInterpolants;
-	float4 Position : SV_POSITION;
-};
+#include "ToonMeshPassCommon.ush"
 
 void MainVS(
 	FVertexFactoryInput Input,
@@ -30,20 +22,6 @@ void MainVS(
 
 	float4 RasterizedWorldPosition = VertexFactoryGetRasterizedWorldPosition(Input, VFIntermediates, WorldPos);
 	ClipSpacePosition = mul(RasterizedWorldPosition, ResolvedView.TranslatedWorldToClip);
-	Output.Position = INVARIANT(ClipSpacePosition);
+	Output.SvPosition = INVARIANT(ClipSpacePosition);
 	Output.FactoryInterpolants = VertexFactoryGetInterpolantsVSToPS(Input, VFIntermediates, VertexParameters);
-}
-
-void MainPS(
-	FSimpleMeshPassVSToPS Input,
-	out uint4 OutColor1 : SV_Target0,
-	out uint4 OutColor2 : SV_Target1,
-	out uint4 OutColor3 : SV_Target2)
-{
-	// 获取像素的材质参数(此处的材质就是材质辑器编辑出来的材质).
-	FMaterialPixelParameters MaterialParameters = GetMaterialPixelParameters(Input.FactoryInterpolants, Input.Position);
-	
-	FToonBuffer ToonBuffer = GetToonBuffer(MaterialParameters);
-
-	EncodeToonBuffer(ToonBuffer, OutColor1, OutColor2, OutColor3);
 }

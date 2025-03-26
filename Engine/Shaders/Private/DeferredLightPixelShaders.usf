@@ -30,6 +30,7 @@
 //#include "HeterogeneousVolumes/HeterogeneousVolumesVoxelGridTypes.ush"
 #include "HairStrands/HairStrandsVisibilityCommonStruct.ush" 
 #include "Common.ush"
+#include "Toon/ToonCommon.ush"
 
 #include "LargeWorldCoordinates.ush"
 
@@ -380,8 +381,20 @@ void DeferredLightPixelMain(
 			//LightAttenuation *= Luminance(ComputeTransmittance(WorldPosition, WorldToLight, 512));
 		}
 #endif // USE_ADAPTIVE_VOLUMETRIC_SHADOW_MAP
-		float4 Radiance = GetDynamicLighting(DerivedParams.TranslatedWorldPosition, DerivedParams.CameraVector, ScreenSpaceData.GBuffer, ScreenSpaceData.AmbientOcclusion, LightData, LightAttenuation, Dither, uint2(InputParams.PixelPos), SurfaceShadow);
-
+		// Start Peky Part
+		// Toon Hair Shadow 屏蔽掉Toon LightPass光照
+		f(ScreenSpaceData.GBuffer.ShadingModelID == SHADINGMODELID_TOON_DEFAULT &&
+			(ScreenSpaceData.GBuffer.ToonBuffer.ToonModel == TOONMODEL_FACE || ScreenSpaceData.GBuffer.ToonBuffer.ToonModel == TOONMODEL_EYE))
+		{
+			float HairShadow = GetHairShadow(ScreenSpaceData.GBuffer,  LightData, InputParams.ScreenUV);
+			LightAttenuation = LightAttenuation * HairShadow;
+		}
+		
+		float4 Radiance = 0;
+		if(!ScreenSpaceData.GBuffer.ShadingModelID == SHADINGMODELID_TOON_DEFAULT)
+			Radiance = GetDynamicLighting(DerivedParams.TranslatedWorldPosition, DerivedParams.CameraVector, ScreenSpaceData.GBuffer, ScreenSpaceData.AmbientOcclusion, LightData, LightAttenuation, Dither, uint2(InputParams.PixelPos), SurfaceShadow);
+		
+		// End Peky Part
 		OutColor += Radiance;
 	}
 

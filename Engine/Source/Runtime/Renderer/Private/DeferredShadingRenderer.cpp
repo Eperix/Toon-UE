@@ -2536,7 +2536,7 @@ void FDeferredShadingSceneRenderer::Render(FRDGBuilder& GraphBuilder)
 
 		// Start Peky Part
 		{
-			RenderToonPass(GraphBuilder, SceneTextures);
+			RenderToonBasePass(GraphBuilder, SceneTextures);
 		}
 		// End Peky Part
 

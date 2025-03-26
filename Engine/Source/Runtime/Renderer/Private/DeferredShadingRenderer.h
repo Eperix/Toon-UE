@@ -434,7 +434,7 @@ public:
 		Froxel::FRenderer& FroxelRenderer);
 
 	// Start Peky Part
-	void RenderToonPass(FRDGBuilder& GraphBuilder, FSceneTextures& SceneTextures);
+	void RenderToonBasePass(FRDGBuilder& GraphBuilder, FSceneTextures& SceneTextures);
 	void RenderToonOutlinePass(FRDGBuilder& GraphBuilder, FSceneTextures& SceneTextures);
 	// End Peky Part
 

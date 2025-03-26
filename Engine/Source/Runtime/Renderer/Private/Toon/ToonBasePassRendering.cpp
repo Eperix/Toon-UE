@@ -1,4 +1,4 @@
-﻿#include "ToonPassRendering.h"
+﻿#include "ToonBasePassRendering.h"
 
 #include "ScenePrivate.h"
 #include "MeshPassProcessor.inl"
@@ -8,12 +8,12 @@
 #include "PipelineFileCache.h"
 
 // IMPLEMENT_MATERIAL_SHADER_TYPE接受的参数：
-// FToonPassPS:我们在ToonPassRendering.h中定义的shader类
+// FToonBasePassPS:我们在ToonPassRendering.h中定义的shader类
 // TEXT("/Engine/Private/Toon/ToonPassShader.usf"):我们使用的shader路径
 // TEXT("MainPS"):shader的入口函数名
 // SF_Pixel:shader的类型，Vertex shader、Pixel shader或者compute shader
-IMPLEMENT_MATERIAL_SHADER_TYPE(, FToonPassVS, TEXT("/Engine/Private/Toon/ToonShaders.usf"), TEXT("MainVS"), SF_Vertex);
-IMPLEMENT_MATERIAL_SHADER_TYPE(, FToonPassPS, TEXT("/Engine/Private/Toon/ToonShaders.usf"), TEXT("MainPS"), SF_Pixel);
+IMPLEMENT_MATERIAL_SHADER_TYPE(, FToonBasePassVS, TEXT("/Engine/Private/Toon/ToonBasePassVS.usf"), TEXT("MainVS"), SF_Vertex);
+IMPLEMENT_MATERIAL_SHADER_TYPE(, FToonBasePassPS, TEXT("/Engine/Private/Toon/ToonBasePassPS.usf"), TEXT("MainPS"), SF_Pixel);
 
 //--------------------------------------------Toon Buffer Texture---------------------------------------------
 // Toon Buffer step 5-2
@@ -35,12 +35,12 @@ FRDGTextureRef CreateToonBufferTexture(FRDGBuilder& GraphBuilder, FIntPoint Exte
 
  //------------------------------------------- Mesh Pass Processor-------------------------------------------------
 
-FToonPassProcessor::FToonPassProcessor(
+FToonBasePassProcessor::FToonBasePassProcessor(
 	const FScene* Scene,  
 	const FSceneView* InViewIfDynamicMeshCommand,  
 	const FMeshPassProcessorRenderState& InPassDrawRenderState,  
 	FMeshPassDrawListContext* InDrawListContext )
-:FMeshPassProcessor(EMeshPass::ToonMeshPass, Scene, Scene->GetFeatureLevel(), InViewIfDynamicMeshCommand, InDrawListContext),
+:FMeshPassProcessor(EMeshPass::ToonBasePass, Scene, Scene->GetFeatureLevel(), InViewIfDynamicMeshCommand, InDrawListContext),
 PassDrawRenderState(InPassDrawRenderState)
 {
 	// 设置默认的BlendState和DepthStencilState
@@ -56,7 +56,7 @@ PassDrawRenderState(InPassDrawRenderState)
     }
 }
 
-void FToonPassProcessor::AddMeshBatch(
+void FToonBasePassProcessor::AddMeshBatch(
     const FMeshBatch& MeshBatch,
     uint64 BatchElementMask,
     const FPrimitiveSceneProxy* PrimitiveSceneProxy,
@@ -91,7 +91,7 @@ void FToonPassProcessor::AddMeshBatch(
     }
 }
 
-bool FToonPassProcessor::Process(
+bool FToonBasePassProcessor::Process(
     const FMeshBatch& MeshBatch,
     uint64 BatchElementMask,
     int32 StaticMeshId,
@@ -103,12 +103,12 @@ bool FToonPassProcessor::Process(
 {
     const FVertexFactory* VertexFactory = MeshBatch.VertexFactory;
 
-    TMeshProcessorShaders<FToonPassVS, FToonPassVS> ToonPassShader;
+    TMeshProcessorShaders<FToonBasePassVS, FToonBasePassVS> ToonBasePassShaders;
     {
         FMaterialShaderTypes ShaderTypes;
     	// 指定使用的shader
-        ShaderTypes.AddShaderType<FToonPassVS>();
-        ShaderTypes.AddShaderType<FToonPassPS>();
+        ShaderTypes.AddShaderType<FToonBasePassVS>();
+        ShaderTypes.AddShaderType<FToonBasePassPS>();
 
         const FVertexFactoryType* VertexFactoryType = VertexFactory->GetType();
 
@@ -119,15 +119,15 @@ bool FToonPassProcessor::Process(
             return false;
         }
 
-        Shaders.TryGetVertexShader(ToonPassShader.VertexShader);
-        Shaders.TryGetPixelShader(ToonPassShader.PixelShader);
+        Shaders.TryGetVertexShader(ToonBasePassShaders.VertexShader);
+        Shaders.TryGetPixelShader(ToonBasePassShaders.PixelShader);
     }
 
 
     FMeshMaterialShaderElementData ShaderElementData;
     ShaderElementData.InitializeMeshMaterialData(ViewIfDynamicMeshCommand, PrimitiveSceneProxy, MeshBatch, StaticMeshId, false);
 
-    const FMeshDrawCommandSortKey SortKey = CalculateMeshStaticSortKey(ToonPassShader.VertexShader, ToonPassShader.PixelShader);
+    const FMeshDrawCommandSortKey SortKey = CalculateMeshStaticSortKey(ToonBasePassShaders.VertexShader, ToonBasePassShaders.PixelShader);
 	PassDrawRenderState.SetDepthStencilState(TStaticDepthStencilState<false, CF_DepthNearOrEqual>().GetRHI());
 
 	FMeshPassProcessorRenderState DrawRenderState(PassDrawRenderState);
@@ -139,7 +139,7 @@ bool FToonPassProcessor::Process(
         MaterialRenderProxy,
         MaterialResource,
         DrawRenderState,
-        ToonPassShader,
+        ToonBasePassShaders,
         MeshFillMode,
         MeshCullMode,
         SortKey,
@@ -152,36 +152,36 @@ bool FToonPassProcessor::Process(
 
 //------------------FRegisterPassProcessorCreateFunction---------------
 
-void SetupToonPassState(FMeshPassProcessorRenderState& DrawRenderState)
+void SetupToonBasePassState(FMeshPassProcessorRenderState& DrawRenderState)
 {
 	DrawRenderState.SetDepthStencilState(TStaticDepthStencilState<false, CF_DepthNearOrEqual>::GetRHI());
 }
 
-FMeshPassProcessor* CreateToonPassProcessor(ERHIFeatureLevel::Type FeatureLevel, const FScene* Scene, const FSceneView* InViewIfDynamicMeshCommand, FMeshPassDrawListContext* InDrawListContext)
+FMeshPassProcessor* CreateToonBasePassProcessor(ERHIFeatureLevel::Type FeatureLevel, const FScene* Scene, const FSceneView* InViewIfDynamicMeshCommand, FMeshPassDrawListContext* InDrawListContext)
 {
 	FMeshPassProcessorRenderState ToonPassState;
-	SetupToonPassState(ToonPassState);
-	return new FToonPassProcessor(Scene, InViewIfDynamicMeshCommand, ToonPassState, InDrawListContext);
+	SetupToonBasePassState(ToonPassState);
+	return new FToonBasePassProcessor(Scene, InViewIfDynamicMeshCommand, ToonPassState, InDrawListContext);
 }
 
 // RegisterToonPass会将CreateToonPassProcessor函数的地址写入FPassProcessorManager的一个Table里，Table的下标是EShadingPath和EMeshPass
 // 这个Table包括了所以Pass的CreatePassProcessor函数，之后引擎就可以根据EShadingPath和EMeshPass找到对应pass的CreatePassProcessor函数
-FRegisterPassProcessorCreateFunction RegisterToonPass(&CreateToonPassProcessor, EShadingPath::Deferred, EMeshPass::ToonMeshPass, EMeshPassFlags::CachedMeshCommands | EMeshPassFlags::MainView);
+FRegisterPassProcessorCreateFunction RegisterToonPass(&CreateToonBasePassProcessor, EShadingPath::Deferred, EMeshPass::ToonBasePass, EMeshPassFlags::CachedMeshCommands | EMeshPassFlags::MainView);
 
 //------------------FRegisterPassProcessorCreateFunction---------------
 
 
-DECLARE_CYCLE_STAT(TEXT("ToonPass"), STAT_CLP_ToonPass, STATGROUP_SceneRendering);
+DECLARE_CYCLE_STAT(TEXT("ToonBasePass"), STAT_CLP_ToonBasePass, STATGROUP_SceneRendering);
 
-BEGIN_SHADER_PARAMETER_STRUCT(FToonMeshPassParameters, )
+BEGIN_SHADER_PARAMETER_STRUCT(FToonBasePassParameters, )
     SHADER_PARAMETER_STRUCT_REF(FViewUniformShaderParameters, View)
     SHADER_PARAMETER_STRUCT_INCLUDE(FInstanceCullingDrawParams, InstanceCullingDrawParams)
     RENDER_TARGET_BINDING_SLOTS()
 END_SHADER_PARAMETER_STRUCT()
 
-FToonMeshPassParameters* GetToonPassParameters(FRDGBuilder& GraphBuilder, const FViewInfo& View, FSceneTextures& SceneTextures)
+FToonBasePassParameters* GetToonPassParameters(FRDGBuilder& GraphBuilder, const FViewInfo& View, FSceneTextures& SceneTextures)
 {
-    FToonMeshPassParameters* PassParameters = GraphBuilder.AllocParameters<FToonMeshPassParameters>();
+    FToonBasePassParameters* PassParameters = GraphBuilder.AllocParameters<FToonBasePassParameters>();
     PassParameters->View = View.ViewUniformBuffer;
 
 	if (!HasBeenProduced(SceneTextures.TBufferA))
@@ -201,12 +201,12 @@ FToonMeshPassParameters* GetToonPassParameters(FRDGBuilder& GraphBuilder, const 
 }
 
 // 在DeferredShadingSceneRenderer调用这个函数来渲染ToonPass
-void FDeferredShadingSceneRenderer::RenderToonPass(FRDGBuilder& GraphBuilder, FSceneTextures& SceneTextures)
+void FDeferredShadingSceneRenderer::RenderToonBasePass(FRDGBuilder& GraphBuilder, FSceneTextures& SceneTextures)
 {
-    RDG_EVENT_SCOPE(GraphBuilder, "ToonPass");
-    RDG_CSV_STAT_EXCLUSIVE_SCOPE(GraphBuilder, RenderToonPass);
+    RDG_EVENT_SCOPE(GraphBuilder, "ToonBasePass");
+    RDG_CSV_STAT_EXCLUSIVE_SCOPE(GraphBuilder, RenderToonBasePass);
 
-    SCOPED_NAMED_EVENT(FDeferredShadingSceneRenderer_RenderToonPass, FColor::Emerald);
+    SCOPED_NAMED_EVENT(FDeferredShadingSceneRenderer_RenderToonBasePass, FColor::Emerald);
 
     for(int32 ViewIndex = 0; ViewIndex < Views.Num(); ++ViewIndex)
     {
@@ -217,19 +217,19 @@ void FDeferredShadingSceneRenderer::RenderToonPass(FRDGBuilder& GraphBuilder, FS
         const bool bShouldRenderView = View.ShouldRenderView();
         if(bShouldRenderView)
         {
-            FToonMeshPassParameters* PassParameters = GetToonPassParameters(GraphBuilder, View, SceneTextures);
+            FToonBasePassParameters* PassParameters = GetToonPassParameters(GraphBuilder, View, SceneTextures);
 
-            View.ParallelMeshDrawCommandPasses[EMeshPass::ToonMeshPass].BuildRenderingCommands(GraphBuilder, Scene->GPUScene, PassParameters->InstanceCullingDrawParams);
+            View.ParallelMeshDrawCommandPasses[EMeshPass::ToonBasePass].BuildRenderingCommands(GraphBuilder, Scene->GPUScene, PassParameters->InstanceCullingDrawParams);
             GraphBuilder.AddDispatchPass(
                 RDG_EVENT_NAME("ToonPass"),
                 PassParameters,
                 ERDGPassFlags::Raster | ERDGPassFlags::SkipRenderPass,
                 [&View, PassParameters](FRDGDispatchPassBuilder& DispatchPassBuilder)
             {
-                View.ParallelMeshDrawCommandPasses[EMeshPass::ToonMeshPass].Dispatch(DispatchPassBuilder, &PassParameters->InstanceCullingDrawParams);
+                View.ParallelMeshDrawCommandPasses[EMeshPass::ToonBasePass].Dispatch(DispatchPassBuilder, &PassParameters->InstanceCullingDrawParams);
                 // FRDGParallelCommandListSet ParallelCommandListSet(InPass, RHICmdList, GET_STATID(STAT_CLP_ToonPass), View, FParallelCommandListBindings(PassParameters));
                 // ParallelCommandListSet.SetHighPriority();
-                // View.ParallelMeshDrawCommandPasses[EMeshPass::ToonMeshPass].DispatchDraw(&ParallelCommandListSet, RHICmdList, &PassParameters->InstanceCullingDrawParams);
+                // View.ParallelMeshDrawCommandPasses[EMeshPass::ToonBasePass].DispatchDraw(&ParallelCommandListSet, RHICmdList, &PassParameters->InstanceCullingDrawParams);
             });
         }
     }

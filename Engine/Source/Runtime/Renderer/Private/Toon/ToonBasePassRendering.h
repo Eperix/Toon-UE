@@ -3,10 +3,10 @@
 #include "MeshMaterialShader.h"
 #include "DataDrivenShaderPlatformInfo.h"
 
-class FToonPassProcessor : public FMeshPassProcessor
+class FToonBasePassProcessor : public FMeshPassProcessor
 {
 	public:
-	FToonPassProcessor(
+	FToonBasePassProcessor(
 		const FScene* Scene,  
 		const FSceneView* InViewIfDynamicMeshCommand,  
 		const FMeshPassProcessorRenderState& InPassDrawRenderState,  
@@ -37,13 +37,13 @@ class FToonPassProcessor : public FMeshPassProcessor
 };
 
 // Shader Start
-class FToonPassVS : public FMeshMaterialShader
+class FToonBasePassVS : public FMeshMaterialShader
 {
 	// 声明Shader，实际上是初始化各种指针以及类型“MeshMaterial”
-	DECLARE_SHADER_TYPE(FToonPassVS, MeshMaterial);
+	DECLARE_SHADER_TYPE(FToonBasePassVS, MeshMaterial);
 public:
-	FToonPassVS() = default;
-	FToonPassVS(const ShaderMetaType::CompiledShaderInitializerType& Initializer):FMeshMaterialShader(Initializer)
+	FToonBasePassVS() = default;
+	FToonBasePassVS(const ShaderMetaType::CompiledShaderInitializerType& Initializer):FMeshMaterialShader(Initializer)
 	{}
 	// 修改Shader环境
 	static void ModifyCompilationEnvironment(const FMaterialShaderPermutationParameters& Parameters, FShaderCompilerEnvironment& OutEnvironment)
@@ -69,13 +69,13 @@ public:
 	}
 };
 
-class FToonPassPS : public FMeshMaterialShader
+class FToonBasePassPS : public FMeshMaterialShader
 {
-	DECLARE_SHADER_TYPE(FToonPassPS, MeshMaterial);
+	DECLARE_SHADER_TYPE(FToonBasePassPS, MeshMaterial);
 
 public:
-	FToonPassPS() = default;
-	FToonPassPS(const ShaderMetaType::CompiledShaderInitializerType& Initializer):FMeshMaterialShader(Initializer)
+	FToonBasePassPS() = default;
+	FToonBasePassPS(const ShaderMetaType::CompiledShaderInitializerType& Initializer):FMeshMaterialShader(Initializer)
 	{}
 	static void ModifyCompilationEnvironment(const FMaterialShaderPermutationParameters& Parameters, FShaderCompilerEnvironment& OutEnvironment)
 	{}

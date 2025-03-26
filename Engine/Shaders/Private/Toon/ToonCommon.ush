@@ -1,4 +1,6 @@
-﻿#pragma once
+﻿
+
+#pragma once
 
 // ToonFunctions:
 float ToonShadowMask(float Lambert, float AttenuationSpeed, float ShadowOffset = 0.5)
@@ -69,3 +71,47 @@ float3 ShiftTangent(float3 T, float3 N, half shift)
 {
 	return normalize(T + shift* N);
 }
+
+float3 GetMainLightDirection()
+{
+	return View.AtmosphereLightDirection[0].xyz;
+}
+
+bool IsMainLight(FDeferredLightData LightData)
+{
+	return !LightData.bRadialLight && all(LightData.Direction == GetMainLightDirection());
+}
+
+float GetHairShadow(FGBufferData GBuffer, FDeferredLightData LightData, float2 ScreenUV)
+{
+	float Shadow = 1.0f;
+	
+	if (!IsMainLight(LightData))
+	{
+		return Shadow;
+	}
+	
+	float k = 100.0f;
+	// 屏幕空间LightDirection
+	// View.TranslatedWorldToCameraView用于将世界空间变换到屏幕空间
+	float3 LightDirVS = mul(LightData.Direction, (float3x3)(View.TranslatedWorldToCameraView));
+	// 翻转LightDirVS的y方向，不然Offset上下会反，可能会出现OpenGL和DirectX不一致的情况，不过到时候遇到再改
+	LightDirVS.y = -LightDirVS.y;
+	// 修正摄像机距离对偏移距离的影响
+	LightDirVS *= (100.0f / CalcSceneDepth(ScreenUV));
+
+	// View.BufferSizeAndInvSize.xy是屏幕分辨率；View.BufferSizeAndInvSize.xy是屏幕分辨率的倒数
+	float2 Offset = LightDirVS.xy * k * GBuffer.ToonBuffer.HairShadowOffset * View.BufferSizeAndInvSize.zw;
+	float2 OffsetedUV = saturate(ScreenUV + Offset);
+	
+	FGBufferData OffsetedGBuffer = GetGBufferData(OffsetedUV);
+
+	if (OffsetedGBuffer.ToonBuffer.ToonModel == TOONMODEL_HAIR
+		&& OffsetedGBuffer.Depth < GBuffer.Depth
+		&& OffsetedGBuffer.ToonBuffer.ObjectID == GBuffer.ToonBuffer.ObjectID)
+	{
+		Shadow = 0.0f;
+	}
+	
+	return Shadow;
+};

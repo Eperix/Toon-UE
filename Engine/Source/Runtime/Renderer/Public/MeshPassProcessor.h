@@ -80,7 +80,7 @@ namespace EMeshPass
 #endif
 
 		// Start Peky Part
-		ToonMeshPass,
+		ToonBasePass,
 		ToonOutlinePass,
 		// End Peky Part
 		Num,
@@ -139,7 +139,7 @@ inline const TCHAR* GetMeshPassName(EMeshPass::Type MeshPass)
 	case EMeshPass::EditorSelection: return TEXT("EditorSelection");
 #endif
 	// Start Peky Part
-	case EMeshPass::ToonMeshPass: return TEXT("ToonMeshPass");
+	case EMeshPass::ToonBasePass: return TEXT("ToonBasePass");
 	case EMeshPass::ToonOutlinePass: return TEXT("ToonOutlinePass");
 	// End Peky Part
 	}

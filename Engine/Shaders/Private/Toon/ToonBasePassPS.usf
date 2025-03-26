@@ -1,0 +1,17 @@
+﻿#include "../Common.ush"
+#include "ToonMaterialParameterCommon.ush"
+#include "ToonMeshPassCommon.ush"
+
+void MainPS(
+	FSimpleMeshPassVSToPS Input,
+	out uint4 OutColor1 : SV_Target0,
+	out uint4 OutColor2 : SV_Target1,
+	out uint4 OutColor3 : SV_Target2)
+{
+	// 获取像素的材质参数(此处的材质就是材质辑器编辑出来的材质).
+	FMaterialPixelParameters MaterialParameters = GetMaterialPixelParameters(Input.FactoryInterpolants, Input.SvPosition);
+	
+	FToonBuffer ToonBuffer = GetToonBuffer(MaterialParameters);
+
+	EncodeToonBuffer(ToonBuffer, OutColor1, OutColor2, OutColor3);
+}
