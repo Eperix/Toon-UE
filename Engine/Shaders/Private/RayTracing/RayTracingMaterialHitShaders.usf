@@ -22,6 +22,7 @@
 #include "RayTracingCommon.ush"
 #include "RayTracingHitGroupCommon.ush"
 #include "RayTracingShaderUtils.ush"
+#include "../Toon/ToonMaterialParameterCommon.ush"
 
 #include "/Engine/Generated/Material.ush"   
 #include "/Engine/Generated/VertexFactory.ush"
@@ -750,13 +751,8 @@ RAY_TRACING_ENTRY_ANY_HIT(MaterialAHS,
 	{
 		return;
 	}
-	FToonPayloadData = RayGenToonPayload = (FToonPayloadData)0;
-	FToonPayloadData HitToonPayload = (FToonPayloadData)0;
 	RayGenToonPayload.ToonData = PackedPayload.PackedCustomData;
-#ifdef  HAVE_GetToonMaterialOutput0
-	float4 ToonBufferA = float4(GetToonMaterialOutput0(MaterialParameters), 0);
-	HitToonPayload = GetToonPayloadDataFromBuffer(ToonBufferA);
-#endif
+	FToonPayloadData HitToonPayload = GetToonPayloadData(MaterialParameters);
 	
 	// 使用了SCF_DISABLEALLTOON的话，不投影到任何Toon材质上
 	if(HitToonPayload.GetShadowCastFlag() & SCF_DISABLEALLTOON)

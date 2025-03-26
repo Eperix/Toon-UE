@@ -1,6 +1,7 @@
 ﻿#include "../Common.ush"
 #include "/Engine/Generated/Material.ush"
 #include "/Engine/Generated/VertexFactory.ush"
+#include "ToonMaterialParameterCommon.ush"
 
 struct FSimpleMeshPassVSToPS
 {
@@ -41,23 +42,8 @@ void MainPS(
 {
 	// 获取像素的材质参数(此处的材质就是材质辑器编辑出来的材质).
 	FMaterialPixelParameters MaterialParameters = GetMaterialPixelParameters(Input.FactoryInterpolants, Input.Position);
-	// FPixelMaterialInputs用于获取材质编辑器的针脚
-	// FPixelMaterialInputs PixelMaterialInputs;
-	uint4 Color1 = 0;
-	uint4 Color2 = 0;
-	uint4 Color3 = 0;
-#ifdef  HAVE_GetToonMaterialOutput0
-	Color1.rgb = GetToonMaterialOutput0(MaterialParameters);
-#endif
-#ifdef  HAVE_GetToonMaterialOutput1
-	Color2.rgb = GetToonMaterialOutput1(MaterialParameters);
-#endif
-#ifdef  HAVE_GetToonMaterialOutput2
-	Color3.rgb = GetToonMaterialOutput2(MaterialParameters);
-#endif
+	
+	FToonBuffer ToonBuffer = GetToonBuffer(MaterialParameters);
 
-	OutColor1 = Color1;
-	OutColor2 = Color2;
-	OutColor3 = Color3;
-
+	EncodeToonBuffer(ToonBuffer, OutColor1, OutColor2, OutColor3);
 }

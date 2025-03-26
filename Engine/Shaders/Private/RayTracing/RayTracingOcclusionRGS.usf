@@ -481,11 +481,7 @@ FOcclusionResult ComputeOcclusion(
 		if (ShadingDesc.bIsToon)
 		{
 #if !SUBSTRATE_ENABLED
-			FToonPayloadData ToonPayloadData = (FToonPayloadData)0;
-			ToonPayloadData.SetSelfID(ShadingDesc.ToonBuffer.SelfID);
-			ToonPayloadData.SetShadowCastFlag(ShadingDesc.ToonBuffer.ShadowCastFlag);
-			ToonPayloadData.SetObjectID(ShadingDesc.ToonBuffer.ObjectID);
-			ToonPayloadData.SetToonModel(ShadingDesc.ToonBuffer.ToonModel);
+			FToonPayloadData ToonPayloadData = GetToonPayloadByToonBuffer(ShadingDesc.ToonBuffer);
 			MinimalPayload = TraceToonVisibilityRay(TLAS, RayFlags | RayFlagsForOpaque, RaytracingMask, Ray, ToonPayloadData);
 #endif
 		}

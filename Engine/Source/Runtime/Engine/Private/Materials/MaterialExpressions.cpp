@@ -28125,8 +28125,24 @@ UMaterialExpressionToonMaterialOutput::UMaterialExpressionToonMaterialOutput(con
 #endif
 }
 
+	// Start Peky Part
+	// Toon Buffer Expression
 #if WITH_EDITOR
 
+	uint32 UMaterialExpressionToonMaterialOutput::GetInputType(int32 InputIndex)
+{
+	if (InputIndex == 0) { return MCT_Float1; }		// SelfID
+	if (InputIndex == 1) { return MCT_Float1; }		// ObjectID
+	if (InputIndex == 2) { return MCT_Float1; }		// ToonModel
+	if (InputIndex == 3) { return MCT_Float1; }		// ShadowCastFlag
+	if (InputIndex == 4) { return MCT_Float1; }		// HairShadowOffset
+	if(InputIndex < 7)
+	{
+		return MCT_Float4;
+	}
+	check(false);
+	return MCT_Float3;
+}
 
 	int32 UMaterialExpressionToonMaterialOutput::Compile(class FMaterialCompiler* Compiler, int32 OutputIndex)
 {
@@ -28139,17 +28155,32 @@ UMaterialExpressionToonMaterialOutput::UMaterialExpressionToonMaterialOutput(con
 	// Generates function names GetToonMaterialOutput{index} used in BasePixelShader.usf.
 	if (OutputIndex == 0)
 	{
-		CodeInput = ToonDataA.IsConnected() ? ToonDataA.Compile(Compiler) : Compiler->Constant3(0.f, 0.f, 0.f);
+		CodeInput = SelfID.IsConnected() ? SelfID.Compile(Compiler) : Compiler->Constant(0);
 	}
 	if (OutputIndex == 1)
 	{
-		CodeInput = ToonDataB.IsConnected() ? ToonDataB.Compile(Compiler) : Compiler->Constant3(0.f, 0.f, 0.f);
+		CodeInput = ObjectID.IsConnected() ? ObjectID.Compile(Compiler) : Compiler->Constant(0);
 	}
 	if (OutputIndex == 2)
 	{
-		CodeInput = ToonDataC.IsConnected() ? ToonDataC.Compile(Compiler) : Compiler->Constant3(0.f, 0.f, 0.f);
+		CodeInput = ToonModel.IsConnected() ? ToonModel.Compile(Compiler) : Compiler->Constant(0);
 	}
-	
+	if (OutputIndex == 3)
+	{
+		CodeInput = ShadowCastFlag.IsConnected() ? ShadowCastFlag.Compile(Compiler) : Compiler->Constant(0);
+	}
+	if (OutputIndex == 4)
+	{
+		CodeInput = HairShadowOffset.IsConnected() ? HairShadowOffset.Compile(Compiler) : Compiler->Constant(0);
+	}
+	if (OutputIndex == 5)
+	{
+		CodeInput = ToonDataB.IsConnected() ? ToonDataB.Compile(Compiler) : Compiler->Constant4(0.f, 0.f, 0.f, 0.f);
+	}
+	if (OutputIndex == 6)
+	{
+		CodeInput = ToonDataC.IsConnected() ? ToonDataC.Compile(Compiler) : Compiler->Constant4(0.f, 0.f, 0.f, 0.f);
+	}
 
 	return Compiler->CustomOutput(this, OutputIndex, CodeInput);
 }
@@ -28163,7 +28194,7 @@ UMaterialExpressionToonMaterialOutput::UMaterialExpressionToonMaterialOutput(con
 
 	int32 UMaterialExpressionToonMaterialOutput::GetNumOutputs() const
 {
-	return 3;
+	return 7;
 }
 
 	FString UMaterialExpressionToonMaterialOutput::GetFunctionName() const
