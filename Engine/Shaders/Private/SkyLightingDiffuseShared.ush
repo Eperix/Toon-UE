@@ -128,8 +128,7 @@ float3 SkyLightDiffuse(FGBufferData GBuffer, float AmbientOcclusion, float2 Buff
 	
 	/** Start Peky Part **/
 	BRANCH
-	if(GBuffer.ShadingModelID == SHADINGMODELID_TOON_DEFAULT || GBuffer.ShadingModelID == SHADINGMODELID_TOON_SKIN
-		|| GBuffer.ShadingModelID == SHADINGMODELID_TOON_EYE || GBuffer.ShadingModelID == SHADINGMODELID_TOON_HAIR)
+	if(GBuffer.ShadingModelID == SHADINGMODELID_TOON_DEFAULT || GBuffer.ShadingModelID == SHADINGMODELID_TOON_HAIR)
 	{
 		float3 SubsurfaceColor = ExtractSubsurfaceColor(GBuffer);
 		DiffuseColor += SubsurfaceColor;

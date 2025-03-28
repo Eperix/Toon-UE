@@ -203,7 +203,7 @@ void SetGBufferForShadingModel(
 #endif
 	/** Start Peky Part **/
 #if MATERIAL_SHADINGMODEL_TOON_DEFAULT
-	else if (ShadingModel == SHADINGMODELID_TOON_DEFAULT || ShadingModel == SHADINGMODELID_TOON_SKIN || ShadingModel == SHADINGMODELID_TOON_EYE)
+	else if (ShadingModel == SHADINGMODELID_TOON_DEFAULT)
 	{
 		GBuffer.CustomData.rgb = EncodeSubsurfaceColor(SubsurfaceColor);
 		GBuffer.CustomData.a = saturate(GetMaterialCustomData0(MaterialParameters));

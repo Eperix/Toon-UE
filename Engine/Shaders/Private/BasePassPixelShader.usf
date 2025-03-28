@@ -959,7 +959,7 @@ void FPixelShaderInOut_MainPS(
 		}
 #endif
 #if MATERIAL_SHADINGMODEL_CLOTH || MATERIAL_SHADINGMODEL_TOON_DEFAULT || MATERIAL_SHADINGMODEL_TOON_HAIR
-		else if (ShadingModel == SHADINGMODELID_CLOTH || ShadingModel == SHADINGMODELID_TOON_DEFAULT || ShadingModel == SHADINGMODELID_TOON_HAIR || ShadingModel == SHADINGMODELID_TOON_SKIN || ShadingModel == SHADINGMODELID_TOON_EYE)
+		else if (ShadingModel == SHADINGMODELID_CLOTH || ShadingModel == SHADINGMODELID_TOON_DEFAULT || ShadingModel == SHADINGMODELID_TOON_HAIR)
 		{
 			SubsurfaceColor = SubsurfaceData.rgb;
 		}
