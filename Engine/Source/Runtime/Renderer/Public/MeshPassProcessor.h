@@ -82,6 +82,7 @@ namespace EMeshPass
 		// Start Peky Part
 		ToonBasePass,
 		ToonOutlinePass,
+		ToonLightPass,
 		// End Peky Part
 		Num,
 		NumBits = 6,
@@ -141,13 +142,14 @@ inline const TCHAR* GetMeshPassName(EMeshPass::Type MeshPass)
 	// Start Peky Part
 	case EMeshPass::ToonBasePass: return TEXT("ToonBasePass");
 	case EMeshPass::ToonOutlinePass: return TEXT("ToonOutlinePass");
+	case EMeshPass::ToonLightPass : return TEXT("ToonLightPass");
 	// End Peky Part
 	}
 
 #if WITH_EDITOR
-	static_assert(EMeshPass::Num == 40 + 4, "Need to update switch(MeshPass) after changing EMeshPass"); // GUID to prevent incorrect auto-resolves, please change when changing the expression: {674D7D62-CFD8-4971-9A8D-CD91E5612CD8}
+	static_assert(EMeshPass::Num == 41 + 4, "Need to update switch(MeshPass) after changing EMeshPass"); // GUID to prevent incorrect auto-resolves, please change when changing the expression: {674D7D62-CFD8-4971-9A8D-CD91E5612CD8}
 #else
-	static_assert(EMeshPass::Num == 40, "Need to update switch(MeshPass) after changing EMeshPass"); // GUID to prevent incorrect auto-resolves, please change when changing the expression: {674D7D62-CFD8-4971-9A8D-CD91E5612CD8}
+	static_assert(EMeshPass::Num == 41, "Need to update switch(MeshPass) after changing EMeshPass"); // GUID to prevent incorrect auto-resolves, please change when changing the expression: {674D7D62-CFD8-4971-9A8D-CD91E5612CD8}
 #endif
 
 	checkf(0, TEXT("Missing case for EMeshPass %u"), (uint32)MeshPass);

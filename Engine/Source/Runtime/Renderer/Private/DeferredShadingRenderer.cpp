@@ -2848,7 +2848,11 @@ void FDeferredShadingSceneRenderer::Render(FRDGBuilder& GraphBuilder)
 			RenderLights(GraphBuilder, SceneTextures, TranslucencyLightingVolumeTextures, LightingChannelsTexture, SortedLightSet);
 
 			// Start Peky Part
-			RenderToonOutlinePass(GraphBuilder, SceneTextures);
+			// Outline Pass And Light Pass
+			{
+				RenderToonLightPass(GraphBuilder, SceneTextures);
+				RenderToonOutlinePass(GraphBuilder, SceneTextures);
+			}
 			// End Peky Part
 			if (SortedLightSet.MegaLightsLightStart < SortedLightSet.SortedLights.Num())
 			{

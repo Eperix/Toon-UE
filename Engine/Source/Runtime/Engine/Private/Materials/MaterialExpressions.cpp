@@ -301,6 +301,11 @@
 #include "Materials/MaterialExpressionSparseVolumeTextureBase.h"
 #include "Materials/MaterialExpressionSparseVolumeTextureObject.h"
 #include "Materials/MaterialExpressionSparseVolumeTextureSample.h"
+// Start Peky Part
+// Toon Expressions
+#include "Materials/MaterialExpressionToonLightOutput.h"
+#include "Materials/MaterialExpressionToonMaterialOutput.h"
+// End Peky Part
 #include "EditorSupportDelegates.h"
 #if WITH_EDITOR
 #include "MaterialGraph/MaterialGraphNode_Comment.h"
@@ -311,7 +316,6 @@
 #include "Serialization/ShaderKeyGenerator.h"
 #include "SubstrateMaterial.h"
 #include "PostProcess/PostProcessMaterialInputs.h"
-#include "Materials/MaterialExpressionToonMaterialOutput.h"
 #else
 #include "Materials/MaterialExpressionVertexInterpolator.h"
 #include "Materials/MaterialParameterCollection.h"
@@ -28101,6 +28105,7 @@ FString UMaterialExpressionFirstPersonOutput::GetDisplayName() const
 }
 
 // Start Peky Part
+// Toon Buffer Expression
 UMaterialExpressionToonMaterialOutput::UMaterialExpressionToonMaterialOutput(const FObjectInitializer& ObjectInitializer)
 : Super(ObjectInitializer)
 {
@@ -28125,8 +28130,6 @@ UMaterialExpressionToonMaterialOutput::UMaterialExpressionToonMaterialOutput(con
 #endif
 }
 
-	// Start Peky Part
-	// Toon Buffer Expression
 #if WITH_EDITOR
 
 	uint32 UMaterialExpressionToonMaterialOutput::GetInputType(int32 InputIndex)
@@ -28206,5 +28209,79 @@ UMaterialExpressionToonMaterialOutput::UMaterialExpressionToonMaterialOutput(con
 {
 	return TEXT("Toon Material");
 }
-// End Peky Part
+	// Peky Part
+	// Toon Light Expression
+	UMaterialExpressionToonLightOutput::UMaterialExpressionToonLightOutput(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
+{
+	// Structure to hold one-time initialization
+	// 节点的分类
+	struct FConstructorStatics
+	{
+		FText NAME_Toon;
+		FConstructorStatics()
+			: NAME_Toon(LOCTEXT("Toon", "Toon"))
+		{
+		}
+	};
+	static FConstructorStatics ConstructorStatics;
+
+#if WITH_EDITORONLY_DATA
+	MenuCategories.Add(ConstructorStatics.NAME_Toon);
+#endif
+
+#if WITH_EDITOR
+	Outputs.Reset();
+#endif
+}
+
+#if WITH_EDITOR
+
+	uint32 UMaterialExpressionToonLightOutput::GetInputType(int32 InputIndex)
+{
+	if (InputIndex == 0) { return MCT_Float3; }		// ToonLighting
+	check(false);
+	return MCT_Float3;
+}
+
+
+	int32 UMaterialExpressionToonLightOutput::Compile(class FMaterialCompiler* Compiler, int32 OutputIndex)
+{
+	int32 CodeInput = INDEX_NONE;
+
+	const bool bStrata = Strata::IsStrataEnabled();
+
+	// 这里会在BasePixelShader.usf.里生成一个获取针脚属性的函数
+	// 如获取第一个针脚的数据使用函数GetToonLightOutput0(MaterialParameters)
+	// Generates function names GetToonLightOutput{index} used in BasePixelShader.usf.
+	if (OutputIndex == 0)
+	{
+		CodeInput = ToonLighting.IsConnected() ? ToonLighting.Compile(Compiler) : Compiler->Constant(0);
+	}
+
+	return Compiler->CustomOutput(this, OutputIndex, CodeInput);
+}
+
+	void UMaterialExpressionToonLightOutput::GetCaption(TArray<FString>& OutCaptions) const
+{
+	OutCaptions.Add(FString(TEXT("Toon Light")));
+}
+
+#endif // WITH_EDITOR
+
+	int32 UMaterialExpressionToonLightOutput::GetNumOutputs() const
+{
+	return 1;
+}
+
+	FString UMaterialExpressionToonLightOutput::GetFunctionName() const
+{
+	return TEXT("GetToonLightOutput");
+}
+
+	FString UMaterialExpressionToonLightOutput::GetDisplayName() const
+{
+	return TEXT("Toon Light");
+}
 #undef LOCTEXT_NAMESPACE
+

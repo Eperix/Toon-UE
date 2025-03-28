@@ -1632,7 +1632,9 @@ void FRelevancePacket::ComputeRelevance(FDynamicPrimitiveIndexList& DynamicPrimi
 								{
 									DrawCommandPacket.AddCommandsForMesh(PrimitiveIndex, PrimitiveSceneInfo, StaticMeshRelevance, StaticMesh, CullingPayloadFlags, Scene, bCanCache, EMeshPass::BasePass);
 									// Start Peky Part
+									// 可见性判断：当BasePass被调用后，ToonPass同样地被调用
 									DrawCommandPacket.AddCommandsForMesh(PrimitiveIndex, PrimitiveSceneInfo, StaticMeshRelevance, StaticMesh, CullingPayloadFlags, Scene, bCanCache, EMeshPass::ToonBasePass);
+									DrawCommandPacket.AddCommandsForMesh(PrimitiveIndex, PrimitiveSceneInfo, StaticMeshRelevance, StaticMesh, CullingPayloadFlags, Scene, bCanCache, EMeshPass::ToonLightPass);
 									DrawCommandPacket.AddCommandsForMesh(PrimitiveIndex, PrimitiveSceneInfo, StaticMeshRelevance, StaticMesh, CullingPayloadFlags, Scene, bCanCache, EMeshPass::ToonOutlinePass);
 									// End Peky Part
 									MarkMask |= EMarkMaskBits::StaticMeshVisibilityMapMask;
@@ -2299,10 +2301,14 @@ static void ComputeDynamicMeshRelevance(
 			View.NumVisibleDynamicMeshElements[EMeshPass::BasePass] += NumElements;
 
 			// Start Peky Part
-			// Set pass mask to render ToonOutlinePass
+			// View决定是否需要渲染对应的ToonPass
+			// TODO: 为ToonShading添加条件判断优化性能
 			PassMask.Set(EMeshPass::ToonBasePass);
 			View.NumVisibleDynamicMeshElements[EMeshPass::ToonBasePass] += NumElements;
 
+			PassMask.Set(EMeshPass::ToonLightPass);
+			View.NumVisibleDynamicMeshElements[EMeshPass::ToonLightPass] += NumElements;
+			
 			PassMask.Set(EMeshPass::ToonOutlinePass);
 			View.NumVisibleDynamicMeshElements[EMeshPass::ToonOutlinePass] += NumElements;
 			// End Peky Part

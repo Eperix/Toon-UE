@@ -435,11 +435,11 @@ public:
 
 	// Start Peky Part
 	void RenderToonBasePass(FRDGBuilder& GraphBuilder, FSceneTextures& SceneTextures);
+	void RenderToonLightPass(FRDGBuilder& FrdgBuilder, FSceneTextures& SceneTextures);
 	void RenderToonOutlinePass(FRDGBuilder& GraphBuilder, FSceneTextures& SceneTextures);
 	// End Peky Part
 
 	bool RenderHzb(FRDGBuilder& GraphBuilder, FRDGTextureRef SceneDepthTexture, const FBuildHZBAsyncComputeParams* AsyncComputeParams, Froxel::FRenderer& FroxelRenderer);
-
 	/** Renders the view family. */
 	virtual void Render(FRDGBuilder& GraphBuilder) override;
 

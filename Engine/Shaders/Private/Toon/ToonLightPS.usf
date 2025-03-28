@@ -1,0 +1,27 @@
+﻿#ifndef TOONLIGHTING
+#define TOONLIGHTING
+#endif
+
+#include "../Common.ush"
+#include "ToonMeshPassCommon.ush"
+#include "ToonMaterialParameterCommon.ush"
+
+void MainPS(
+	FSimpleMeshPassVSToPS In,
+	OPTIONAL_IsFrontFace,
+	out float4 OutColor : SV_Target0
+	)
+{
+		// 这个是需要的，材质编辑器生成的代码有很多都用到ResolvedView
+    	ResolvedView = ResolveView();
+    	
+    	// 获取像素的材质参数(此处的材质就是材质辑器编辑出来的材质).
+    	FMaterialPixelParameters MaterialParameters = GetMaterialPixelParameters(In.FactoryInterpolants, In.SvPosition);
+    
+    	FPixelMaterialInputs PixelMaterialInputs;
+    	CalcMaterialParameters(MaterialParameters, PixelMaterialInputs, In.SvPosition, bIsFrontFace);
+    	
+    	float3 ToonLight = GetToonLight(MaterialParameters);
+    	
+    	OutColor = float4(ToonLight, 1.0f);
+}

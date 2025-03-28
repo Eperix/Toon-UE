@@ -53,8 +53,10 @@ typedef IPSOCollector* (*PSOCollectorCreateFunction)(ERHIFeatureLevel::Type InFe
 class FPSOCollectorCreateManager
 {
 public:
+	// Start Peky Part
+	// 64 In UE5.5, No Need To Change
 	constexpr static uint32 MaxPSOCollectorCount = 64;
-
+	// End Peky Part
 	static int32 GetPSOCollectorCount(EShadingPath ShadingPath) { return PSOCollectorCount[(uint32)ShadingPath]; }
 	static PSOCollectorCreateFunction GetCreateFunction(EShadingPath ShadingPath, int32 Index)
 	{

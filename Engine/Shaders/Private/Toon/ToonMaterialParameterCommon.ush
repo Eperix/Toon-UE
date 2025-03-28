@@ -38,9 +38,20 @@ FToonBuffer GetToonBuffer(FMaterialPixelParameters MaterialParameters)
 	return ToonBuffer;
 }
 
+// Toon RayTracing Shadow
 FToonPayloadData GetToonPayloadData(FMaterialPixelParameters MaterialParameters)
 {
 	FToonBuffer ToonBuffer = GetToonBuffer(MaterialParameters);
 	
 	return GetToonPayloadByToonBuffer(ToonBuffer);
+}
+
+// Toon Light Output
+float3 GetToonLight(FMaterialPixelParameters MaterialParameters)
+{
+	float3 ToonLight = 0;
+#if NUM_MATERIAL_OUTPUTS_GETTOONLIGHTOUTPUT > 0
+	ToonLight = GetToonLightOutput0(MaterialParameters);
+#endif
+	return ToonLight;
 }
