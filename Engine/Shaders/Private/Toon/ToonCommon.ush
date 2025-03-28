@@ -1,6 +1,5 @@
-﻿
-
-#pragma once
+﻿#pragma once
+#include "../DeferredShadingCommon.ush"
 
 // ToonFunctions:
 float ToonShadowMask(float Lambert, float AttenuationSpeed, float ShadowOffset = 0.5)

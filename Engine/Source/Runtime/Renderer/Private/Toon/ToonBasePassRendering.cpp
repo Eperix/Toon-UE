@@ -12,7 +12,7 @@
 // TEXT("/Engine/Private/Toon/ToonPassShader.usf"):我们使用的shader路径
 // TEXT("MainPS"):shader的入口函数名
 // SF_Pixel:shader的类型，Vertex shader、Pixel shader或者compute shader
-IMPLEMENT_MATERIAL_SHADER_TYPE(, FToonBasePassVS, TEXT("/Engine/Private/Toon/ToonBasePassVS.usf"), TEXT("MainVS"), SF_Vertex);
+IMPLEMENT_MATERIAL_SHADER_TYPE(, FToonBasePassVS, TEXT("/Engine/Private/Toon/ToonMeshPassVS.usf"), TEXT("MainVS"), SF_Vertex);
 IMPLEMENT_MATERIAL_SHADER_TYPE(, FToonBasePassPS, TEXT("/Engine/Private/Toon/ToonBasePassPS.usf"), TEXT("MainPS"), SF_Pixel);
 
 //--------------------------------------------Toon Buffer Texture---------------------------------------------

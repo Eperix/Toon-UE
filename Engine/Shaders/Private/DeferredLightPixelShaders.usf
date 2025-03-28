@@ -30,7 +30,6 @@
 //#include "HeterogeneousVolumes/HeterogeneousVolumesVoxelGridTypes.ush"
 #include "HairStrands/HairStrandsVisibilityCommonStruct.ush" 
 #include "Common.ush"
-#include "Toon/ToonCommon.ush"
 
 #include "LargeWorldCoordinates.ush"
 
@@ -57,6 +56,7 @@
 
 #include "Substrate/SubstrateEvaluation.ush"
 #include "Substrate/SubstrateDeferredLighting.ush"
+#include "Toon/ToonCommon.ush"
 
 #if USE_VIRTUAL_SHADOW_MAP_MASK
 #include "VirtualShadowMaps/VirtualShadowMapMaskBitsCommon.ush"
@@ -383,7 +383,7 @@ void DeferredLightPixelMain(
 #endif // USE_ADAPTIVE_VOLUMETRIC_SHADOW_MAP
 		// Start Peky Part
 		// Toon Hair Shadow 屏蔽掉Toon LightPass光照
-		f(ScreenSpaceData.GBuffer.ShadingModelID == SHADINGMODELID_TOON_DEFAULT &&
+		if(ScreenSpaceData.GBuffer.ShadingModelID == SHADINGMODELID_TOON_DEFAULT &&
 			(ScreenSpaceData.GBuffer.ToonBuffer.ToonModel == TOONMODEL_FACE || ScreenSpaceData.GBuffer.ToonBuffer.ToonModel == TOONMODEL_EYE))
 		{
 			float HairShadow = GetHairShadow(ScreenSpaceData.GBuffer,  LightData, InputParams.ScreenUV);

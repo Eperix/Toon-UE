@@ -2,8 +2,8 @@
 #include "ToonMeshPassCommon.ush"
 
 void MainVS(
-	FVertexFactoryInput Input,
-	out FSimpleMeshPassVSToPS Output)
+FVertexFactoryInput Input,
+out FSimpleMeshPassVSToPS Output)
 {
 
 	float4 ClipSpacePosition;

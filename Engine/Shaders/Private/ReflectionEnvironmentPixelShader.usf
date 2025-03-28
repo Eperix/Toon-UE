@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+﻿// Copyright Epic Games, Inc. All Rights Reserved.
 
 /*=============================================================================
 	ReflectionEnvironmentComputeShaders - functionality to apply local cubemaps.
@@ -559,7 +559,7 @@ void ReflectionEnvironmentSkyLighting(
 		// Remove Toon Shading
 		// 在这里计算SkyLight
 		// 当开启Lumen的时候这个Pass并不会绘制
-		if (GBuffer.ShadingModelID == SHADINGMODELID_TOON)
+		if (GBuffer.ShadingModelID == SHADINGMODELID_TOON_DEFAULT)
 		{
 			SkyLighting = float3(0.0,0.0,0.0);
 		}

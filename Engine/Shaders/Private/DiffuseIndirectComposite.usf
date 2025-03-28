@@ -611,7 +611,7 @@ void MainPS(
 		// DiffuseIndirectAndAO里前面几个pass计算Lumen光照
 		// 然后在DiffuseIndirectComposite中将它们合并到一起
 		// 环境光、间接光照都这这里
-		if (Material.GBufferData.ShadingModelID == SHADINGMODELID_TOON)
+		if (Material.GBufferData.ShadingModelID == SHADINGMODELID_TOON_DEFAULT)
 		{
 			OutAddColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
 		}
