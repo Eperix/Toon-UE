@@ -667,8 +667,6 @@ enum EMaterialShadingModel : int
 	/** Start Peky Part **/
 	MSM_ToonDefault				UMETA(DisplayName="Toon Default"),
 	MSM_ToonHair				UMETA(DisplayName="Toon Hair"),
-	MSM_ToonSkin				UMETA(DisplayName="Toon Skin"),
-	MSM_ToonEye					UMETA(DisplayName="Toon Eye"),
 	/** End Peky Part **/
 	/** Number of unique shading models. */
 	MSM_NUM						UMETA(Hidden),
@@ -678,7 +676,7 @@ enum EMaterialShadingModel : int
 	MSM_MAX
 };
 
-static_assert(MSM_NUM <= 256, "Do not exceed 16 shading models without expanding FMaterialShadingModelField to support uint32 instead of uint16!");
+static_assert(MSM_NUM <= 16, "Do not exceed 16 shading models without expanding FMaterialShadingModelField to support uint32 instead of uint16!");
 
 /** Wrapper for a bitfield of shading models. A material contains one of these to describe what possible shading models can be used by that material. */
 USTRUCT()

@@ -414,7 +414,6 @@ FText FMaterialAttributeDefinitionMap::GetAttributeOverrideForMaterial(const FGu
 		}
 		CustomPinNames.Add({ MSM_Cloth, LOCTEXT("FuzzColor", "Fuzz Color").ToString() });
 		CustomPinNames.Add({ MSM_ToonDefault, LOCTEXT("EnvColor", "Env Color").ToString() });
-		CustomPinNames.Add({ MSM_ToonSkin, LOCTEXT("EnvColor", "Env Color").ToString() });
 		CustomPinNames.Add({ MSM_ToonHair, LOCTEXT("EnvColor", "Env Color").ToString() });
 		return FText::FromString(GetPinNameFromShadingModelField(Material->GetShadingModels(), CustomPinNames, LOCTEXT("SubsurfaceColor", "Subsurface Color").ToString()));
 	case MP_CustomData0:
@@ -425,9 +424,7 @@ FText FMaterialAttributeDefinitionMap::GetAttributeOverrideForMaterial(const FGu
 		CustomPinNames.Add({ MSM_SubsurfaceProfile, LOCTEXT("Curvature", "Curvature").ToString() });
 		// Start Peky Part
 		CustomPinNames.Add({ MSM_ToonDefault, LOCTEXT("Ramp", "Ramp").ToString() });
-		CustomPinNames.Add({ MSM_ToonSkin, LOCTEXT("Ramp", "Ramp").ToString() });
 		CustomPinNames.Add({ MSM_ToonHair, LOCTEXT("SpecularRange", "Specular Range").ToString() });
-		CustomPinNames.Add({ MSM_ToonEye, LOCTEXT("SpecularRange", "Specular Range").ToString() });
 		// End Peky Part
 		return FText::FromString(GetPinNameFromShadingModelField(Material->GetShadingModels(), CustomPinNames, LOCTEXT("CustomData0", "Custom Data 0").ToString()));
 	case MP_CustomData1:

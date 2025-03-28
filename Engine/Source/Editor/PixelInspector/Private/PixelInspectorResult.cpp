@@ -272,10 +272,6 @@ namespace PixelInspector
 			return EMaterialShadingModel::MSM_ToonDefault;
 		case PIXEL_INSPECTOR_SHADINGMODELID_TOON_HAIR:
 			return EMaterialShadingModel::MSM_ToonHair;
-		case PIXEL_INSPECTOR_SHADINGMODELID_TOON_SKIN:
-			return EMaterialShadingModel::MSM_ToonSkin;
-		case PIXEL_INSPECTOR_SHADINGMODELID_TOON_EYE:
-			return EMaterialShadingModel::MSM_ToonEye;
 		// End Peky Part
 		};
 		return EMaterialShadingModel::MSM_DefaultLit;

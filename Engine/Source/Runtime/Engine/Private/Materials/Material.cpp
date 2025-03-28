@@ -7483,15 +7483,15 @@ static bool IsPropertyActive_Internal(EMaterialProperty InProperty,
 			Active = ShadingModels.HasAnyShadingModel({ MSM_DefaultLit, MSM_ClearCoat, MSM_ToonHair, MSM_ToonDefault }) && (!bIsTranslucentBlendMode || !bIsVolumetricTranslucencyLightingMode);
 			break;
 		case MP_SubsurfaceColor:
-			Active = ShadingModels.HasAnyShadingModel({ MSM_ToonEye, MSM_ToonHair, MSM_ToonSkin, MSM_ToonDefault, MSM_Subsurface, MSM_PreintegratedSkin, MSM_TwoSidedFoliage, MSM_Cloth });
+			Active = ShadingModels.HasAnyShadingModel({ MSM_ToonHair, MSM_ToonDefault, MSM_Subsurface, MSM_PreintegratedSkin, MSM_TwoSidedFoliage, MSM_Cloth });
 			// Active = ShadingModels.HasAnyShadingModel({ MSM_Subsurface, MSM_PreintegratedSkin, MSM_TwoSidedFoliage, MSM_Cloth });
 			break;
 		case MP_CustomData0:
-			Active = ShadingModels.HasAnyShadingModel({ MSM_ToonEye, MSM_ToonHair, MSM_ToonSkin, MSM_ToonDefault, MSM_ClearCoat, MSM_Hair, MSM_Cloth, MSM_Eye, MSM_SubsurfaceProfile });
+			Active = ShadingModels.HasAnyShadingModel({ MSM_ToonHair, MSM_ToonDefault, MSM_ClearCoat, MSM_Hair, MSM_Cloth, MSM_Eye, MSM_SubsurfaceProfile });
 			// Active = ShadingModels.HasAnyShadingModel({ MSM_ClearCoat, MSM_Hair, MSM_Cloth, MSM_Eye, MSM_SubsurfaceProfile });
 			break;
 		case MP_CustomData1:
-			Active = ShadingModels.HasAnyShadingModel({ MSM_ToonEye, MSM_ToonHair, MSM_ToonSkin, MSM_ToonDefault, MSM_ClearCoat, MSM_Eye });
+			Active = ShadingModels.HasAnyShadingModel({ MSM_ToonHair, MSM_ToonDefault, MSM_ClearCoat, MSM_Eye });
 			// Active = ShadingModels.HasAnyShadingModel({ MSM_ClearCoat, MSM_Eye });
 			break;
 		/** End Peky Part **/

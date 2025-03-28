@@ -131,7 +131,7 @@ void FToonOutlinePassProcessor::AddMeshBatch(
 	{       
 		const FMaterialShadingModelField ShadingModels = Material->GetShadingModels();  
 	   // Only Toon shading model and enable render toon outline can render this pass  
-	   if (ShadingModels.HasAnyShadingModel({MSM_ToonDefault, MSM_ToonEye, MSM_ToonEye, MSM_ToonSkin}))
+	   if (ShadingModels.HasAnyShadingModel({MSM_ToonDefault, MSM_ToonHair}))
 	   {          
 			const EBlendMode BlendMode = Material->GetBlendMode();  
 			bool bResult = true;  

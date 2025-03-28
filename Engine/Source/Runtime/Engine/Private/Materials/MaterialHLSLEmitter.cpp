@@ -619,16 +619,6 @@ static void GetMaterialEnvironment(EShaderPlatform InPlatform,
 			OutEnvironment.SetDefine(TEXT("MATERIAL_SHADINGMODEL_TOON_HAIR"), TEXT("1"));
 			NumSetMaterials++;
 		}
-		if (ShadingModels.HasShadingModel(MSM_ToonSkin))
-		{
-			OutEnvironment.SetDefine(TEXT("MATERIAL_SHADINGMODEL_TOON_SKIN"), TEXT("1"));
-			NumSetMaterials++;
-		}
-		if (ShadingModels.HasShadingModel(MSM_ToonEye))
-		{
-			OutEnvironment.SetDefine(TEXT("MATERIAL_SHADINGMODEL_TOON_EYE"), TEXT("1"));
-			NumSetMaterials++;
-		}
 		/** End Peky Part **/
 
 		if (ShadingModels.HasShadingModel(MSM_SingleLayerWater) && FDataDrivenShaderPlatformInfo::GetRequiresDisableForwardLocalLights(InPlatform))

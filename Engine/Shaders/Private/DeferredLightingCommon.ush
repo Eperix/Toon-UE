@@ -360,22 +360,10 @@ FLightAccumulator AccumulateDynamicLighting(
 		ToonShadow.TransmissionShadow = 1;
 		ToonShadow.TransmissionThickness = 1;
 		ToonShadow.HairTransmittance.OpaqueVisibility = 1;
-
-		// Start Peky Part, Toon Shadow
-		const bool bIsToonShading = GBuffer.ShadingModelID == SHADINGMODELID_TOON_DEFAULT || GBuffer.ShadingModelID == SHADINGMODELID_TOON_EYE || GBuffer.ShadingModelID == SHADINGMODELID_TOON_SKIN || GBuffer.ShadingModelID == SHADINGMODELID_TOON_HAIR;
+		
 		const float ContactShadowOpacity = GBuffer.CustomData.a;
-		BRANCH
-		if (GBuffer.ShadingModelID == SHADINGMODELID_TOON_DEFAULT || GBuffer.ShadingModelID == SHADINGMODELID_TOON_EYE
-		|| GBuffer.ShadingModelID == SHADINGMODELID_TOON_SKIN || GBuffer.ShadingModelID == SHADINGMODELID_TOON_HAIR)
-		{
-			GetShadowTerms(GBuffer.Depth, GBuffer.PrecomputedShadowFactors, GBuffer.ShadingModelID, ContactShadowOpacity,
-			LightData, TranslatedWorldPosition, L, LightAttenuation, Dither, ToonShadow);
-		}
-		else
-		{
-			GetShadowTerms(GBuffer.Depth, GBuffer.PrecomputedShadowFactors, GBuffer.ShadingModelID, ContactShadowOpacity,
-            LightData, TranslatedWorldPosition, L, LightAttenuation, Dither, Shadow);
-		}
+		GetShadowTerms(GBuffer.Depth, GBuffer.PrecomputedShadowFactors, GBuffer.ShadingModelID, ContactShadowOpacity,
+        LightData, TranslatedWorldPosition, L, LightAttenuation, Dither, Shadow);
 		SurfaceShadow = Shadow.SurfaceShadow;
 
 		LightAccumulator.EstimatedCost += 0.3f;		// add the cost of getting the shadow terms

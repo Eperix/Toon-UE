@@ -607,7 +607,7 @@ void MainPS(
 		OutAddColor = LightAccumulator_GetResult(LightAccumulator);
 
 		// Start Peky Part
-		// Remove Toon Shading
+		// Remove Toon Shading,这里去掉了Lumen的环境光照
 		// DiffuseIndirectAndAO里前面几个pass计算Lumen光照
 		// 然后在DiffuseIndirectComposite中将它们合并到一起
 		// 环境光、间接光照都这这里

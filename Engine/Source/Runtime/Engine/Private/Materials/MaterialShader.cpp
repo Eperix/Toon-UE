@@ -138,9 +138,7 @@ FString GetShadingModelString(EMaterialShadingModel ShadingModel)
 		/** Start Peky Part **/
 		case MSM_ToonDefault:		ShadingModelName = TEXT("MSM_ToonDefault"); break;
 		case MSM_ToonHair:			ShadingModelName = TEXT("MSM_ToonHair"); break;
-		case MSM_ToonSkin:			ShadingModelName = TEXT("MSM_ToonSkin"); break;
-		case MSM_ToonEye:			ShadingModelName = TEXT("MSM_ToonEye"); break;
-		/** End Peky Part **/
+		// End Peky Part
 		default: ShadingModelName = TEXT("Unknown"); break;
 	}
 	return ShadingModelName;
@@ -561,7 +559,7 @@ void UpdateMaterialShaderCompilingStats(const FMaterial* Material)
 	}
 	/** Start Peky Part **/
 	else if (ShadingModels.HasAnyShadingModel({ MSM_DefaultLit, MSM_Subsurface, MSM_PreintegratedSkin, MSM_ClearCoat, MSM_Cloth,
-		MSM_SubsurfaceProfile, MSM_TwoSidedFoliage, MSM_SingleLayerWater, MSM_ThinTranslucent, MSM_ToonHair, MSM_ToonDefault, MSM_ToonSkin, MSM_ToonEye }))
+		MSM_SubsurfaceProfile, MSM_TwoSidedFoliage, MSM_SingleLayerWater, MSM_ThinTranslucent, MSM_ToonHair, MSM_ToonDefault }))
 	{
 		INC_DWORD_STAT_BY(STAT_ShaderCompiling_NumLitMaterialShaders, 1);
 	}

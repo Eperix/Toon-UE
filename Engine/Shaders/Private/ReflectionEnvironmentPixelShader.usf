@@ -131,15 +131,6 @@ float4 CompositeReflections(float4 ReflectionInput, float2 BufferUV, float InRou
 
 float3 ReflectionEnvironment(FGBufferData GBuffer, float AmbientOcclusion, float2 BufferUV, float2 ScreenPosition, float4 SvPosition, float3 BentNormal, float3 SpecularColor, uint ShadingModelID)
 {
-	/** Start Peky Part **/
-	// Remove Toon Shading
-	BRANCH
-	if ( GBuffer.ShadingModelID == SHADINGMODELID_TOON_DEFAULT || GBuffer.ShadingModelID == SHADINGMODELID_TOON_EYE
-		|| GBuffer.ShadingModelID == SHADINGMODELID_TOON_SKIN || GBuffer.ShadingModelID == SHADINGMODELID_TOON_HAIR)
-	{
-		return float3(0.0f, 0.0f, 0.0f);
-	}
-	// End Peky Part
 	float4 Color = float4(0, 0, 0, 1);
 
 	float IndirectIrradiance = GBuffer.IndirectIrradiance;
@@ -574,9 +565,13 @@ void ReflectionEnvironmentSkyLighting(
 
 	// Start Peky Part
 	// Remove Toon Shading
-	// 计算SkyLight镜面反射部分
+	// 去掉非Lumen的环境光照
 	BRANCH
-	if (!bUnlitMaterial && ShadingModelID != SHADINGMODELID_HAIR && ShadingModelID != SHADINGMODELID_TOON_DEFAULT)
+	if (ShadingModelID == SHADINGMODELID_TOON_DEFAULT)
+	{
+		OutColor.xyz += 0.0f;
+	}
+	else if (!bUnlitMaterial && ShadingModelID != SHADINGMODELID_HAIR)
 	{
 		OutColor.xyz += ReflectionEnvironment(GBuffer, AmbientOcclusion, BufferUV, ScreenPosition, SvPosition, BentNormal, SpecularColor, ShadingModelID);
 	}

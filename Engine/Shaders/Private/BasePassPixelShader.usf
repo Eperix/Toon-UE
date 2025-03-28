@@ -944,8 +944,8 @@ void FPixelShaderInOut_MainPS(
 #if !SUBSTRATE_ENABLED
 /** Start Peky Part **/
 // Decode Subsurface Color 
-#if MATERIAL_SHADINGMODEL_SUBSURFACE || MATERIAL_SHADINGMODEL_PREINTEGRATED_SKIN || MATERIAL_SHADINGMODEL_SUBSURFACE_PROFILE || MATERIAL_SHADINGMODEL_TWOSIDED_FOLIAGE || MATERIAL_SHADINGMODEL_CLOTH || MATERIAL_SHADINGMODEL_EYE || MATERIAL_SHADINGMODEL_TOON_DEFAULT || MATERIAL_SHADINGMODEL_TOON_HAIR || MATERIAL_SHADINGMODEL_TOON_SKIN || MATERIAL_SHADINGMODEL_TOON_EYE
-	if (ShadingModel == SHADINGMODELID_SUBSURFACE || ShadingModel == SHADINGMODELID_PREINTEGRATED_SKIN || ShadingModel == SHADINGMODELID_SUBSURFACE_PROFILE || ShadingModel == SHADINGMODELID_TWOSIDED_FOLIAGE || ShadingModel == SHADINGMODELID_CLOTH || ShadingModel == SHADINGMODELID_EYE || ShadingModel == SHADINGMODELID_TOON_DEFAULT || ShadingModel == SHADINGMODELID_TOON_HAIR || ShadingModel == SHADINGMODELID_TOON_SKIN || ShadingModel == SHADINGMODELID_TOON_EYE)
+#if MATERIAL_SHADINGMODEL_SUBSURFACE || MATERIAL_SHADINGMODEL_PREINTEGRATED_SKIN || MATERIAL_SHADINGMODEL_SUBSURFACE_PROFILE || MATERIAL_SHADINGMODEL_TWOSIDED_FOLIAGE || MATERIAL_SHADINGMODEL_CLOTH || MATERIAL_SHADINGMODEL_EYE || MATERIAL_SHADINGMODEL_TOON_DEFAULT || MATERIAL_SHADINGMODEL_TOON_HAIR
+	if (ShadingModel == SHADINGMODELID_SUBSURFACE || ShadingModel == SHADINGMODELID_PREINTEGRATED_SKIN || ShadingModel == SHADINGMODELID_SUBSURFACE_PROFILE || ShadingModel == SHADINGMODELID_TWOSIDED_FOLIAGE || ShadingModel == SHADINGMODELID_CLOTH || ShadingModel == SHADINGMODELID_EYE || ShadingModel == SHADINGMODELID_TOON_DEFAULT || ShadingModel == SHADINGMODELID_TOON_HAIR)
 	{
 		float4 SubsurfaceData = GetMaterialSubsurfaceData(PixelMaterialInputs);
 
@@ -958,7 +958,7 @@ void FPixelShaderInOut_MainPS(
 			SubsurfaceColor = SubsurfaceData.rgb * View.DiffuseOverrideParameter.w + View.DiffuseOverrideParameter.xyz;
 		}
 #endif
-#if MATERIAL_SHADINGMODEL_CLOTH || MATERIAL_SHADINGMODEL_TOON_DEFAULT || MATERIAL_SHADINGMODEL_TOON_HAIR || MATERIAL_SHADINGMODEL_TOON_SKIN  || MATERIAL_SHADINGMODEL_TOON_EYE
+#if MATERIAL_SHADINGMODEL_CLOTH || MATERIAL_SHADINGMODEL_TOON_DEFAULT || MATERIAL_SHADINGMODEL_TOON_HAIR
 		else if (ShadingModel == SHADINGMODELID_CLOTH || ShadingModel == SHADINGMODELID_TOON_DEFAULT || ShadingModel == SHADINGMODELID_TOON_HAIR || ShadingModel == SHADINGMODELID_TOON_SKIN || ShadingModel == SHADINGMODELID_TOON_EYE)
 		{
 			SubsurfaceColor = SubsurfaceData.rgb;
@@ -1111,12 +1111,10 @@ void FPixelShaderInOut_MainPS(
 #endif
 
 #if USES_GBUFFER
-	// Start Peky Part : Set GBuffer for SMS
 	// This requires cleanup. Shader code that uses GBuffer.SelectiveOutputMask expects the outputmask to be in
-	// bits [8:11], but it gets packed as bits [0:3] in the flexible gbuffer since we might move it around.
-	GBuffer.SelectiveOutputMask = GetSelectiveOutputMask() >> 8;
+	// bits [4:7], but it gets packed as bits [0:3] in the flexible gbuffer since we might move it around.
+	GBuffer.SelectiveOutputMask = GetSelectiveOutputMask() >> 4;
 	GBuffer.Velocity = 0;
-	// End Peky Part
 #endif
 
 #if WRITES_VELOCITY_TO_GBUFFER
@@ -1144,7 +1142,7 @@ void FPixelShaderInOut_MainPS(
 #if !SUBSTRATE_ENABLED || SUBSTRATE_INLINE_SINGLELAYERWATER
 	/** Start Peky Part **/
 	BRANCH
-	if (GBuffer.ShadingModelID == SHADINGMODELID_TOON_DEFAULT || GBuffer.ShadingModelID == SHADINGMODELID_TOON_HAIR || GBuffer.ShadingModelID == SHADINGMODELID_TOON_SKIN || GBuffer.ShadingModelID == SHADINGMODELID_TOON_EYE)
+	if (GBuffer.ShadingModelID == SHADINGMODELID_TOON_DEFAULT || GBuffer.ShadingModelID == SHADINGMODELID_TOON_HAIR)
 	{
 		// Compute SpecularColor
 		GBuffer.SpecularColor = ComputeF0(Specular, BaseColor, 0.0f);
@@ -1179,7 +1177,7 @@ void FPixelShaderInOut_MainPS(
 	/** Start Peky Part **/
 	// Compute BaseColor
 BRANCH
-	if (GBuffer.ShadingModelID == SHADINGMODELID_TOON_HAIR || GBuffer.ShadingModelID == SHADINGMODELID_TOON_SKIN || GBuffer.ShadingModelID == SHADINGMODELID_TOON_DEFAULT || GBuffer.ShadingModelID == SHADINGMODELID_TOON_EYE)
+	if (GBuffer.ShadingModelID == SHADINGMODELID_TOON_HAIR || GBuffer.ShadingModelID == SHADINGMODELID_TOON_DEFAULT)
 	{
 		GBuffer.DiffuseColor = BaseColor;
 	}
@@ -1465,7 +1463,7 @@ BRANCH
 #if !SUBSTRATE_ENABLED
 
 	// Volume lighting for lit translucency
-#if (MATERIAL_SHADINGMODEL_DEFAULT_LIT || MATERIAL_SHADINGMODEL_SUBSURFACE || MATERIAL_SHADINGMODEL_TOON_DEFAULT || MATERIAL_SHADINGMODEL_TOON_HAIR || MATERIAL_SHADINGMODEL_TOON_SKIN || MATERIAL_SHADINGMODEL_TOON_EYE) && (MATERIALBLENDING_TRANSLUCENT || MATERIALBLENDING_ADDITIVE) && !FORWARD_SHADING
+#if (MATERIAL_SHADINGMODEL_DEFAULT_LIT || MATERIAL_SHADINGMODEL_SUBSURFACE || MATERIAL_SHADINGMODEL_TOON_DEFAULT || MATERIAL_SHADINGMODEL_TOON_HAIR) && (MATERIALBLENDING_TRANSLUCENT || MATERIALBLENDING_ADDITIVE) && !FORWARD_SHADING
 	if (GBuffer.ShadingModelID == SHADINGMODELID_DEFAULT_LIT || GBuffer.ShadingModelID == SHADINGMODELID_SUBSURFACE)
 	{
 		Color += GetTranslucencyVolumeLighting(MaterialParameters, PixelMaterialInputs, BasePassInterpolants, GBuffer, IndirectIrradiance);
@@ -1481,7 +1479,7 @@ BRANCH
 
 	// Start Peky Part
 	// Remove Toon Shading
-	// BasePass会把Emissive写到SceneColor里
+	// BasePass会把Emissive写到SceneColor里，这里先不去掉了
 // #if MATERIAL_SHADINGMODEL_TOON_DEFAULT
 // 	Emissive = 0;
 // #else
@@ -1543,9 +1541,9 @@ BRANCH
 
 	// Start Peky Part
 	// Remove Toon Shading
-	// 一般在Translucency的Parallel Pass中绘制
+	// 一般在Translucency的Parallel Pass中绘制,移除Toon的Transluency照明
 	// 把DiffuseColor加到SceneColor里
-#if !POST_PROCESS_SUBSURFACE && !MATERIAL_SHADINGMODEL_THIN_TRANSLUCENT && !MATERIAL_SHADINGMODEL_TOON
+#if !POST_PROCESS_SUBSURFACE && !MATERIAL_SHADINGMODEL_THIN_TRANSLUCENT && !MATERIAL_SHADINGMODEL_TOON_DEFAULT
 	// End Peky Part
  	// For skin we need to keep them separate. We also keep them separate for thin translucent.
 	// Otherwise just add them together.

@@ -453,12 +453,12 @@ FGBufferInfo RENDERCORE_API FetchLegacyGBufferInfo(const FGBufferParams& Params)
 
 	// Start Peky Part
 	// pack it into bits [0:7] of alpha
-	Info.Slots[GBS_ShadingModelId] = FGBufferItem(GBS_ShadingModelId, GBC_Bits_8, GBCH_Both);
-	Info.Slots[GBS_ShadingModelId].Packing[0] = FGBufferPacking(TargetGBufferB, 0, 3, 0, 0, 8);
+	Info.Slots[GBS_ShadingModelId] = FGBufferItem(GBS_ShadingModelId, GBC_Bits_4, GBCH_Both);
+	Info.Slots[GBS_ShadingModelId].Packing[0] = FGBufferPacking(TargetGBufferB, 0, 3, 0, 0, 4);
 
 	// pack it into bits [8:11] of alpha
 	Info.Slots[GBS_SelectiveOutputMask] = FGBufferItem(GBS_SelectiveOutputMask, GBC_Bits_4, GBCH_Both);
-	Info.Slots[GBS_SelectiveOutputMask].Packing[0] = FGBufferPacking(TargetGBufferB, 0, 3, 0, 8, 4);
+	Info.Slots[GBS_SelectiveOutputMask].Packing[0] = FGBufferPacking(TargetGBufferB, 0, 3, 0, 4, 4);
 	// End Peky Part
 	
 	{

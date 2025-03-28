@@ -382,7 +382,7 @@ void DeferredLightPixelMain(
 		}
 #endif // USE_ADAPTIVE_VOLUMETRIC_SHADOW_MAP
 		// Start Peky Part
-		// Toon Hair Shadow 屏蔽掉Toon LightPass光照
+		// Toon Hair Shadow
 		if(ScreenSpaceData.GBuffer.ShadingModelID == SHADINGMODELID_TOON_DEFAULT &&
 			(ScreenSpaceData.GBuffer.ToonBuffer.ToonModel == TOONMODEL_FACE || ScreenSpaceData.GBuffer.ToonBuffer.ToonModel == TOONMODEL_EYE))
 		{
@@ -390,8 +390,9 @@ void DeferredLightPixelMain(
 			LightAttenuation = LightAttenuation * HairShadow;
 		}
 		
-		float4 Radiance = 0;
-		if(!ScreenSpaceData.GBuffer.ShadingModelID == SHADINGMODELID_TOON_DEFAULT)
+		// 屏蔽掉Toon LightPass光照
+		float4 Radiance = 0.0f;
+		if(ScreenSpaceData.GBuffer.ShadingModelID != SHADINGMODELID_TOON_DEFAULT)
 			Radiance = GetDynamicLighting(DerivedParams.TranslatedWorldPosition, DerivedParams.CameraVector, ScreenSpaceData.GBuffer, ScreenSpaceData.AmbientOcclusion, LightData, LightAttenuation, Dither, uint2(InputParams.PixelPos), SurfaceShadow);
 		
 		// End Peky Part

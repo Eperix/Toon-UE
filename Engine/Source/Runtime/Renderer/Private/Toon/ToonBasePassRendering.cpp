@@ -70,7 +70,7 @@ void FToonBasePassProcessor::AddMeshBatch(
     {
     	const FMaterialShadingModelField ShadingModels = Material->GetShadingModels();
     	// 只有材质使用了Toon相关的shading model才会被绘制
-	    if (ShadingModels.HasShadingModel(MSM_ToonDefault) || ShadingModels.HasShadingModel(MSM_ToonEye) || ShadingModels.HasShadingModel(MSM_ToonSkin) || ShadingModels.HasShadingModel(MSM_ToonHair))
+	    if (ShadingModels.HasShadingModel(MSM_ToonDefault) || ShadingModels.HasShadingModel(MSM_ToonHair))
 	    {
 	    	const EBlendMode BlendMode = Material->GetBlendMode();
 

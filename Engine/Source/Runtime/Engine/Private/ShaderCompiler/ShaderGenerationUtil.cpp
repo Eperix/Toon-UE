@@ -137,8 +137,6 @@ void ApplyFetchEnvironmentInternal(FShaderMaterialPropertyDefines& SrcDefines, c
 	/** Start Peky Part **/
 	FETCH_COMPILE_BOOL(MATERIAL_SHADINGMODEL_TOON_DEFAULT);
 	FETCH_COMPILE_BOOL(MATERIAL_SHADINGMODEL_TOON_HAIR);
-	FETCH_COMPILE_BOOL(MATERIAL_SHADINGMODEL_TOON_SKIN);
-	FETCH_COMPILE_BOOL(MATERIAL_SHADINGMODEL_TOON_EYE);
 	/** Start Peky Part **/
 
 	FETCH_COMPILE_BOOL(SINGLE_LAYER_WATER_SEPARATED_MAIN_LIGHT);
@@ -598,9 +596,6 @@ static const FGBufferCompressionInfo GBufferCompressionInfo[] =
 	{ GBC_Raw_Unorm_2, 				  	1, 1, {  2,  0,  0,  0 }, false, false, TEXT("Invalid")                , TEXT("Invalid")                },
 	{ GBC_Raw_Float_16_16,			  	2, 2, { 16, 16,  0,  0 }, false, false, TEXT("Invalid")                , TEXT("Invalid")                },
 	{ GBC_Raw_Float_16,				  	1, 1, { 16,  0,  0,  0 }, false, false, TEXT("Invalid")                , TEXT("Invalid")                },
-		// Start Peky Part:Config Bits
-	{GBC_Bits_8,					1, 1, {  8,  0,  0,  0 },  true, false, TEXT("Invalid")					, TEXT("Invalid")				},		
-		// End Peky Part
 	{ GBC_Bits_4, 					  	1, 1, {  4,  0,  0,  0 },  true, false, TEXT("Invalid")                , TEXT("Invalid")                },
 	{ GBC_Bits_2, 					  	1, 1, {  2,  0,  0,  0 },  true, false, TEXT("Invalid")                , TEXT("Invalid")                },
 	{ GBC_Packed_Normal_Octahedral_8_8, 3, 2, {  8,  8,  0,  0 }, false,  true, TEXT("CompressOctahedral")     , TEXT("DecompressOctahedral")   },
@@ -2036,16 +2031,6 @@ static void DetermineUsedMaterialSlots(
 		Slots[GBS_CustomData] = GetGBufferSlotUsage(bUseCustomData);
 	}
 	if (Mat.MATERIAL_SHADINGMODEL_TOON_HAIR)
-	{
-		SetStandardGBufferSlots(Slots, bWriteEmissive, bHasTangent, bHasVelocity, bWritesVelocity, bHasStaticLighting, bIsSubstrateMaterial);
-		Slots[GBS_CustomData] = GetGBufferSlotUsage(bUseCustomData);
-	}
-	if (Mat.MATERIAL_SHADINGMODEL_TOON_SKIN)
-	{
-		SetStandardGBufferSlots(Slots, bWriteEmissive, bHasTangent, bHasVelocity, bWritesVelocity, bHasStaticLighting, bIsSubstrateMaterial);
-		Slots[GBS_CustomData] = GetGBufferSlotUsage(bUseCustomData);
-	}
-	if (Mat.MATERIAL_SHADINGMODEL_TOON_EYE)
 	{
 		SetStandardGBufferSlots(Slots, bWriteEmissive, bHasTangent, bHasVelocity, bWritesVelocity, bHasStaticLighting, bIsSubstrateMaterial);
 		Slots[GBS_CustomData] = GetGBufferSlotUsage(bUseCustomData);

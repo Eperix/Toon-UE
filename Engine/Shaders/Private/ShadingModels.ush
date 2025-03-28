@@ -1049,16 +1049,6 @@ FDirectLighting ToonHairBxDF( FGBufferData GBuffer, half3 N, half3 V, half3 L, f
 	return Lighting;
 }
 
-FDirectLighting  ToonEyeBxDF( FGBufferData GBuffer, half3 N, half3 V, half3 L, float Falloff, float NoL, FAreaLight AreaLight, FShadowTerms Shadow )
-{
-	FDirectLighting Lighting;
-	return ToonDefaultBxDF(GBuffer, N, V, L, Falloff, NoL, AreaLight, Shadow);
-}
-FDirectLighting  ToonSkinBxDF( FGBufferData GBuffer, half3 N, half3 V, half3 L, float Falloff, float NoL, FAreaLight AreaLight, FShadowTerms Shadow )
-{
-	FDirectLighting Lighting;
-	return ToonDefaultBxDF(GBuffer, N, V, L, Falloff, NoL, AreaLight, Shadow);
-}
 FDirectLighting IntegrateBxDF( FGBufferData GBuffer, half3 N, half3 V, half3 L, float Falloff, half NoL, FAreaLight AreaLight, FShadowTerms Shadow )
 {
 	switch( GBuffer.ShadingModelID )
@@ -1087,10 +1077,6 @@ FDirectLighting IntegrateBxDF( FGBufferData GBuffer, half3 N, half3 V, half3 L, 
 			return ToonDefaultBxDF( GBuffer, N, V, L, Falloff, NoL, AreaLight, Shadow );
 		case SHADINGMODELID_TOON_HAIR:
 			return ToonHairBxDF( GBuffer, N, V, L, Falloff, NoL, AreaLight, Shadow );
-		case SHADINGMODELID_TOON_SKIN:
-			return ToonSkinBxDF( GBuffer, N, V, L, Falloff, NoL, AreaLight, Shadow );
-		case SHADINGMODELID_TOON_EYE:
-			return ToonEyeBxDF( GBuffer, N, V, L, Falloff, NoL, AreaLight, Shadow );
 		default:
 			return (FDirectLighting)0;
 	}

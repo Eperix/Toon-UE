@@ -33,19 +33,17 @@
 /** Start Peky Part, Remember To Change The Number Below **/
 #define SHADINGMODELID_TOON_DEFAULT			13
 #define SHADINGMODELID_TOON_HAIR			14
-#define SHADINGMODELID_TOON_SKIN			15
-#define SHADINGMODELID_TOON_EYE				16
 /** End Peky Part **/
-#define SHADINGMODELID_NUM					17
-// #define SHADINGMODELID_MASK				0xF 4bits
-#define SHADINGMODELID_MASK					0xFF		// 8 bits reserved for ShadingModelID			
+#define SHADINGMODELID_NUM					15
+#define SHADINGMODELID_MASK				0xF
+// #define SHADINGMODELID_MASK					0xFF		// 8 bits reserved for ShadingModelID			
 
 // The flags are defined so that 0 value has no effect!
 // These occupy the 4 high bits in the same channel as the SHADINGMODELID_*
-#define HAS_ANISOTROPY_MASK				(1 << 8)
-#define SKIP_PRECSHADOW_MASK			(1 << 9)
-#define ZERO_PRECSHADOW_MASK			(1 << 10)
-#define SKIP_VELOCITY_MASK				(1 << 11)
+#define HAS_ANISOTROPY_MASK				(1 << 4)
+#define SKIP_PRECSHADOW_MASK			(1 << 5)
+#define ZERO_PRECSHADOW_MASK			(1 << 6)
+#define SKIP_VELOCITY_MASK				(1 << 7)
 
 #define SSS_PROFILE_ID_INVALID  256
 #define SSS_PROFILE_ID_PERPIXEL 512
@@ -89,8 +87,6 @@ float3 GetShadingModelColor(uint ShadingModelID)
 		/** Start Peky Part, Ranked must be same as Def in EngineTypes.h  **/
 		case SHADINGMODELID_TOON_DEFAULT: return float3(1.0f, 0.7f, 0.8f);
 		case SHADINGMODELID_TOON_HAIR: return float3(0.7f, 0.7f, 0.8f);
-		case SHADINGMODELID_TOON_SKIN: return float3(0.0f, 0.7f, 0.8f);
-		case SHADINGMODELID_TOON_EYE: return float3(0.0f, 0.7f, 0.0f);
 		/** End Peky Part **/
 		default: return float3(1.0f, 1.0f, 1.0f); // White
 	}

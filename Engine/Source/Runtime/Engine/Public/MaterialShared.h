@@ -141,7 +141,7 @@ inline bool IsSubsurfaceShadingModel(FMaterialShadingModelField ShadingModel)
 	return ShadingModel.HasShadingModel(MSM_Subsurface) || ShadingModel.HasShadingModel(MSM_PreintegratedSkin) ||
 		ShadingModel.HasShadingModel(MSM_SubsurfaceProfile) || ShadingModel.HasShadingModel(MSM_TwoSidedFoliage) ||
 		ShadingModel.HasShadingModel(MSM_Cloth) || ShadingModel.HasShadingModel(MSM_Eye) ||
-		ShadingModel.HasAnyShadingModel({MSM_ToonDefault, MSM_ToonHair, MSM_ToonSkin, MSM_ToonEye});
+		ShadingModel.HasAnyShadingModel({MSM_ToonDefault, MSM_ToonHair});
 	/** End Peky Part **/
 }
 
