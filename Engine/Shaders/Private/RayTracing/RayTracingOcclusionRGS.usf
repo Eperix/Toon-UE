@@ -387,6 +387,13 @@ FOcclusionResult ComputeOcclusion(
 		bApplyNormalCulling = false;
 	}
 
+	// Start Peky Part
+	// Toon RayTracing Shadow
+	if (ShadingDesc.bIsToon && ShadingDesc.ToonBuffer.ShadowCastFlag != SCF_DISABLEONSELF)
+	{
+		bApplyNormalCulling = false;
+	}
+	// End Peky Part
 	uint TimeSeed = View.StateFrameIndex;
 
 #if ENABLE_MULTIPLE_SAMPLES_PER_PIXEL

@@ -769,7 +769,7 @@ RAY_TRACING_ENTRY_ANY_HIT(MaterialAHS,
 			IgnoreHit();
 		}
 		// 消除自阴影
-		if (HitToonPayload.GetShadowCastFlag() & SCF_DISABLEONSELF && RayGenToonPayload.GetSelfID() == HitToonPayload.GetSelfID())
+		if (RayGenPayload.GetShadowCastFlag() & SCF_DISABLEONSELF && RayGenToonPayload.GetSelfID() == HitToonPayload.GetSelfID())
 		{
 			IgnoreHit();
 		}
