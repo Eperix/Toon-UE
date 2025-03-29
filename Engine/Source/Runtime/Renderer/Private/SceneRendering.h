@@ -2829,6 +2829,8 @@ struct FFastVramConfig
 	ETextureCreateFlags TBufferA;
 	ETextureCreateFlags TBufferB;
 	ETextureCreateFlags TBufferC;
+
+	ETextureCreateFlags ToonShadow;
 	// End Peky Part
 	
 	ETextureCreateFlags GBufferA;

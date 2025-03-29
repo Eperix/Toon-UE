@@ -12,6 +12,22 @@ IMPLEMENT_MATERIAL_SHADER_TYPE(, FToonLightPassVS, TEXT("/Engine/Private/Toon/To
 IMPLEMENT_MATERIAL_SHADER_TYPE(, FToonLightPassPS, TEXT("/Engine/Private/Toon/ToonLightPS.usf"), TEXT("MainPS"), SF_Pixel);
 IMPLEMENT_SHADERPIPELINE_TYPE_VSPS(ToonLightPipeline, FToonLightPassVS, FToonLightPassPS, true);
 
+
+FRDGTextureDesc GetToonShadowTextureDesc(FIntPoint Extent, ETextureCreateFlags CreateFlags)
+{
+	//输入的参数：
+	//Extent：贴图尺寸；PF_B8G8R8A8_UINT：贴图格式，表示RGBA各个通道均为8bit uint
+	//FClearValueBinding::Black:清除值，表示清除贴图时将其清除为黑色
+	//TexCreate_UAV：Unordered Access View，允许在着色器中进行随机读写操作
+	//TexCreate_RenderTargetable：表示纹理可作为渲染目标使用
+	//TexCreate_ShaderResource：表示纹理可作为着色器资源，可以在着色器中进行采样等操作
+	return FRDGTextureDesc(FRDGTextureDesc::Create2D(Extent, PF_R8G8B8A8, FClearValueBinding::Black, TexCreate_UAV | TexCreate_RenderTargetable | TexCreate_ShaderResource | CreateFlags));
+}
+// Toon Buffer step 5-3
+FRDGTextureRef GetToonShadowTexture(FRDGBuilder& GraphBuilder, FIntPoint Extent, ETextureCreateFlags CreateFlags, const TCHAR* Name)
+{	
+	return GraphBuilder.CreateTexture(GetToonShadowTextureDesc(Extent, CreateFlags), Name);
+}
 //------------------------------------------- Mesh Pass Processor-------------------------------------------------
 
 bool GetToonLightShader(

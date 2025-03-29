@@ -126,5 +126,7 @@ public:
     {
         FMeshMaterialShader::GetShaderBindings(Scene, FeatureLevel, PrimitiveSceneProxy, MaterialRenderProxy, Material, ShaderElementData, ShaderBindings);
     }
-
 };
+
+FRDGTextureDesc GetToonShadowTextureDesc(FIntPoint Extent, ETextureCreateFlags CreateFlags);
+FRDGTextureRef CreateToonShadowTexture(FRDGBuilder& GraphBuilder, FIntPoint Extent, ETextureCreateFlags CreateFlags, const TCHAR* Name);

@@ -152,6 +152,8 @@ struct FSceneTextures : public FMinimalSceneTextures
 	FRDGTextureRef TBufferA {};
 	FRDGTextureRef TBufferB {};
 	FRDGTextureRef TBufferC {};
+
+	FRDGTextureRef ToonShadow{};
 	// End Peky Part
 	
 	// Texture used by the quad overdraw debug view mode when enabled.

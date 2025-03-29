@@ -21,7 +21,10 @@
 #include "PostProcess/PostProcessAmbientOcclusionMobile.h"
 #include "PostProcess/PostProcessPixelProjectedReflectionMobile.h"
 #include "IHeadMountedDisplayModule.h"
+// Start Peky Part
 #include "Toon/ToonBasePassRendering.h"
+#include "Toon/ToonLightPassRendering.h"
+// End Peky Part
 #include "Substrate/Substrate.h"
 #include "VisualizeTexture.h"
 
@@ -677,6 +680,8 @@ void FSceneTextures::InitializeViewFamily(FRDGBuilder& GraphBuilder, FViewFamily
 		SceneTextures.TBufferA = CreateToonBufferTexture(GraphBuilder, Config.Extent, GFastVRamConfig.TBufferA, TEXT("TBufferA"));
 		SceneTextures.TBufferB = CreateToonBufferTexture(GraphBuilder, Config.Extent, GFastVRamConfig.TBufferB, TEXT("TBufferB"));
 		SceneTextures.TBufferC = CreateToonBufferTexture(GraphBuilder, Config.Extent, GFastVRamConfig.TBufferC, TEXT("TBufferC"));
+
+		SceneTextures.ToonShadow = CreateToonShadowTexture(GraphBuilder, Config.Extent, GFastVRamConfig.ToonShadow, TEXT("ToonShadow"));
 		// End Peky Part
 		
 		// Small Depth
@@ -1055,6 +1060,7 @@ void SetupSceneTextureUniformParameters(
 	SceneTextureParameters.TBufferATexture = SystemTextures.Black;
 	SceneTextureParameters.TBufferBTexture = SystemTextures.Black;
 	SceneTextureParameters.TBufferCTexture = SystemTextures.Black;
+	SceneTextureParameters.ToonShadowTexture = SystemTextures.Black;
 	// End Peky Part
 	
 	SceneTextureParameters.CustomDepthTexture = SystemTextures.DepthDummy;
@@ -1130,6 +1136,10 @@ void SetupSceneTextureUniformParameters(
 		if (EnumHasAnyFlags(SetupMode, ESceneTextureSetupMode::TBufferC) && HasBeenProduced(SceneTextures->TBufferC))
 		{
 			SceneTextureParameters.TBufferCTexture = SceneTextures->TBufferC;
+		}
+		if (EnumHasAnyFlags(SetupMode, ESceneTextureSetupMode::ToonShadow) && HasBeenProduced(SceneTextures->ToonShadow))
+		{
+			SceneTextureParameters.ToonShadowTexture = SceneTextures->ToonShadow;
 		}
 		// End Peky Part
 

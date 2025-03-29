@@ -49,9 +49,10 @@ enum class ESceneTextureSetupMode : uint32
 	TBufferA 	= 1 << 11,
 	TBufferB 	= 1 << 12,
 	TBufferC	= 1 << 13,
+	ToonShadow	= 1 << 14,
 	GBuffers		= GBufferA | GBufferB | GBufferC | GBufferD | GBufferE | GBufferF,
 	All				= SceneColor | SceneDepth | SceneVelocity | GBuffers | SSAO | CustomDepth,
-	ToonBuffers		= TBufferA | TBufferB | TBufferC,
+	ToonBuffers		= TBufferA | TBufferB | TBufferC | ToonShadow,
 	// End Peky Part
 };
 ENUM_CLASS_FLAGS(ESceneTextureSetupMode);
