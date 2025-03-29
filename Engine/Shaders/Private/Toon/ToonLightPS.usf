@@ -4,6 +4,7 @@
 
 #include "../Common.ush"
 #include "ToonMeshPassCommon.ush"
+#include "/Engine/Generated/UnifomBuffers/ToonLight.ush"
 #include "ToonMaterialParameterCommon.ush"
 
 void MainPS(
@@ -20,7 +21,7 @@ void MainPS(
     
     	FPixelMaterialInputs PixelMaterialInputs;
     	CalcMaterialParameters(MaterialParameters, PixelMaterialInputs, In.SvPosition, bIsFrontFace);
-    	
+	
     	float3 ToonLight = GetToonLight(MaterialParameters);
     	
     	OutColor = float4(ToonLight, 1.0f);

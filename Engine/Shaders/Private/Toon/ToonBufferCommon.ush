@@ -121,3 +121,12 @@ FToonPayloadData GetToonPayloadByToonBuffer(FToonBuffer ToonBuffer)
 
 	return ToonPayloadData;
 }
+// Toon Shadow Buffer
+float4 EncodeToonShadow(float SurfaceShadow, float TransmissionShadow, float HairShadow)
+{
+	float4 ToonShadow = 1.0f;
+	ToonShadow.r = SurfaceShadow;
+	ToonShadow.g = TransmissionShadow;
+	ToonShadow.b = HairShadow;
+	return ToonShadow;
+}
