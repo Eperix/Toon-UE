@@ -1,11 +1,11 @@
 ﻿#ifndef TOONLIGHTING
-#define TOONLIGHTING
+#define TOONLIGHTING 0
 #endif
 
 #include "../Common.ush"
 #include "ToonMeshPassCommon.ush"
-#include "/Engine/Generated/UnifomBuffers/ToonLight.ush"
 #include "ToonMaterialParameterCommon.ush"
+#include "/Engine/Generated/UniformBuffers/ToonMainLight.ush"
 
 void MainPS(
 	FSimpleMeshPassVSToPS In
@@ -22,7 +22,6 @@ void MainPS(
     	FPixelMaterialInputs PixelMaterialInputs;
     	CalcMaterialParameters(MaterialParameters, PixelMaterialInputs, In.SvPosition, bIsFrontFace);
 	
-    	float3 ToonLight = GetToonLight(MaterialParameters);
-    	
-    	OutColor = float4(ToonLight, 1.0f);
+    	float3 Light = GetToonLight(MaterialParameters);
+    	OutColor = float4(Light, 1.0f);
 }

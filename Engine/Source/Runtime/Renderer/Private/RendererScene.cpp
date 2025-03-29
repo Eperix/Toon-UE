@@ -1585,6 +1585,8 @@ FScene::FScene(UWorld* InWorld, bool bInRequiresHitProxies, bool bInIsEditorScen
 ,	ConvolvedSkyRenderTargetReadyIndex(-1)
 ,   PathTracingSkylightColor(0, 0, 0, 0)
 ,	SimpleDirectionalLight(NULL)
+// Start Peky Part
+,	ToonMainLightId(-1)
 ,	ReflectionSceneData(InFeatureLevel)
 ,	IndirectLightingCache(InFeatureLevel)
 ,	VolumetricLightmapSceneData(this)
@@ -2371,6 +2373,47 @@ FPrimitiveSceneInfo* FScene::GetPrimitiveSceneInfo(const FPersistentPrimitiveInd
 	return GetPrimitiveSceneInfo(PrimitiveIndex);
 }
 
+// Start Peky Part
+// Toon Main Light
+void FScene::RemoveToonMainLightId(const FLightSceneInfo* DirectionLight)
+{
+	if (ToonMainLightId == DirectionLight->Id)
+	{
+		ToonMainLightId = -1;
+		// UE_LOG(LogTemp, Log, TEXT("Remove ToonMainLight ID:%i"), DirectionLight->Id)
+		
+		for (const auto StoredLight : DirectionalLights)
+		{
+			SetToonMainLightId(StoredLight);
+		}
+	}
+}
+
+void FScene::SetToonMainLightId(const FLightSceneInfo* DirectionLight)
+{
+	const FLightSceneInfo* CurrentMainLight = Lights[ToonMainLightId].LightSceneInfo;
+	if (ToonMainLightId != -1 && CurrentMainLight && CurrentMainLight->Proxy)
+	{
+		const int32 LightForwardShadingPriority = DirectionLight->Proxy->GetDirectionalLightForwardShadingPriority();
+		const float LightLuminance = DirectionLight->Proxy->GetColor().GetLuminance();
+		const int32 CurrentMainLightPriority = CurrentMainLight->Proxy->GetDirectionalLightForwardShadingPriority();
+		const float CurrentMainLightLuminance = CurrentMainLight->Proxy->GetColor().GetLuminance();
+	
+		if (LightForwardShadingPriority > CurrentMainLightPriority ||
+			(LightForwardShadingPriority == CurrentMainLightPriority && LightLuminance > CurrentMainLightLuminance) )
+		{
+			ToonMainLightId = DirectionLight->Id;
+			// UE_LOG(LogTemp, Log, TEXT("CurrentMainLight is Valid, Set New ToonMainLight ID:%i"), DirectionLight->Id)
+		}
+	}
+	else
+	{
+		ToonMainLightId = DirectionLight->Id;
+		// UE_LOG(LogTemp, Log, TEXT("CurrentMainLight is NoValid, Set New ToonMainLight ID:%i"), DirectionLight->Id)
+	}
+}
+// End Peky Part
+
 void FScene::RemovePrimitiveSceneInfo_RenderThread(FPrimitiveSceneInfo* PrimitiveSceneInfo)
 {
 	PrimitiveUpdates.EnqueueDelete(PrimitiveSceneInfo);
@@ -2574,7 +2617,12 @@ void FScene::AddLightSceneInfo_RenderThread(FLightSceneInfo* LightSceneInfo)
 	{
 		DirectionalLights.Add(LightSceneInfo);
 	}
-
+	
+	// Start Peky Part
+	// Toon Main Light
+	SetToonMainLightId(LightSceneInfo);
+	// End Peky Part
+	
 	if (bDirectionalLight &&
 		// Only use a stationary or movable light
 		!(LightSceneInfo->Proxy->HasStaticLighting() 
@@ -3849,6 +3897,10 @@ void FScene::RemoveLightSceneInfo_RenderThread(FLightSceneInfo* LightSceneInfo)
 	if (bDirectionalLight)
 	{
 		DirectionalLights.Remove(LightSceneInfo);
+		// Start Peky Part
+		// Toon Main Light
+		RemoveToonMainLightId(LightSceneInfo);
+		// End Peky Part
 	}
 
 	// check SimpleDirectionalLight

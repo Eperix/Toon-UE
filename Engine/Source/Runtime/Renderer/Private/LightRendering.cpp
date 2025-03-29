@@ -850,6 +850,9 @@ class FDeferredLightPS : public FGlobalShader
 	class FAnistropicMaterials 	: SHADER_PERMUTATION_BOOL("SUPPORTS_ANISOTROPIC_MATERIALS");
 	class FSubstrateTileType	: SHADER_PERMUTATION_INT("SUBSTRATE_TILETYPE", 4);
 	class FVirtualShadowMapMask : SHADER_PERMUTATION_BOOL("USE_VIRTUAL_SHADOW_MAP_MASK");
+	// Start Peky Part
+	// Toon Main Light
+	class FToonMainLight : SHADER_PERMUTATION_BOOL("IS_TOON_MAINLIGHT");
 
 	using FPermutationDomain = TShaderPermutationDomain<
 		FSourceShapeDim,
@@ -865,7 +868,11 @@ class FDeferredLightPS : public FGlobalShader
 		FCloudTransmittance,
 		FAnistropicMaterials,
 		FSubstrateTileType,
-		FVirtualShadowMapMask>;
+		FVirtualShadowMapMask,
+	// Start Peky Part
+	// ToonMainLight
+	FToonMainLight>;
+	// End Peky Part
 
 	BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
 		SHADER_PARAMETER_RDG_UNIFORM_BUFFER(FSceneTextureUniformParameters, SceneTextures)
@@ -923,11 +930,14 @@ class FDeferredLightPS : public FGlobalShader
 		{
 			return false;
 		}
-
-		if (PermutationVector.Get< FSourceShapeDim >() != ELightSourceShape::Directional && (PermutationVector.Get<FAtmosphereTransmittance>() || PermutationVector.Get<FCloudTransmittance>()))
+		// Start Peky Part
+		// Toon Main Light
+		if (PermutationVector.Get< FSourceShapeDim >() != ELightSourceShape::Directional && (PermutationVector.Get<FAtmosphereTransmittance>() || PermutationVector.Get<FCloudTransmittance>()
+					|| PermutationVector.Get<FToonMainLight>()))
 		{
 			return false;
 		}
+		// End Peky Part
 
 		// Directional lights don't support virtual shadow map mask one pass projection, as they are always full screen lit and not part of the light grid
 		if (PermutationVector.Get< FSourceShapeDim >() == ELightSourceShape::Directional && PermutationVector.Get< FVirtualShadowMapMask >())
@@ -2462,12 +2472,20 @@ static FDeferredLightPS::FParameters GetDeferredLightPSParameters(
 	Out.RenderTargets[0] = FRenderTargetBinding(SceneColorTexture, ERenderTargetLoadAction::ELoad);
 	// Start Peky Part
 	// Toon Light Pass
-	Out.RenderTargets[1] = FRenderTargetBinding(View.GetSceneTextures().ToonShadow, ERenderTargetLoadAction::ELoad);
-	
-	if (Substrate::IsOpaqueRoughRefractionEnabled() && Substrate::UsesSubstrateMaterialBuffer(View.GetShaderPlatform()))
+	if (LightSceneInfo->Id == Scene->ToonMainLightId) // ToonMainLight
 	{
-		Out.RenderTargets[2] = FRenderTargetBinding(Scene->SubstrateSceneData.SeparatedOpaqueRoughRefractionSceneColor, ERenderTargetLoadAction::ELoad);
-		Out.RenderTargets[3] = FRenderTargetBinding(Scene->SubstrateSceneData.SeparatedSubSurfaceSceneColor, ERenderTargetLoadAction::ELoad);
+		// Toon Shadow
+		Out.RenderTargets[1] = FRenderTargetBinding(View.GetSceneTextures().ToonShadow, ERenderTargetLoadAction::EClear);
+		if (Substrate::IsOpaqueRoughRefractionEnabled())
+		{
+			Out.RenderTargets[2] = FRenderTargetBinding(Scene->SubstrateSceneData.SeparatedOpaqueRoughRefractionSceneColor, ERenderTargetLoadAction::ELoad);
+			Out.RenderTargets[3] = FRenderTargetBinding(Scene->SubstrateSceneData.SeparatedSubSurfaceSceneColor, ERenderTargetLoadAction::ELoad);
+		}
+	}
+	else if (Substrate::IsOpaqueRoughRefractionEnabled())
+	{
+		Out.RenderTargets[1] = FRenderTargetBinding(Scene->SubstrateSceneData.SeparatedOpaqueRoughRefractionSceneColor, ERenderTargetLoadAction::ELoad);
+		Out.RenderTargets[2] = FRenderTargetBinding(Scene->SubstrateSceneData.SeparatedSubSurfaceSceneColor, ERenderTargetLoadAction::ELoad);
 	}
 	// End Peky Part
 	if (SceneDepthTexture)
@@ -2771,6 +2789,10 @@ static void RenderLight(
 			PermutationVector.Set< FDeferredLightPS::FAnistropicMaterials >(bSupportAnisotropyPermutation && !LightSceneInfo->Proxy->IsRectLight());
 			PermutationVector.Set < FDeferredLightPS::FAtmosphereTransmittance >(false);
 			PermutationVector.Set< FDeferredLightPS::FCloudTransmittance >(false);
+			// Start Peky Part
+			// 当不是平行光是直接设置非MainLight
+			PermutationVector.Set<FDeferredLightPS::FToonMainLight>(false);
+			// End Peky Part
 		}
 		else // Directional
 		{
@@ -2781,6 +2803,18 @@ static void RenderLight(
 			// Only directional lights are rendered in this path, so we only need to check if it is use to light the atmosphere
 			PermutationVector.Set< FDeferredLightPS::FAtmosphereTransmittance >(IsLightAtmospherePerPixelTransmittanceEnabled(Scene, View, LightSceneInfo));
 			PermutationVector.Set< FDeferredLightPS::FCloudTransmittance >(PassParameters->PS.CloudShadowEnabled > 0);
+			// Start Peky Part
+			// Toon Main Light
+			if (LightSceneInfo->Id == Scene->ToonMainLightId)
+			{
+				// 当光源是平行光且Id和FScene中保存的ToonMainLightId相等时，FDeferredLightPS::FToonMainLight设置为true
+				PermutationVector.Set<FDeferredLightPS::FToonMainLight>(true);
+			}
+			else
+			{
+				PermutationVector.Set<FDeferredLightPS::FToonMainLight>(false);
+			}
+			// End Peky Part
 		}
 		PermutationVector = FDeferredLightPS::RemapPermutation(PermutationVector);
 
@@ -2919,6 +2953,10 @@ void FDeferredShadingSceneRenderer::RenderLightForHair(
 	PermutationVector.Set< FDeferredLightPS::FLightFunctionAtlasDim >(
 		LightFunctionAtlas::IsEnabled(View, ELightFunctionAtlasSystem::DeferredLighting) && LightSceneInfo->Proxy->HasValidLightFunctionAtlasSlot() &&
 		LightSceneInfo->Proxy->GetLightFunctionMaterial() != nullptr && !View.Family->EngineShowFlags.VisualizeLightCulling && bCanLightUsesAtlasForUnbatchedLight);
+	// Start Peky Part
+	// 当不是平行光是直接设置非MainLight
+	PermutationVector.Set<FDeferredLightPS::FToonMainLight>(false);
+	// End Peky Part
 	if (bIsDirectional)
 	{
 		PermutationVector.Set< FDeferredLightPS::FSourceShapeDim >(ELightSourceShape::Directional);
@@ -3114,6 +3152,10 @@ static void InternalRenderSimpleLightsStandardDeferred(
 	PermutationVector.Set< FDeferredLightPS::FAtmosphereTransmittance >(false);
 	PermutationVector.Set< FDeferredLightPS::FCloudTransmittance >(false);
 	PermutationVector.Set< FDeferredLightPS::FSubstrateTileType>(TileType != ESubstrateTileType::ECount ? TileType : 0);
+	// Start Peky Part
+	// 当不是平行光是直接设置非MainLight
+	PermutationVector.Set<FDeferredLightPS::FToonMainLight>(false);
+	// End Peky Part
 	TShaderMapRef<FDeferredLightPS> PixelShader(View.ShaderMap, PermutationVector);
 
 	FDeferredLightVS::FPermutationDomain PermutationVectorVS;

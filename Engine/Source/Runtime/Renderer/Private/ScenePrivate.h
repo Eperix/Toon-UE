@@ -3144,7 +3144,10 @@ public:
 	FLightSceneInfo* AtmosphereLights[NUM_ATMOSPHERE_LIGHTS];
 
 	TArray<FLightSceneInfo*, TInlineAllocator<4>> DirectionalLights;
-
+	// Start Peky Part
+	// Toon Main Light
+	int32 ToonMainLightId;
+	// End Peky Part
 	/** The decals in the scene. */
 	TArray<FDeferredDecalProxy*> Decals;
 
@@ -3430,6 +3433,11 @@ public:
 	virtual void RemoveLocalFogVolume(class FLocalFogVolumeSceneProxy* FogProxy) override;
 	virtual bool HasAnyLocalFogVolume() const override;
 
+	// Start Peky Part
+	// ToonMainLight
+	void RemoveToonMainLightId(const FLightSceneInfo* DirectionLight);
+	void SetToonMainLightId(const FLightSceneInfo* DirectionLight);
+	// End Peky Part
 	virtual void AddSkyAtmosphere(FSkyAtmosphereSceneProxy* SkyAtmosphereSceneProxy, bool bStaticLightingBuilt) override;
 	virtual void RemoveSkyAtmosphere(FSkyAtmosphereSceneProxy* SkyAtmosphereSceneProxy) override;
 	virtual FSkyAtmosphereRenderSceneInfo* GetSkyAtmosphereSceneInfo() override { return SkyAtmosphere; }

@@ -23,8 +23,8 @@ FRDGTextureDesc GetToonShadowTextureDesc(FIntPoint Extent, ETextureCreateFlags C
 	//TexCreate_ShaderResource：表示纹理可作为着色器资源，可以在着色器中进行采样等操作
 	return FRDGTextureDesc(FRDGTextureDesc::Create2D(Extent, PF_R8G8B8A8, FClearValueBinding::Black, TexCreate_UAV | TexCreate_RenderTargetable | TexCreate_ShaderResource | CreateFlags));
 }
-// Toon Buffer step 5-3
-FRDGTextureRef GetToonShadowTexture(FRDGBuilder& GraphBuilder, FIntPoint Extent, ETextureCreateFlags CreateFlags, const TCHAR* Name)
+
+FRDGTextureRef CreateToonShadowTexture(FRDGBuilder& GraphBuilder, FIntPoint Extent, ETextureCreateFlags CreateFlags, const TCHAR* Name)
 {	
 	return GraphBuilder.CreateTexture(GetToonShadowTextureDesc(Extent, CreateFlags), Name);
 }
@@ -236,47 +236,49 @@ SHADER_PARAMETER_SAMPLER(SamplerState, ToonShadowTextureSampler)
 SHADER_PARAMETER_STRUCT_INCLUDE(FLightShaderParameters, LightParameters)
 END_GLOBAL_SHADER_PARAMETER_STRUCT()
 
-IMPLEMENT_STATIC_UNIFORM_BUFFER_SLOT(ToonLight);
-IMPLEMENT_STATIC_UNIFORM_BUFFER_STRUCT(FToonLightUniformParameters, "ToonLight", ToonLight);
+IMPLEMENT_STATIC_UNIFORM_BUFFER_SLOT(ToonMainLight);
+IMPLEMENT_STATIC_UNIFORM_BUFFER_STRUCT(FToonLightUniformParameters, "ToonMainLight", ToonMainLight);
 
 BEGIN_SHADER_PARAMETER_STRUCT(FToonLightPassParameters, )
 	SHADER_PARAMETER_STRUCT_REF(FViewUniformShaderParameters, View)
+	SHADER_PARAMETER_RDG_UNIFORM_BUFFER(FToonLightUniformParameters , ToonMainLight)
 	SHADER_PARAMETER_STRUCT_INCLUDE(FInstanceCullingDrawParams, InstanceCullingDrawParams)
-	SHADER_PARAMETER_RDG_UNIFORM_BUFFER(FToonLightUniformParameters, ToonLight)
 	RENDER_TARGET_BINDING_SLOTS()
 END_SHADER_PARAMETER_STRUCT()
 
 FToonLightPassParameters* GetToonLightPassParameters(FRDGBuilder& GraphBuilder, const FViewInfo& View, const FScene* Scene, FSceneTextures& SceneTextures)
 {
 	FToonLightPassParameters* PassParameters = GraphBuilder.AllocParameters<FToonLightPassParameters>();
-	// Set ToonLight Data
-	FToonLightUniformParameters& ToonUniformParameters = *GraphBuilder.AllocParameters<FToonLightUniformParameters>();
+	FToonLightUniformParameters& ToonLightUniformParameters = *GraphBuilder.AllocParameters<FToonLightUniformParameters>();
 	{
 		const FRDGTextureRef WhiteDummy = GSystemTextures.GetWhiteDummy(GraphBuilder);
-		ToonUniformParameters.ToonShadowTexture = WhiteDummy;
-		ToonUniformParameters.ToonShadowTextureSampler = TStaticSamplerState<SF_Point, AM_Wrap, AM_Wrap, AM_Wrap>::GetRHI();
-		ToonUniformParameters.LightParameters.Color = FVector3f::Zero();
-		ToonUniformParameters.LightParameters.Direction = FVector3f::Zero();
-		ToonUniformParameters.LightParameters.SourceRadius =0;
-		ToonUniformParameters.LightParameters.SoftSourceRadius = 0;
+		ToonLightUniformParameters.ToonShadowTexture = WhiteDummy;
+		ToonLightUniformParameters.ToonShadowTextureSampler = TStaticSamplerState<SF_Point, AM_Wrap, AM_Wrap, AM_Wrap>::GetRHI();
+		ToonLightUniformParameters.LightParameters.Color = FVector3f::Zero();
+		ToonLightUniformParameters.LightParameters.Direction = FVector3f::Zero();
+		ToonLightUniformParameters.LightParameters.SourceRadius = 0;
+		ToonLightUniformParameters.LightParameters.SoftSourceRadius = 0;
 
-		const FLightSceneInfo* MainLight = Scene->AtmosphereLights[0];
-		if (MainLight)
+		// ToonMainLight
+		if (Scene->ToonMainLightId != -1)
 		{
-			ToonUniformParameters.ToonShadowTexture = SceneTextures.ToonShadow;
-			FLightRenderParameters LightRenderParameters;
-			MainLight->Proxy->GetLightShaderParameters(LightRenderParameters);
-			LightRenderParameters.MakeShaderParameters(View.ViewMatrices, View.GetLastEyeAdaptationExposure(), ToonUniformParameters.LightParameters);
+			const FLightSceneInfo* MainLight = Scene->Lights[Scene->ToonMainLightId].LightSceneInfo;
+			if (MainLight && MainLight->bVisible)
+			{
+				ToonLightUniformParameters.ToonShadowTexture = SceneTextures.ToonShadow;
+				FLightRenderParameters LightParameters;
+				MainLight->Proxy->GetLightShaderParameters(LightParameters, 0);
+				LightParameters.MakeShaderParameters(View.ViewMatrices, View.GetLastEyeAdaptationExposure(), ToonLightUniformParameters.LightParameters);
+			}
 		}
 	}
-	
 	PassParameters->View = View.ViewUniformBuffer;
-	PassParameters->ToonLight = GraphBuilder.CreateUniformBuffer(&ToonUniformParameters);
+	PassParameters->ToonMainLight = GraphBuilder.CreateUniformBuffer(&ToonLightUniformParameters);
 	PassParameters->RenderTargets[0] = FRenderTargetBinding(SceneTextures.Color.Target, ERenderTargetLoadAction::ELoad);
 	PassParameters->RenderTargets.DepthStencil =
 		FDepthStencilBinding(SceneTextures.Depth.Target, ERenderTargetLoadAction::ELoad,
 			ERenderTargetLoadAction::ELoad, FExclusiveDepthStencil::DepthWrite_StencilWrite);
-	
+
 	return PassParameters;
 }
 
@@ -309,10 +311,10 @@ void FDeferredShadingSceneRenderer::RenderToonLightPass(FRDGBuilder& GraphBuilde
             ParallelMeshPass.BuildRenderingCommands(GraphBuilder, Scene->GPUScene, PassParameters->InstanceCullingDrawParams);
 
             GraphBuilder.AddDispatchPass(
-                RDG_EVENT_NAME("ToonMainLight"),
+                RDG_EVENT_NAME("ToonLight"),
                 PassParameters,
                 ERDGPassFlags::Raster | ERDGPassFlags::SkipRenderPass,
-                [this, &View, &ParallelMeshPass, PassParameters](FRDGDispatchPassBuilder& DispatchPassBuilder)
+                [&ParallelMeshPass, PassParameters](FRDGDispatchPassBuilder& DispatchPassBuilder)
             {
                 ParallelMeshPass.Dispatch(DispatchPassBuilder, &PassParameters->InstanceCullingDrawParams);
             });

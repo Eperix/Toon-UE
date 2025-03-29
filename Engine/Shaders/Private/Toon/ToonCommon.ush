@@ -71,24 +71,18 @@ float3 ShiftTangent(float3 T, float3 N, half shift)
 	return normalize(T + shift* N);
 }
 
-float3 GetMainLightDirection()
+bool IsToonMainLight()
 {
-	return View.AtmosphereLightDirection[0].xyz;
-}
-
-bool IsMainLight(FDeferredLightData LightData)
-{
-	return !LightData.bRadialLight && all(LightData.Direction == GetMainLightDirection());
+#if IS_TOON_MAINLIGHT
+	return true;
+#else
+	return false;
+#endif
 }
 
 float GetHairShadow(FGBufferData GBuffer, FDeferredLightData LightData, float2 ScreenUV)
 {
 	float Shadow = 1.0f;
-	
-	if (!IsMainLight(LightData))
-	{
-		return Shadow;
-	}
 	
 	float k = 100.0f;
 	// 屏幕空间LightDirection

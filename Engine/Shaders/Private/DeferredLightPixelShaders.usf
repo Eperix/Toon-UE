@@ -239,15 +239,24 @@ void DeferredLightPixelMain(
 	float3 ScreenVector		: TEXCOORD1,
 #endif
 	float4 SVPos			: SV_POSITION,
-	out float4 OutColor		: SV_Target0,
 	// Start Peky Part
 	// Toon Light Pass
-	out float4 ToonShadow	:SV_Target1
+	out float4 OutColor		: SV_Target0
+	#if IS_TOON_MAINLIGHT
+	// Toon Shadow
+	, out float4 ToonShadow	: SV_Target1
 #if SUBSTRATE_OPAQUE_ROUGH_REFRACTION_ENABLED
 	, out float3 OutOpaqueRoughRefractionSceneColor : SV_Target2
 	, out float3 OutSubSurfaceSceneColor : SV_Target3
-	// End Peky Part
+
 #endif
+#else
+#if SUBSTRATE_OPAQUE_ROUGH_REFRACTION_ENABLED
+	, out float3 OutOpaqueRoughRefractionSceneColor : SV_Target1
+	, out float3 OutSubSurfaceSceneColor : SV_Target2
+#endif
+#endif
+	// End Peky Part
 	)
 {
 	const float2 PixelPos = SVPos.xy;
@@ -388,12 +397,16 @@ void DeferredLightPixelMain(
 			//LightAttenuation *= Luminance(ComputeTransmittance(WorldPosition, WorldToLight, 512));
 		}
 #endif // USE_ADAPTIVE_VOLUMETRIC_SHADOW_MAP
+		
+		float4 Radiance = GetDynamicLighting(DerivedParams.TranslatedWorldPosition, DerivedParams.CameraVector, ScreenSpaceData.GBuffer, ScreenSpaceData.AmbientOcclusion, LightData, LightAttenuation, Dither, uint2(InputParams.PixelPos), SurfaceShadow);
+		OutColor += Radiance;
 		// Start Peky Part
+#if IS_TOON_MAINLIGHT
 		// 屏蔽掉Toon LightPass光照
-		float4 Radiance = 0.0f;
-		if(ScreenSpaceData.GBuffer.ShadingModelID != SHADINGMODELID_TOON_DEFAULT)
-			Radiance = GetDynamicLighting(DerivedParams.TranslatedWorldPosition, DerivedParams.CameraVector, ScreenSpaceData.GBuffer, ScreenSpaceData.AmbientOcclusion, LightData, LightAttenuation, Dither, uint2(InputParams.PixelPos), SurfaceShadow);
-
+		if (ScreenSpaceData.GBuffer.ShadingModelID == SHADINGMODELID_TOON_DEFAULT)
+		{
+			OutColor = 0.0f;
+		}
 		// Toon Shadow
 		float HairShadow = 1;
 		
@@ -403,32 +416,29 @@ void DeferredLightPixelMain(
 		Shadow.TransmissionThickness = 1;
 		Shadow.HairTransmittance.OpaqueVisibility = 1;
 		const float ContactShadowOpacity = ScreenSpaceData.GBuffer.CustomData.a;
-
-		if (IsMainLight(LightData))
+		
+		// 计算Shadow
+		GetShadowTerms(ScreenSpaceData.GBuffer.Depth, ScreenSpaceData.GBuffer.PrecomputedShadowFactors, ScreenSpaceData.GBuffer.ShadingModelID,
+			ContactShadowOpacity,
+			LightData, DerivedParams.TranslatedWorldPosition, LightData.Direction, LightAttenuation, Dither, Shadow);
+		float NoL = dot(ScreenSpaceData.GBuffer.WorldNormal, LightData.Direction);
+		// RayTracing Shadow在物体背面不会发射射线计算阴影
+		// 因此SurfaceShadow在物体背面会有问题，使用NoL把背面的阴影给补上
+		if (!ScreenSpaceData.GBuffer.ToonBuffer.ShadowCastFlag & SCF_DISABLEONSELF)
 		{
-			// 计算Shadow
-			GetShadowTerms(ScreenSpaceData.GBuffer.Depth, ScreenSpaceData.GBuffer.PrecomputedShadowFactors, ScreenSpaceData.GBuffer.ShadingModelID,
-				ContactShadowOpacity,
-				LightData, DerivedParams.TranslatedWorldPosition, LightData.Direction, LightAttenuation, Dither, Shadow);
-			float NoL = dot(ScreenSpaceData.GBuffer.WorldNormal, LightData.Direction);
-			// RayTracing Shadow在物体背面不会发射射线计算阴影
-			// 因此SurfaceShadow在物体背面会有问题，使用NoL把背面的阴影给补上
-			if (!ScreenSpaceData.GBuffer.ToonBuffer.ShadowCastFlag & SCF_DISABLEONSELF)
-			{
-				Shadow.SurfaceShadow *= step(0, NoL);
-			}
-	
-			// Toon Hair Shadow
-			if(ScreenSpaceData.GBuffer.ShadingModelID == SHADINGMODELID_TOON_DEFAULT &&
-				(ScreenSpaceData.GBuffer.ToonBuffer.ToonModel == TOONMODEL_FACE || ScreenSpaceData.GBuffer.ToonBuffer.ToonModel == TOONMODEL_EYE))
-			{
-				HairShadow = GetHairShadow(ScreenSpaceData.GBuffer,  LightData, InputParams.ScreenUV);
-			}
+			Shadow.SurfaceShadow *= step(0, NoL);
+		}
+
+		// Toon Hair Shadow
+		if(ScreenSpaceData.GBuffer.ShadingModelID == SHADINGMODELID_TOON_DEFAULT &&
+			(ScreenSpaceData.GBuffer.ToonBuffer.ToonModel == TOONMODEL_FACE || ScreenSpaceData.GBuffer.ToonBuffer.ToonModel == TOONMODEL_EYE))
+		{
+			HairShadow = GetHairShadow(ScreenSpaceData.GBuffer,  LightData, InputParams.ScreenUV);
 		}
 
 		ToonShadow = EncodeToonShadow(Shadow.SurfaceShadow, Shadow.TransmissionShadow, HairShadow);
 		// End Peky Part
-		OutColor += Radiance;
+#endif
 	}
 
 #endif // SUBSTRATE_ENABLED

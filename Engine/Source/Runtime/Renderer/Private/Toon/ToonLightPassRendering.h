@@ -78,12 +78,11 @@ public:
     	OutEnvironment.SetDefine(TEXT("TOONLIGHTING"), 1);
     }
 
-    static bool ShouldCompilePermutation(const FMeshMaterialShaderPermutationParameters& Parameters)
+	static bool ShouldCompilePermutation(const FMeshMaterialShaderPermutationParameters& Parameters)
     {
-    	const bool bIsFeatureSupported = IsFeatureLevelSupported(Parameters.Platform, ERHIFeatureLevel::SM5);
-        return bIsFeatureSupported && FMeshMaterialShader::ShouldCompilePermutation(Parameters) &&
-            (Parameters.VertexFactoryType->GetFName() == FName(TEXT("FLocalVertexFactory")) || 
-                Parameters.VertexFactoryType->GetFName() == FName(TEXT("TGPUSkinVertexFactoryDefault")));
+    	return IsFeatureLevelSupported(Parameters.Platform, ERHIFeatureLevel::SM5) &&
+			(Parameters.VertexFactoryType->GetFName() == FName(TEXT("FLocalVertexFactory")) || 
+				Parameters.VertexFactoryType->GetFName() == FName(TEXT("TGPUSkinVertexFactoryDefault")));
     }
 
 };
@@ -91,10 +90,8 @@ public:
 
 class FToonLightPassPS : public FMeshMaterialShader
 {
-    DECLARE_SHADER_TYPE(FToonLightPassPS, MeshMaterial);
-
+	DECLARE_SHADER_TYPE(FToonLightPassPS, MeshMaterial);
 public:
-
     FToonLightPassPS() = default;
     FToonLightPassPS(const ShaderMetaType::CompiledShaderInitializerType& Initializer)
         : FMeshMaterialShader(Initializer)
@@ -109,8 +106,7 @@ public:
 
 	static bool ShouldCompilePermutation(const FMeshMaterialShaderPermutationParameters& Parameters)
     {
-    	const bool bIsFeatureSupported = IsFeatureLevelSupported(Parameters.Platform, ERHIFeatureLevel::SM5);
-    	return bIsFeatureSupported && FMeshMaterialShader::ShouldCompilePermutation(Parameters) &&
+    	return IsFeatureLevelSupported(Parameters.Platform, ERHIFeatureLevel::SM5) &&
 			(Parameters.VertexFactoryType->GetFName() == FName(TEXT("FLocalVertexFactory")) || 
 				Parameters.VertexFactoryType->GetFName() == FName(TEXT("TGPUSkinVertexFactoryDefault")));
     }

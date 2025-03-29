@@ -1,0 +1,61 @@
+﻿#pragma once
+#include "../ShadingModels.ush"
+
+struct FToonLighting
+{
+	float3 DiffuseTerm;
+	float3 SpecularTerm;
+	float3 TransmissionTerm;
+};
+
+FAreaLight InitialAreaLight(float SourceRadius, float SoftSourceRadius, float Roughness)
+{
+	FAreaLight AreaLight;
+	float InvDist = 1.0f;
+
+	Roughness = max(Roughness, View.MinRoughness);
+	float a2 = Pow(Roughness, 2);
+	AreaLight.SphereSinAlpha = saturate(SourceRadius * InvDist * (1 - a));
+	AreaLight.SphereSinAlphaSoft = saturate( SoftSourceRadius * InvDist );
+	AreaLight.LineCosSubtended = 1;
+	AreaLight.FalloffColor = 1;
+	AreaLight.Rect = (FRect)0;
+	AreaLight.IsRectAndDiffuseMicroReflWeight = 0;
+	AreaLight.Texture = InitRectTexture();
+
+	return AreaLight;
+}
+
+// 自定义的PBR BxDF
+FToonLighting ToonPBRBxDF(half3 BaseColor, half Metallic, half Specular, half Roughness, half3 Normal,
+		half3 LightVector, half SourceRadius, half SoftSourceRadius, half3 ViewVector)
+{
+	FAreaLight AreaLight = InitialAreaLight(SourceRadius, SoftSourceRadius, Roughness);
+
+	FToonLighting ToonLighting;
+	BxDFContext Context;
+
+	Init(Context, Normal, ViewVector, LightVector);
+
+	SphereMaxNoH(Context, AreaLight.SphereSinAlpha, true);
+
+	Context.NoV = saturate(abs( Context.NoV ) + 1e-5);
+
+	half3 SpecularColor = ComputeF0(Specular, BaseColor, Metallic);
+	half3 DiffuseColor = BaseColor - BaseColor * Metallic;
+	
+	ToonLighting.DiffuseTerm = Diffuse_Lambert(DiffuseColor);
+	ToonLighting.SpecularTerm = SpecularGGX(Roughness, SpecularColor, Context, saturate(Context.NoL), AreaLight);
+
+	FBxDFEnergyTerms EnergyTerms = ComputeGGXSpecEnergyTerms(Roughness, Context.NoV, SpecularColor);
+	
+	// Add energy presevation (i.e. attenuation of the specular layer onto the diffuse component
+	ToonLighting.DiffuseTerm *= ComputeEnergyPreservation(EnergyTerms);
+	
+	// Add specular microfacet multiple scattering term (energy-conservation)
+	ToonLighting.SpecularTerm *= ComputeEnergyConservation(EnergyTerms);
+
+	ToonLighting.TransmissionTerm = 0;
+
+	return ToonLighting;
+}
