@@ -28249,7 +28249,7 @@ UMaterialExpressionToonMaterialOutput::UMaterialExpressionToonMaterialOutput(con
 {
 	int32 CodeInput = INDEX_NONE;
 
-	const bool bStrata = Strata::IsStrataEnabled();
+	const bool bSubstrate = Substrate::IsSubstrateEnabled();
 
 	// 这里会在BasePixelShader.usf.里生成一个获取针脚属性的函数
 	// 如获取第一个针脚的数据使用函数GetToonLightOutput0(MaterialParameters)

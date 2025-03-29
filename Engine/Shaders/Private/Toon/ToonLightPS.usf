@@ -7,7 +7,7 @@
 #include "ToonMaterialParameterCommon.ush"
 
 void MainPS(
-	FSimpleMeshPassVSToPS In,
+	FSimpleMeshPassVSToPS In
 	OPTIONAL_IsFrontFace,
 	out float4 OutColor : SV_Target0
 	)

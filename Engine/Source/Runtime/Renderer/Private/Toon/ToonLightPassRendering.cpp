@@ -50,11 +50,10 @@ bool ShouldDrawToonLightPass(const FMaterial* Material)
 
 FToonMainLightMeshProcessor::FToonMainLightMeshProcessor(
     const FScene* Scene,
-    ERHIFeatureLevel::Type InFeatureLevel,
     const FSceneView* InViewIfDynamicMeshCommand,
     const FMeshPassProcessorRenderState& InPassDrawRenderState,
     FMeshPassDrawListContext* InDrawListContext)
-:FMeshPassProcessor(Scene, Scene->GetFeatureLevel(), InViewIfDynamicMeshCommand, InDrawListContext),
+:FMeshPassProcessor(EMeshPass::ToonLightPass, Scene, Scene->GetFeatureLevel(), InViewIfDynamicMeshCommand, InDrawListContext),
 PassDrawRenderState(InPassDrawRenderState)
 {
 }
@@ -204,7 +203,7 @@ FMeshPassProcessor* CreateToonLightPassProcessor(ERHIFeatureLevel::Type FeatureL
 {
 	FMeshPassProcessorRenderState ToonPassState;
 	SetupToonLightPassState(ToonPassState);
-	return new FToonMainLightMeshProcessor(Scene, FeatureLevel, InViewIfDynamicMeshCommand, ToonPassState, InDrawListContext);
+	return new FToonMainLightMeshProcessor(Scene, InViewIfDynamicMeshCommand, ToonPassState, InDrawListContext);
 }
 
 // RegisterToonPass会将CreateToonPassProcessor函数的地址写入FPassProcessorManager的一个Table里，Table的下标是EShadingPath和EMeshPass
@@ -260,15 +259,13 @@ void FDeferredShadingSceneRenderer::RenderToonLightPass(FRDGBuilder& GraphBuilde
             FToonLightPassParameters* PassParameters = GetToonLightPassParameters(GraphBuilder, View, Scene,SceneTextures);
             ParallelMeshPass.BuildRenderingCommands(GraphBuilder, Scene->GPUScene, PassParameters->InstanceCullingDrawParams);
 
-            GraphBuilder.AddPass(
+            GraphBuilder.AddDispatchPass(
                 RDG_EVENT_NAME("ToonMainLight"),
                 PassParameters,
                 ERDGPassFlags::Raster | ERDGPassFlags::SkipRenderPass,
-                [this, &View, &ParallelMeshPass, PassParameters](const FRDGPass* InPass, FRHICommandListImmediate& RHICmdList)
+                [this, &View, &ParallelMeshPass, PassParameters](FRDGDispatchPassBuilder& DispatchPassBuilder)
             {
-                FRDGParallelCommandListSet ParallelCommandListSet(InPass, RHICmdList, GET_STATID(STAT_CLP_ToonLightPass), View, FParallelCommandListBindings(PassParameters));
-                ParallelCommandListSet.SetHighPriority();
-                ParallelMeshPass.DispatchDraw(&ParallelCommandListSet, RHICmdList, &PassParameters->InstanceCullingDrawParams);
+                ParallelMeshPass.Dispatch(DispatchPassBuilder, &PassParameters->InstanceCullingDrawParams);
             });
         }
     }
