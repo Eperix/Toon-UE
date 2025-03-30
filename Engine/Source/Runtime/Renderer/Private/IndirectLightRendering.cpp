@@ -30,6 +30,8 @@
 #include "Lumen/LumenTracingUtils.h"
 #include "Lumen/LumenSceneLighting.h"
 #include "Lumen/LumenReflections.h"
+#include "PostProcess/PostProcessDownsample.h"
+#include "PostProcess/PostProcessEyeAdaptation.h"
 #include "MegaLights/MegaLights.h"
 
 // This is the project default dynamic global illumination, NOT the scalability setting (see r.Lumen.DiffuseIndirect.Allow for scalability)
@@ -206,6 +208,12 @@ class FDiffuseIndirectCompositePS : public FGlobalShader
 		SHADER_PARAMETER(FVector2f, BufferUVToOutputPixelPosition)
 		SHADER_PARAMETER_RDG_BUFFER_SRV(StructuredBuffer<float4>, EyeAdaptation)
 		SHADER_PARAMETER_RDG_TEXTURE_ARRAY(Texture2D<uint>, CompressedMetadata, [2])
+		// ----------------------------------Peky Start----------------------------------
+		// Toon Lumen
+		SHADER_PARAMETER_STRUCT_INCLUDE(FLumenToonParameters, LumenToonParameters)
+		SHADER_PARAMETER_RDG_TEXTURE(Texture2D, DownSampleInput)
+		SHADER_PARAMETER(FVector4f, DownSampleInputSizeAndInv)
+		// ----------------------------------Peky End----------------------------------
 
 		RENDER_TARGET_BINDING_SLOTS()
 	END_SHADER_PARAMETER_STRUCT()
@@ -1470,7 +1478,36 @@ void FDeferredShadingSceneRenderer::RenderDiffuseIndirectAndAmbientOcclusion(
 			{
 				BlendState = TStaticBlendState<>::GetRHI();
 			}
+			// ----------------------------------Peky Start----------------------------------
+			// Toon Lumen
+			
+			// 设置LumenToonParameter
+			PassParameters->LumenToonParameters = GetLumenToonParameters(GraphBuilder, View);
 
+			// 对Lumen Diffuse进行DownSample，并把DownSample Texture传入Shader
+			const FRDGTextureRef BlackDummy = GSystemTextures.GetBlackDummy(GraphBuilder);
+			PassParameters->DownSampleInput = BlackDummy;
+			const FEyeAdaptationParameters EyeAdaptationParameters = GetEyeAdaptationParameters(View);
+			FScreenPassTexture InputTexture = FScreenPassTexture(DenoiserOutputs.Textures[0]);
+			FScreenPassTextureSlice InputTextureSlice = FScreenPassTextureSlice::CreateFromScreenPassTexture(GraphBuilder, InputTexture);
+			FSceneDownsampleChain SceneDownsampleChain;
+			if (InputTexture.IsValid())
+			{
+				SceneDownsampleChain.Init(
+					GraphBuilder, View,
+					EyeAdaptationParameters,
+					InputTextureSlice,
+					EDownsampleQuality::High,
+					false);
+				FScreenPassTexture DownSampleTexture(SceneDownsampleChain.GetLastTexture());
+				PassParameters->DownSampleInput = DownSampleTexture.Texture;
+				PassParameters->DownSampleInputSizeAndInv = FVector4f(
+					SceneDownsampleChain.GetLastTexture().ViewRect.Size().X,
+					SceneDownsampleChain.GetLastTexture().ViewRect.Size().Y,
+					1.0f / SceneDownsampleChain.GetLastTexture().ViewRect.Size().X,
+					1.0f / SceneDownsampleChain.GetLastTexture().ViewRect.Size().Y);
+			}
+			// ----------------------------------Peky End----------------------------------
 			if (TileType == ESubstrateTileType::ECount)
 			{
 				ClearUnusedGraphResources(PixelShader, PassParameters);

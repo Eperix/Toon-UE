@@ -574,6 +574,13 @@ FPostProcessSettings::FPostProcessSettings()
 	LumenDiffuseColorBoost = 1.0f;
 	LumenSkylightLeaking = 0.0f;
 	LumenFullSkylightLeakingDistance = 1000.0f;
+	// ----------------------------------Peky Start----------------------------------
+	// Toon Lumen
+	LuminanceFlatten = 0.0f;
+	ColorFlatten = 0.0f;
+	DiffuseOcclusion = 1.0f;
+	// ----------------------------------Peky
+	// End----------------------------------
 
 	ColorGradingIntensity = 1.0f;
 

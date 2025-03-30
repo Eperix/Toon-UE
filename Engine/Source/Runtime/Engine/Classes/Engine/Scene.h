@@ -1271,6 +1271,19 @@ struct FPostProcessSettings
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Overrides, meta = (PinHiddenByDefault, InlineEditConditionToggle))
 	uint32 bOverride_LumenFullSkylightLeakingDistance : 1;
+	// ----------------------------------PekyEngine Start----------------------------------
+	// Toon Lumen
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Overrides, meta = (PinHiddenByDefault, InlineEditConditionToggle))
+	uint32 bOverride_LuminanceFlatten : 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Overrides, meta = (PinHiddenByDefault, InlineEditConditionToggle))
+	uint32 bOverride_ColorFlatten : 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Overrides, meta = (PinHiddenByDefault, InlineEditConditionToggle))
+	uint32 bOverride_DiffuseOcclusion : 1;
+	
+	// ----------------------------------Peky Engine End----------------------------------
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Overrides, meta=(PinHiddenByDefault, InlineEditConditionToggle))
 	uint8 bOverride_LumenRayLightingMode:1;
@@ -1292,6 +1305,21 @@ struct FPostProcessSettings
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Overrides, meta = (PinHiddenByDefault, InlineEditConditionToggle))
 	uint8 bOverride_LumenSurfaceCacheResolution : 1;
+	// ---------------------------------- Peky Start----------------------------------
+	// Toon Lumen
+
+	/** Make Lumen Luminance uniform */
+	UPROPERTY(interp, EditAnywhere, BlueprintReadWrite, Category = "Global Illumination|Toon Lumen", meta = (ClampMin = "0", ClampMax = "1", editcondition = "bOverride_LuminanceFlatten", DisplayName = "Luminance Flatten"))
+	float LuminanceFlatten;
+
+	/** Make Lumen Color uniform */
+	UPROPERTY(interp, EditAnywhere, BlueprintReadWrite, Category = "Global Illumination|Toon Lumen", meta = (ClampMin = "0", ClampMax = "1", editcondition = "bOverride_ColorFlatten", DisplayName = "Color Flatten"))
+	float ColorFlatten;
+
+	/** The Intensity of DiffuseOcclusion(AO) */
+	UPROPERTY(interp, EditAnywhere, BlueprintReadWrite, Category = "Global Illumination|Toon Lumen", meta = (ClampMin = "0", ClampMax = "1", editcondition = "bOverride_DiffuseOcclusion", DisplayName = "Diffuse Occlusion"))
+	float DiffuseOcclusion;
+	// ----------------------------------Peky End----------------------------------
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Overrides, meta = (PinHiddenByDefault, InlineEditConditionToggle))
 	uint32 bOverride_RayTracingGI : 1;

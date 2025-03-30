@@ -389,7 +389,7 @@ FOcclusionResult ComputeOcclusion(
 
 	// Start Peky Part
 	// Toon RayTracing Shadow
-	if (ShadingDesc.bIsToon && ShadingDesc.ToonBuffer.ShadowCastFlag != SCF_DISABLEONSELF)
+	if (ShadingDesc.bIsToon && ShadingDesc.ToonBuffer.ShadowCastFlag & SCF_DISABLEONSELF)
 	{
 		bApplyNormalCulling = false;
 	}

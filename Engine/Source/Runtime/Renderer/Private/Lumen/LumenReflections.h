@@ -38,6 +38,16 @@ namespace LumenReflections
 	bool UseAsyncCompute(const FViewFamilyInfo& ViewFamily);
 }
 
+// Start Peky Part
+// Toon Lumen
+BEGIN_SHADER_PARAMETER_STRUCT(FLumenToonParameters, )
+	SHADER_PARAMETER(float, LuminanceFlatten)
+	SHADER_PARAMETER(float, ColorFlatten)
+	SHADER_PARAMETER(float, DiffuseOcclusion)
+END_SHADER_PARAMETER_STRUCT()
+
+extern FLumenToonParameters GetLumenToonParameters(FRDGBuilder& GraphBuilder, const FViewInfo& View);
+// End Peky Part
 BEGIN_SHADER_PARAMETER_STRUCT(FLumenReflectionsVisualizeTracesParameters, )
 	SHADER_PARAMETER_RDG_BUFFER_UAV(RWBuffer<float4>, RWVisualizeTracesData)
 	SHADER_PARAMETER(uint32, VisualizeTraceCoherency)

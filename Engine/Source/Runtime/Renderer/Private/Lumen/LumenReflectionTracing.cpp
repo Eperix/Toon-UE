@@ -917,6 +917,20 @@ FLumenHZBScreenTraceParameters SetupHZBScreenTraceParameters(
 	return Parameters;
 }
 
+// ----------------------------------Peky Start----------------------------------
+// Toon Lumen
+FLumenToonParameters GetLumenToonParameters(
+	FRDGBuilder& GraphBuilder,
+	const FViewInfo& View)
+{
+	FLumenToonParameters Parameters;
+	Parameters.LuminanceFlatten = View.FinalPostProcessSettings.LuminanceFlatten;
+	Parameters.ColorFlatten = View.FinalPostProcessSettings.ColorFlatten;
+	Parameters.DiffuseOcclusion = View.FinalPostProcessSettings.DiffuseOcclusion;
+	return Parameters;
+}
+// ----------------------------------Peky End----------------------------------
+
 void TraceReflections(
 	FRDGBuilder& GraphBuilder,
 	const FScene* Scene,

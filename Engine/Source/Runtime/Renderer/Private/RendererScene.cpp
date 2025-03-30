@@ -2391,8 +2391,13 @@ void FScene::RemoveToonMainLightId(const FLightSceneInfo* DirectionLight)
 
 void FScene::SetToonMainLightId(const FLightSceneInfo* DirectionLight)
 {
+	if (ToonMainLightId == -1 || ToonMainLightId >= Lights.Num())
+	{
+		ToonMainLightId = DirectionLight->Id;
+		return;
+	}
 	const FLightSceneInfo* CurrentMainLight = Lights[ToonMainLightId].LightSceneInfo;
-	if (ToonMainLightId != -1 && CurrentMainLight && CurrentMainLight->Proxy)
+	if (CurrentMainLight && CurrentMainLight->Proxy)
 	{
 		const int32 LightForwardShadingPriority = DirectionLight->Proxy->GetDirectionalLightForwardShadingPriority();
 		const float LightLuminance = DirectionLight->Proxy->GetColor().GetLuminance();

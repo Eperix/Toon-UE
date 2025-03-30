@@ -1,6 +1,24 @@
 ﻿#pragma once
 #include "../DeferredShadingCommon.ush"
 
+float Sigmoid(float x) {
+	return 1.0f / (1.0f + exp(-x));
+}
+float2 TranslatedPositionToScreenUV(float3 TranslatedWorldPosition)
+{
+	float4 ViewPosition = mul(float4(TranslatedWorldPosition, 1.0), View.TranslatedWorldToView);
+	float2 ScreenUV = float2(ViewPosition.xy /  (ViewPosition.z * GetTanHalfFieldOfView().xy));
+	ScreenUV = ScreenUV * float2(0.5, -0.5) + float2(0.5, 0.5);
+	return saturate(ScreenUV);
+}
+
+float2 TranslatedPositionToBufferUV(float3 TranslatedWorldPosition)
+{
+	float2 ScreenUV = TranslatedPositionToScreenUV(TranslatedWorldPosition);
+	float2 BufferUV = (ScreenUV * View.ViewSizeAndInvSize.xy + View.ViewRectMin.xy) * View.BufferSizeAndInvSize.zw;
+	return BufferUV;
+}
+
 // ToonFunctions:
 float ToonShadowMask(float Lambert, float AttenuationSpeed, float ShadowOffset = 0.5)
 {

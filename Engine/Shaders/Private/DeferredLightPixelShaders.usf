@@ -424,7 +424,7 @@ void DeferredLightPixelMain(
 		float NoL = dot(ScreenSpaceData.GBuffer.WorldNormal, LightData.Direction);
 		// RayTracing Shadow在物体背面不会发射射线计算阴影
 		// 因此SurfaceShadow在物体背面会有问题，使用NoL把背面的阴影给补上
-		if (!ScreenSpaceData.GBuffer.ToonBuffer.ShadowCastFlag & SCF_DISABLEONSELF)
+		if (!(ScreenSpaceData.GBuffer.ToonBuffer.ShadowCastFlag & SCF_DISABLEONSELF))
 		{
 			Shadow.SurfaceShadow *= step(0, NoL);
 		}

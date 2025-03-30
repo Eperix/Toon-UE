@@ -76,6 +76,10 @@ RWTexture2D<float3> OutSubSurfaceSceneColor;
 #include "Substrate/Substrate.ush"
 #include "Substrate/SubstrateEvaluation.ush"
 #include "HairStrands/HairStrandsEnvironmentLightingCommon.ush"
+// Start Peky Part
+// Toon Lumen
+#include "Toon/ToonCommon.ush"
+// End Peky Part
 
 #if DIM_APPLY_DIFFUSE_INDIRECT
 
@@ -139,6 +143,15 @@ float LumenFoliageOcclusionStrength;
 float LumenMaxAOMultibounceAlbedo;
 float LumenReflectionContrast;
 float LumenReflectionSpecularScale;
+// Start Peky Part
+// Toon Lumen
+float LuminanceFlatten;
+float ColorFlatten;
+float DiffuseOcclusion;
+float4 DownSampleInputSizeAndInv;
+
+Texture2D DownSampleInput;
+// End Peky Part
 
 #if SSR_TILED_COMPOSITION
 StructuredBuffer<uint> SSRTileMaskBuffer;
@@ -581,6 +594,37 @@ void MainPS(
 				float EnergyPreservationFactor = 1.0;
 			#endif
 				IndirectLighting.Diffuse = (DiffuseIndirectLighting * DiffuseColor + BackfaceDiffuseIndirectLighting) * Occlusion.DiffuseOcclusion * EnergyPreservationFactor;
+				// ----------------------------------Peky Start----------------------------------
+				// Toon Lumen
+				
+				if (GBuffer.ShadingModelID == SHADINGMODELID_TOON_DEFAULT)
+				{
+					// DownSampleInput是DownSample后的DiffuseIndirect_Textures_0
+					float3 DownDiffuseCenter = DownSampleInput.SampleLevel(GlobalBilinearClampedSampler, SceneBufferUV, 0).rgb;
+					float DistFactor = 2.0f;
+					float3 DownDiffuseUp = DownSampleInput.SampleLevel(GlobalBilinearClampedSampler, SceneBufferUV - float2(0.0f, DownSampleInputSizeAndInv.w) * DistFactor, 0).rgb;
+					float3 DownDiffuseDown = DownSampleInput.SampleLevel(GlobalBilinearClampedSampler, SceneBufferUV + float2(0.0f, DownSampleInputSizeAndInv.w) * DistFactor, 0).rgb;
+					float3 DownDiffuseLeft = DownSampleInput.SampleLevel(GlobalBilinearClampedSampler, SceneBufferUV - float2(DownSampleInputSizeAndInv.z, 0.0f) * DistFactor, 0).rgb;
+					float3 DownDiffuseRight = DownSampleInput.SampleLevel(GlobalBilinearClampedSampler, SceneBufferUV + float2(DownSampleInputSizeAndInv.z, 0.0f) * DistFactor, 0).rgb;
+					float3 DownDiffuse = DownDiffuseCenter * 2 + DownDiffuseUp + DownDiffuseDown + DownDiffuseLeft + DownDiffuseRight;
+					DownDiffuse *= 0.166667f;
+
+					// DiffuseIndirectLighting是默认的Lumen Diffuse
+					// 把它和DownSample后的Lumen Diffuse都转化到Lab空间
+					float3 DownDiffuseLab = LinearRGB_2_LAB(DownDiffuse);
+					float3 DiffuseLab = LinearRGB_2_LAB(DiffuseIndirectLighting);
+					
+					// 使用计算出来的亮度差异分别插值L和AB（L是亮度，AB是颜色）
+					float LerpL = lerp(DiffuseLab.r, DownDiffuseLab.r, LuminanceFlatten);
+					float2 LerpAB = lerp(DiffuseLab.gb, DownDiffuseLab.gb, ColorFlatten);
+					float3 LerpDiffuse = LAB_2_LinearRGB(float3(LerpL.r, LerpAB));
+
+					// 再添加一个参数来调整Ao强度
+					float ToonOcclusion = lerp(1.0f, Occlusion.DiffuseOcclusion, DiffuseOcclusion);
+
+					IndirectLighting.Diffuse =  (LerpDiffuse * DiffuseColor + BackfaceDiffuseIndirectLighting) * ToonOcclusion;
+				}
+				// ----------------------------------Peky End----------------------------------
 				IndirectLighting.Transmission = 0;
 
 				#if DIM_APPLY_DIFFUSE_INDIRECT == DIM_APPLY_DIFFUSE_INDIRECT_SCREEN_PROBE_GATHER
@@ -596,6 +640,7 @@ void MainPS(
 
 		// Accumulate lighting into the final buffers
 	#if !SUBSTRATE_ENABLED
+		IndirectLighting.Specular = 0;
 		IndirectLighting.Specular *= GetSSSCheckerboadSpecularScale(PixelPos, Material.bNeedsSeparateLightAccumulation);
 		FLightAccumulator LightAccumulator = (FLightAccumulator)0;
 		LightAccumulator_Add(
@@ -611,10 +656,10 @@ void MainPS(
 		// DiffuseIndirectAndAO里前面几个pass计算Lumen光照
 		// 然后在DiffuseIndirectComposite中将它们合并到一起
 		// 环境光、间接光照都这这里
-		if (Material.GBufferData.ShadingModelID == SHADINGMODELID_TOON_DEFAULT)
-		{
-			OutAddColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
-		}
+		// if (Material.GBufferData.ShadingModelID == SHADINGMODELID_TOON_DEFAULT)
+		// {
+		// 	OutAddColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
+		// }
 		// End Peky Part
 	#endif // !SUBSTRATE_ENABLED
 

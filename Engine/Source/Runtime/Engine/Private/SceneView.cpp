@@ -1731,6 +1731,12 @@ void FSceneView::OverridePostProcessSettings(const FPostProcessSettings& Src, fl
 		LERP_PP(LumenDiffuseColorBoost);
 		LERP_PP(LumenSkylightLeaking);
 		LERP_PP(LumenFullSkylightLeakingDistance);
+		// ----------------------------------Peky Start----------------------------------
+		// Toon Lumen
+		LERP_PP(LuminanceFlatten);
+		LERP_PP(ColorFlatten);
+		LERP_PP(DiffuseOcclusion);
+		// ----------------------------------Peky End----------------------------------
 
 		SET_PP(LumenRayLightingMode);
 		SET_PP(LumenReflectionsScreenTraces);
