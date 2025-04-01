@@ -51,7 +51,13 @@ FAreaLightIntegrateContext CreateCapsuleIntegrateContext(float Roughness, half3 
 	BRANCH
 	if( Capsule.Length > 0 )
 	{
-		LineIrradiance( N, Capsule.LightPos[0], Capsule.LightPos[1], Capsule.DistBiasSqr, LineCosSubtended, Falloff, NoL );
+		// ----------------------------------YK Engine Start-----------------------------------------
+		// Toon Multiple light sources
+		// Source Length大于0时的椭球体光源Flat Normal效果
+		LineIrradiance( N, Capsule, LineCosSubtended, Falloff, NoL);
+		//-------------------------------------YK Engine End------------------------------------------
+		
+		// LineIrradiance( N, Capsule.LightPos[0], Capsule.LightPos[1], Capsule.DistBiasSqr, LineCosSubtended, Falloff, NoL );
 	}
 	else
 	{
@@ -59,7 +65,18 @@ FAreaLightIntegrateContext CreateCapsuleIntegrateContext(float Roughness, half3 
 		Falloff = rcp( DistSqr + Capsule.DistBiasSqr );
 
 		float3 L = Capsule.LightPos[0] * rsqrt( DistSqr );
-		NoL = dot( N, L );
+		// ----------------------------------YK Engine Start-----------------------------------------
+		// Toon Multiple light sources
+		
+		float ToonNoL;
+		if (!Capsule.ToonLight.IsDirectionalLight)
+		{
+			float3 ToonNormal = FlatNormal(Capsule.ToonLight, L, N, rsqrt(Falloff));
+			ToonNoL = dot(ToonNormal, L);
+		}
+		NoL = Capsule.ToonLight.IsToon ? ToonNoL : dot( N, L );
+		
+		//-------------------------------------YK Engine End------------------------------------------
 	}
 
 	if( Capsule.Radius > 0 )

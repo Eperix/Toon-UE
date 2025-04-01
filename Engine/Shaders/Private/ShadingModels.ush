@@ -973,47 +973,19 @@ FDirectLighting PreintegratedSkinBxDF( FGBufferData GBuffer, half3 N, half3 V, h
 
 
 /** Start Peky Part **/
+// 仅有二值化Diffuse的ToonBxDF
 FDirectLighting ToonDefaultBxDF( FGBufferData GBuffer, half3 N, half3 V, half3 L, float Falloff, float NoL, FAreaLight AreaLight, FShadowTerms Shadow )
 {
-#if GBUFFER_HAS_TANGENT
-	half3 X = GBuffer.WorldTangent;
-	half3 Y = normalize(cross(N, X));
-#else
-	half3 X = 0;
-	half3 Y = 0;
-#endif
+	float LightingLevel = 0.5 - AreaLight.ToonLight.ToonLightOffset;
+	float ToonDiffuse = smoothstep(LightingLevel - AreaLight.ToonLight.ToonLightSmooth * 0.5f, LightingLevel + AreaLight.ToonLight.ToonLightSmooth * 0.5f, NoL);
 	
-	BxDFContext Context;
-	Init(Context, N, X, Y, V, L);
-	SphereMaxNoH(Context, AreaLight.SphereSinAlpha, true);
-	Context.NoV = saturate(abs(Context.NoV) + 0.00001);
-	float SpecularOffset = GBuffer.Specular;
-	SpecularOffset = (SpecularOffset - 1) * -0.25;
-	float SpecularRange = saturate(GBuffer.Metallic - 0.5);
-	float3 ShadowColor = 0;
-	ShadowColor = GBuffer.BaseColor * ShadowColor;
-
-	float offset = GBuffer.CustomData.a;
-	float SoftScatterStrength = 0;
-
-	offset = offset * 2 - 1;
-	half3 H = normalize(V + L);
-	float NoH = saturate(dot(N, H));
-	NoL=dot(N,L)*2-2;
-	half NoLOffset = NoL+saturate(GBuffer.CustomData.a)*4;
-
+	float3 Diffuse = AreaLight.FalloffColor * Falloff * ToonDiffuse;
+	
 	FDirectLighting Lighting;
-	Lighting.Diffuse = AreaLight.FalloffColor * ((smoothstep(-SpecularRange, SpecularRange, NoLOffset)) * Falloff) * Diffuse_Lambert(GBuffer.DiffuseColor) * 2.2;
-
-	float InScatter = pow(saturate(dot(L, -V)), 12) * lerp(3, .1f, 1);
-	float NormalContribution = saturate(dot(N, H));
-	float BackScatter = GBuffer.GBufferAO * NormalContribution / (PI * 2);
-	Lighting.Specular = ToonStep(SpecularRange, (saturate(D_GGX(SpecularOffset, NoH)))) * (AreaLight.FalloffColor * GBuffer.SpecularColor * Falloff * 8);
-	float3 TransmissionSoft = AreaLight.FalloffColor * (Falloff * lerp(BackScatter, 1, InScatter)) * ShadowColor * SoftScatterStrength;
-	float3 ShadowLightener = 0;
-	ShadowLightener = (saturate(smoothstep(0, 1, saturate(1 - NoLOffset))) * ShadowColor * 0.1);
-
-	Lighting.Transmission = (ShadowLightener + TransmissionSoft) * Falloff;
+	Lighting.Diffuse = Diffuse_Lambert(GBuffer.BaseColor) * Diffuse;
+	Lighting.Specular = 0.0f;
+	Lighting.Transmission = 0.0f;
+	
 	return Lighting;
 }
 

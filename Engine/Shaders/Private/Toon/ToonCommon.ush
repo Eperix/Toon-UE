@@ -12,6 +12,12 @@ float2 TranslatedPositionToScreenUV(float3 TranslatedWorldPosition)
 	return saturate(ScreenUV);
 }
 
+float BoxSDF(float3 Position, float3 BoxExtent)
+{
+	float3 q = abs(Position) - BoxExtent;
+	return length(max(q, 0.0f)) + min(max(q.x, max(q.y, q.z)), 0.0f);
+}
+
 float2 TranslatedPositionToBufferUV(float3 TranslatedWorldPosition)
 {
 	float2 ScreenUV = TranslatedPositionToScreenUV(TranslatedWorldPosition);
@@ -55,15 +61,24 @@ float3 GetSkinShadow(float Shadow, float3 Color0)
 	return LerpMultiFloat3(0, Color1, Color2, 1, Shadow);
 }
 
-float3 ToonStep(float feather, float halfLambert, float threshold = 0.5f)
-{
-	return smoothstep(threshold - feather, threshold + feather, halfLambert);
-}
-
-half ToonStepHalf(float halfLambert, float smoothness = 0.001f, float threshold = 0.5f)
+half ToonStep(float halfLambert, float smoothness = 0.001f, float threshold = 0.5f)
 {
 	smoothness = max(smoothness, 0.001f);
 	return smoothstep(threshold - smoothness, threshold + smoothness, halfLambert);
+}
+
+float LinearStep(float MinValue, float MaxValue, float Value)
+{
+	return max(0, min(1, (Value - MinValue) / (MaxValue - MinValue)));
+}
+
+bool IsToonMainLight()
+{
+#if IS_TOON_MAINLIGHT
+	return true;
+#else
+	return false;
+#endif
 }
 
 float ToonFresnel(float3 N, float3 V, float Exponent, float BaseReflectionFraction = 0.0f)
@@ -87,15 +102,6 @@ float StrandSpecular(float3 T, float3 L, float3 V, half Exponent, half Scale = 1
 float3 ShiftTangent(float3 T, float3 N, half shift)
 {
 	return normalize(T + shift* N);
-}
-
-bool IsToonMainLight()
-{
-#if IS_TOON_MAINLIGHT
-	return true;
-#else
-	return false;
-#endif
 }
 
 float GetHairShadow(FGBufferData GBuffer, FDeferredLightData LightData, float2 ScreenUV)

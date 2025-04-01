@@ -367,6 +367,12 @@ void DeferredLightPixelMain(
 		FDeferredLightData LightData = InitDeferredLightFromUniforms(CURRENT_LIGHT_TYPE);
 		UpdateLightDataColor(LightData.Color, InputParams, DerivedParams);
 
+		// ----------------------------------YK Engine Start-----------------------------------------
+		// Toon Multiple light sources
+		LightData.ToonLight.IsToon = ScreenSpaceData.GBuffer.ShadingModelID == SHADINGMODELID_TOON_DEFAULT;
+		LightData.ToonLight.IsDirectionalLight = !LightData.bRadialLight;
+		//-------------------------------------YK Engine End------------------------------------------
+		
 	 #if USE_HAIR_COMPLEX_TRANSMITTANCE
 		if (ScreenSpaceData.GBuffer.ShadingModelID == SHADINGMODELID_HAIR && ShouldUseHairComplexTransmittance(ScreenSpaceData.GBuffer))
 		{

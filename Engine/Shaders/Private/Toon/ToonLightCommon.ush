@@ -4,8 +4,8 @@
 #pragma once
 
 // FLATTEN_RANGE_MODE
-#define RELATIVEDISTANCE 0
-#define ABSOLUTEDISTANCE 1
+#define RELATIVE_DISTANCE 0
+#define ABSOLUTE_DISTANCE 1
 
 // 用于传递Toon多光源计算需要的数据
 struct FToonLight
@@ -16,7 +16,10 @@ struct FToonLight
 	float ToonLightFlatten;
 	float FlattenRange;
 	float PreserveTexNormal;
-	
+
+	// Toon多光源计算需要的其他数据
+	bool IsToon;
+	bool IsDirectionalLight;
 };
 
 FToonLight InitToonLight()
@@ -27,7 +30,27 @@ FToonLight InitToonLight()
 	ToonLight.ToonLightFlatten = 0.0f;
 	ToonLight.FlattenRange = 200.0f;
 	ToonLight.PreserveTexNormal = 0.0f;
+	ToonLight.IsToon = false;
+	ToonLight.IsDirectionalLight = false;
 	return ToonLight;
+}
+
+// LinearDistance：灯光与着色点的线性距离
+// 对于点光源来说，LinearFalloff = distance(灯光世界空间坐标, 着色点世界空间坐标)
+float3 FlatNormal(FToonLight ToonLight, float3 LightVector, float3 Normal, float LinearDistance)
+{
+	// 这里乘上个1.5是为了让距离灯光为FlattenRange的点，它的ToonDistance等于2/3.
+	// 这样该点插值后的FlattedNormal与光源的夹角会等于60°，计算出来的NoL就会等于0.5
+	float ToonDistance = saturate(LinearDistance / (ToonLight.FlattenRange * 1.5f));
+	
+	float3 Temp = cross(LightVector, Normal);
+	float3 LightTangent = normalize(cross(Temp, LightVector));
+	// 越靠近光源的点，法线越接近LightVector；越远离光源的点，法线越接近LightTangent
+	float3 FlattedNormal = lerp(LightVector, LightTangent, ToonDistance);
+	
+	FlattedNormal =	normalize(lerp(Normal, FlattedNormal, ToonLight.ToonLightFlatten));
+	
+	return ToonLight.IsToon ? FlattedNormal : Normal;
 }
 
 // ----------------------------------YK Engine End----------------------------------

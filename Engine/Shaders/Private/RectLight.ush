@@ -6,6 +6,10 @@
 #include "CapsuleLight.ush"
 #include "MonteCarlo.ush"
 #include "LightData.ush"
+// ----------------------------------YK Engine Start-----------------------------------------
+// Toon Multiple light sources
+#include "Toon/ToonCommon.ush"
+//-------------------------------------YK Engine End------------------------------------------
 
 #ifndef USE_SOURCE_TEXTURE
 #define USE_SOURCE_TEXTURE (FEATURE_LEVEL > FEATURE_LEVEL_ES3_1)
@@ -149,8 +153,15 @@ float3 RectIrradianceLambert( float3 N, FRect Rect, out float BaseIrradiance, ou
 	// SinAlphaSqr = r^2 / d^2;
 	float SinAlphaSqr = BaseIrradiance * (1.0 / PI);
 
-	NoL = SphereHorizonCosWrap( dot( N, L ), SinAlphaSqr );
-
+	// NoL = SphereHorizonCosWrap( dot( N, L ), SinAlphaSqr );
+	// ----------------------------------YK Engine Start-----------------------------------------
+	// Toon Multiple light sources
+	float BoxDistance = BoxSDF(LocalPosition, float3(Rect.Extent, 0.0f));
+	float3 ToonNormal = FlatNormal(Rect.ToonLight, L, N, BoxDistance);
+	
+	NoL = SphereHorizonCosWrap( dot( ToonNormal, L ), SinAlphaSqr );
+	//-------------------------------------YK Engine End------------------------------------------
+	
 	return L;
 }
 

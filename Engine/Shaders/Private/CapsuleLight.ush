@@ -99,7 +99,34 @@ float3 LineIrradiance( float3 N, float3 Line0, float3 Line1, float DistanceBiasS
 	float3 VectorIrradiance = ( BaseIrradiance * 0.5 ) * ( Line0 * InvLength0 + Line1 * InvLength1 );
 	return VectorIrradiance;
 }
+// ----------------------------------YK Engine Start-----------------------------------------
+// Toon Multiple light sources
+// 重载LineIrradiance实现椭球体光源Flat Normal效果
+float3 LineIrradiance( float3 N, FCapsuleLight Capsule, out float CosSubtended, out float BaseIrradiance, out float NoL)
+{
+	const float3 Line0 = Capsule.LightPos[0];
+	const float3 Line1 = Capsule.LightPos[1];
+	float3 ToLight0 = normalize(Line0);
+	float3 ToLight1 = normalize(Line1);
+	const float DistanceBiasSqr = Capsule.DistBiasSqr;
+	
+	float LengthSqr0 = dot( Line0, Line0 );
+	float LengthSqr1 = dot( Line1, Line1 );
+	float InvLength0 = rsqrt( LengthSqr0 );
+	float InvLength1 = rsqrt( LengthSqr1 );
+	float InvLength01 = InvLength0 * InvLength1;
 
+	CosSubtended = dot( Line0, Line1 ) * InvLength01;
+	BaseIrradiance = InvLength01 / ( CosSubtended * 0.5 + 0.5 + DistanceBiasSqr * InvLength01 );
+
+	half3 FlattedNormal0 = FlatNormal(Capsule.ToonLight, ToLight0, N, rsqrt(BaseIrradiance));
+	half3 FlattedNormal1 = FlatNormal(Capsule.ToonLight, ToLight1, N, rsqrt(BaseIrradiance));
+	NoL = 0.5 * ( dot(FlattedNormal0, Line0) * InvLength0 + dot(FlattedNormal1, Line1) * InvLength1 );
+	
+	float3 VectorIrradiance = ( BaseIrradiance * 0.5 ) * ( Line0 * InvLength0 + Line1 * InvLength1 );
+	return VectorIrradiance;
+}
+//-------------------------------------YK Engine End------------------------------------------
 // Alpha is half of angle of spherical cap
 float SphereHorizonCosWrap( float NoL, float SinAlphaSqr )
 {
