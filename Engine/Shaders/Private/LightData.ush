@@ -4,6 +4,10 @@
 
 #include "Common.ush"
 #include "HairShadingCommon.ush" // Used for FHairTransmittanceData
+// ----------------------------------YK Engine Start----------------------------------
+// Toon Multiple light sources
+#include "Toon/ToonLightCommon.ush"
+// ----------------------------------YK Engine End----------------------------------
 #include "/Engine/Shared/LightDefinitions.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -134,6 +138,14 @@ struct FLightShaderParameters
 	float  IESAtlasIndex;
 	uint  LightFunctionAtlasLightIndex;
 	uint  bAffectsTranslucentLighting;
+	// ----------------------------------YK Engine Start----------------------------------
+	// Toon Multiple light sources
+	float ToonLightSmooth;
+	float ToonLightOffset;
+	float ToonLightFlatten;
+	float FlattenRange;
+	float PreserveTexNormal;
+	// ----------------------------------YK Engine End----------------------------------
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -188,6 +200,10 @@ struct FDeferredLightData
 	FHairTransmittanceData HairTransmittance;
 	// Wether the light affect translucent materials or not 
 	uint  bAffectsTranslucentLighting;
+	// ----------------------------------YK Engine Start----------------------------------
+	// Toon Multiple light sources
+	FToonLight ToonLight;
+	// ----------------------------------YK Engine End----------------------------------
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

@@ -202,6 +202,11 @@ void MainPS(
 					LightData.RectLightData.AtlasData.AtlasMaxLevel	= 0.f;
 					LightData.HairTransmittance			= InitHairTransmittanceData();
 					LightData.ShadowedBits				= 0;
+					// ----------------------------------YK Engine Start----------------------------------
+					// Toon Multiple light sources
+					// 初始化一下ToonLight，防止报错
+					LightData.ToonLight = InitToonLight();
+					// ----------------------------------YK Engine End----------------------------------
 				}
 
 				float3 SampleRadiance = 0;

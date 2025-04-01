@@ -16,6 +16,10 @@ struct FAreaLight
 	FRectTexture Texture;
 
 	uint		IsRectAndDiffuseMicroReflWeight;
+	// ----------------------------------YK Engine Start----------------------------------
+	// Toon Multiple light sources
+	FToonLight ToonLight;
+	// ----------------------------------YK Engine End----------------------------------
 };
 
 struct FAreaLightIntegrateContext

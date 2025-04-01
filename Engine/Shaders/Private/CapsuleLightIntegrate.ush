@@ -111,6 +111,10 @@ FAreaLightIntegrateContext CreateCapsuleIntegrateContext(float Roughness, half3 
 	Out.NoL = NoL;
 	Out.Falloff = Falloff;	
 	Out.L = L;
+	// ----------------------------------YK Engine Start----------------------------------
+	// Toon Multiple light sources
+	Out.AreaLight.ToonLight = Capsule.ToonLight;
+	// ----------------------------------YK Engine End----------------------------------
 	return Out;
 }
 

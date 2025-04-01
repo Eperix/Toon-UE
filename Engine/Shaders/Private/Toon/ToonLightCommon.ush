@@ -1,1 +1,33 @@
-﻿#pragma once
+﻿// ----------------------------------YK Engine Start----------------------------------
+// Toon Multiple light sources
+
+#pragma once
+
+// FLATTEN_RANGE_MODE
+#define RELATIVEDISTANCE 0
+#define ABSOLUTEDISTANCE 1
+
+// 用于传递Toon多光源计算需要的数据
+struct FToonLight
+{
+	// 与FLightShaderParameters里的Toon多光源数据对应
+	float ToonLightSmooth;
+	float ToonLightOffset;
+	float ToonLightFlatten;
+	float FlattenRange;
+	float PreserveTexNormal;
+	
+};
+
+FToonLight InitToonLight()
+{
+	FToonLight ToonLight;
+	ToonLight.ToonLightSmooth = 0.5f;
+	ToonLight.ToonLightOffset = 0.0f;
+	ToonLight.ToonLightFlatten = 0.0f;
+	ToonLight.FlattenRange = 200.0f;
+	ToonLight.PreserveTexNormal = 0.0f;
+	return ToonLight;
+}
+
+// ----------------------------------YK Engine End----------------------------------

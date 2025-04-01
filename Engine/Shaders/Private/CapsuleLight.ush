@@ -2,6 +2,11 @@
 
 #pragma once
 
+// ----------------------------------YK Engine Start----------------------------------
+// Toon Multiple light sources
+#include "Toon/ToonLightCommon.ush"
+// ----------------------------------YK Engine End----------------------------------
+
 float SmoothMin( float a, float b, float k )
 {
 	float h = saturate( 0.5 + (0.5 / k) * (b - a) );
@@ -26,6 +31,10 @@ struct FCapsuleLight
 	float	Radius;
 	float	SoftRadius;
 	float	DistBiasSqr;
+	// ----------------------------------YK Engine Start----------------------------------
+	// Toon Multiple light sources
+	FToonLight ToonLight;
+	// ----------------------------------YK Engine End----------------------------------
 };
 
 void ClipToHorizon( inout float3 Line0, inout float3 Line1, float3 N )

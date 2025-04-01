@@ -1094,6 +1094,11 @@ FDirectLighting EvaluateBxDF( FGBufferData GBuffer, half3 N, half3 V, half3 L, f
 	AreaLight.Rect = (FRect)0;
 	AreaLight.IsRectAndDiffuseMicroReflWeight = 0;
 	AreaLight.Texture = InitRectTexture();
+	// ----------------------------------YK Engine Start----------------------------------
+	// Toon Multiple light sources
+	// 初始化一下ToonLight，防止报错
+	AreaLight.ToonLight = InitToonLight();
+	// ----------------------------------YK Engine End----------------------------------
 
 	return IntegrateBxDF( GBuffer, N, V, L, 1, NoL, AreaLight, Shadow );
 }

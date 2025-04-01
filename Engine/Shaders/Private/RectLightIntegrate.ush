@@ -245,6 +245,10 @@ FAreaLightIntegrateContext CreateRectIntegrateContext( float Roughness, half3 N,
 	Out.NoL = NoL;
 	Out.Falloff = Falloff;
 #endif
+	// ----------------------------------YK Engine Start----------------------------------
+	// Toon Multiple light sources
+	Out.AreaLight.ToonLight = Rect.ToonLight;
+	// ----------------------------------YK Engine End----------------------------------
 	return Out;
 }
 

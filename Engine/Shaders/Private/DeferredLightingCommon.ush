@@ -288,11 +288,13 @@ float GetLocalLightAttenuation(
 	return LightMask;
 }
 
+// Start Peky Part
+// Toon Multiple Light
 #define RECLIGHT_BARNDOOR 1
 // Wrapper for FDeferredLightData for computing visible rect light (i.e., unoccluded by barn doors)
 FRect GetRect(float3 ToLight, FDeferredLightData LightData)
 {
-	return GetRect(
+	FRect Rect = GetRect(
 		ToLight, 
 		LightData.Direction, 
 		LightData.Tangent, 
@@ -301,7 +303,10 @@ FRect GetRect(float3 ToLight, FDeferredLightData LightData)
 		LightData.RectLightData.BarnCosAngle, 
 		LightData.RectLightData.BarnLength,
 		RECLIGHT_BARNDOOR);
+	Rect.ToonLight = LightData.ToonLight;
+	return Rect;
 }
+// End Peky Part
 
 FCapsuleLight GetCapsule( float3 ToLight, FDeferredLightData LightData )
 {
@@ -312,6 +317,10 @@ FCapsuleLight GetCapsule( float3 ToLight, FDeferredLightData LightData )
 	Capsule.DistBiasSqr = 1;
 	Capsule.LightPos[0] = ToLight - 0.5 * Capsule.Length * LightData.Tangent;
 	Capsule.LightPos[1] = ToLight + 0.5 * Capsule.Length * LightData.Tangent;
+	// ----------------------------------YK Engine Start----------------------------------
+	// Toon Multiple light sources
+	Capsule.ToonLight = LightData.ToonLight;
+	// ----------------------------------YK Engine End----------------------------------
 	return Capsule;
 }
 

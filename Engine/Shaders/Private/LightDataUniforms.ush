@@ -47,6 +47,14 @@ FDeferredLightData InitDeferredLightFromUniforms(uint InLightType)
 	Out.bAffectsTranslucentLighting = DeferredLightUniforms.bAffectsTranslucentLighting;
 
 	Out.HairTransmittance		= InitHairTransmittanceData();
+	// ----------------------------------YK Engine Start----------------------------------
+	// Toon Multiple light sources
+	Out.ToonLight.ToonLightSmooth = DeferredLightUniforms.ToonLightSmooth;
+	Out.ToonLight.ToonLightOffset = DeferredLightUniforms.ToonLightOffset;
+	Out.ToonLight.ToonLightFlatten = DeferredLightUniforms.ToonLightFlatten;
+	Out.ToonLight.FlattenRange = DeferredLightUniforms.FlattenRange;
+	Out.ToonLight.PreserveTexNormal = DeferredLightUniforms.PreserveTexNormal;
+	// ----------------------------------YK Engine End----------------------------------
 	return Out;
 }
 

@@ -26,6 +26,10 @@ struct FRect
 	float2		Extent;
 	float2		FullExtent;
 	float2		Offset;
+	// ----------------------------------YK Engine Start----------------------------------
+	// Toon Multiple light sources
+	FToonLight ToonLight;
+	// ----------------------------------YK Engine End----------------------------------
 };
 
 float3 SampleRectTexture(FRectTexture RectTexture, float2 RectUV, float Level, bool bIsReference = false)
