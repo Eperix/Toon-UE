@@ -853,6 +853,8 @@ class FDeferredLightPS : public FGlobalShader
 	// Start Peky Part
 	// Toon Main Light
 	class FToonMainLight : SHADER_PERMUTATION_BOOL("IS_TOON_MAINLIGHT");
+	// Toon Multiple light sources
+	class FFlattenRangeMode		: SHADER_PERMUTATION_INT("FLATTEN_RANGE_MODE", 2);
 
 	using FPermutationDomain = TShaderPermutationDomain<
 		FSourceShapeDim,
@@ -870,8 +872,9 @@ class FDeferredLightPS : public FGlobalShader
 		FSubstrateTileType,
 		FVirtualShadowMapMask,
 	// Start Peky Part
-	// ToonMainLight
-	FToonMainLight>;
+	// Toon Light
+		FToonMainLight,
+		FFlattenRangeMode>;
 	// End Peky Part
 
 	BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
@@ -2792,6 +2795,8 @@ static void RenderLight(
 			// Start Peky Part
 			// 当不是平行光是直接设置非MainLight
 			PermutationVector.Set<FDeferredLightPS::FToonMainLight>(false);
+			// Toon Multiple light sources
+			PermutationVector.Set< FDeferredLightPS::FFlattenRangeMode>(LightProxy->GetRangeMode());
 			// End Peky Part
 		}
 		else // Directional
@@ -2814,6 +2819,8 @@ static void RenderLight(
 			{
 				PermutationVector.Set<FDeferredLightPS::FToonMainLight>(false);
 			}
+			// Toon Multiple light sources
+			PermutationVector.Set< FDeferredLightPS::FFlattenRangeMode>(EFlattenRangeMode::RelativeDistance);
 			// End Peky Part
 		}
 		PermutationVector = FDeferredLightPS::RemapPermutation(PermutationVector);
@@ -2956,6 +2963,7 @@ void FDeferredShadingSceneRenderer::RenderLightForHair(
 	// Start Peky Part
 	// 当不是平行光是直接设置非MainLight
 	PermutationVector.Set<FDeferredLightPS::FToonMainLight>(false);
+	PermutationVector.Set< FDeferredLightPS::FFlattenRangeMode>(AbsoluteDistance);
 	// End Peky Part
 	if (bIsDirectional)
 	{
@@ -3155,6 +3163,7 @@ static void InternalRenderSimpleLightsStandardDeferred(
 	// Start Peky Part
 	// 当不是平行光是直接设置非MainLight
 	PermutationVector.Set<FDeferredLightPS::FToonMainLight>(false);
+	PermutationVector.Set< FDeferredLightPS::FFlattenRangeMode>(EFlattenRangeMode::AbsoluteDistance);
 	// End Peky Part
 	TShaderMapRef<FDeferredLightPS> PixelShader(View.ShaderMap, PermutationVector);
 

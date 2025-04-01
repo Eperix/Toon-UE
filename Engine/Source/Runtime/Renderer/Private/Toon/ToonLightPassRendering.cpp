@@ -8,6 +8,22 @@
 #include "LightSceneProxy.h"
 #include "SkyAtmosphereRendering.h"
 
+DECLARE_CYCLE_STAT(TEXT("ToonLightPass"), STAT_CLP_ToonLightPass, STATGROUP_SceneRendering);
+BEGIN_GLOBAL_SHADER_PARAMETER_STRUCT(FToonLightUniformParameters, )
+	SHADER_PARAMETER_RDG_TEXTURE(Texture2D, ToonShadowTexture)
+	SHADER_PARAMETER_SAMPLER(SamplerState, ToonShadowTextureSampler)
+	SHADER_PARAMETER_STRUCT_INCLUDE(FLightShaderParameters, LightParameters)
+END_GLOBAL_SHADER_PARAMETER_STRUCT()
+IMPLEMENT_STATIC_UNIFORM_BUFFER_SLOT(ToonMainLight);
+IMPLEMENT_STATIC_UNIFORM_BUFFER_STRUCT(FToonLightUniformParameters, "ToonMainLight", ToonMainLight);
+
+BEGIN_SHADER_PARAMETER_STRUCT(FToonLightParameters, )
+	SHADER_PARAMETER_STRUCT_REF(FViewUniformShaderParameters, View)
+	SHADER_PARAMETER_RDG_UNIFORM_BUFFER(FToonLightUniformParameters , ToonMainLight)
+	SHADER_PARAMETER_STRUCT_INCLUDE(FInstanceCullingDrawParams, InstanceCullingDrawParams)
+	RENDER_TARGET_BINDING_SLOTS()
+END_SHADER_PARAMETER_STRUCT()
+
 IMPLEMENT_MATERIAL_SHADER_TYPE(, FToonLightPassVS, TEXT("/Engine/Private/Toon/ToonMeshPassVS.usf"), TEXT("MainVS"), SF_Vertex);
 IMPLEMENT_MATERIAL_SHADER_TYPE(, FToonLightPassPS, TEXT("/Engine/Private/Toon/ToonLightPS.usf"), TEXT("MainPS"), SF_Pixel);
 IMPLEMENT_SHADERPIPELINE_TYPE_VSPS(ToonLightPipeline, FToonLightPassVS, FToonLightPassPS, true);
@@ -228,27 +244,9 @@ FRegisterPassProcessorCreateFunction RegisterToonLightPass(&CreateToonLightPassP
 
 //------------------FRegisterPassProcessorCreateFunction---------------
 
-DECLARE_CYCLE_STAT(TEXT("ToonLightPass"), STAT_CLP_ToonLightPass, STATGROUP_SceneRendering);
-
-BEGIN_GLOBAL_SHADER_PARAMETER_STRUCT(FToonLightUniformParameters, )
-SHADER_PARAMETER_RDG_TEXTURE(Texture2D, ToonShadowTexture)
-SHADER_PARAMETER_SAMPLER(SamplerState, ToonShadowTextureSampler)
-SHADER_PARAMETER_STRUCT_INCLUDE(FLightShaderParameters, LightParameters)
-END_GLOBAL_SHADER_PARAMETER_STRUCT()
-
-IMPLEMENT_STATIC_UNIFORM_BUFFER_SLOT(ToonMainLight);
-IMPLEMENT_STATIC_UNIFORM_BUFFER_STRUCT(FToonLightUniformParameters, "ToonMainLight", ToonMainLight);
-
-BEGIN_SHADER_PARAMETER_STRUCT(FToonLightPassParameters, )
-	SHADER_PARAMETER_STRUCT_REF(FViewUniformShaderParameters, View)
-	SHADER_PARAMETER_RDG_UNIFORM_BUFFER(FToonLightUniformParameters , ToonMainLight)
-	SHADER_PARAMETER_STRUCT_INCLUDE(FInstanceCullingDrawParams, InstanceCullingDrawParams)
-	RENDER_TARGET_BINDING_SLOTS()
-END_SHADER_PARAMETER_STRUCT()
-
-FToonLightPassParameters* GetToonLightPassParameters(FRDGBuilder& GraphBuilder, const FViewInfo& View, const FScene* Scene, FSceneTextures& SceneTextures)
+FToonLightParameters* GetToonLightPassParameters(FRDGBuilder& GraphBuilder, const FViewInfo& View, const FScene* Scene, FSceneTextures& SceneTextures)
 {
-	FToonLightPassParameters* PassParameters = GraphBuilder.AllocParameters<FToonLightPassParameters>();
+	FToonLightParameters* PassParameters = GraphBuilder.AllocParameters<FToonLightParameters>();
 	FToonLightUniformParameters& ToonLightUniformParameters = *GraphBuilder.AllocParameters<FToonLightUniformParameters>();
 	{
 		const FRDGTextureRef WhiteDummy = GSystemTextures.GetWhiteDummy(GraphBuilder);
@@ -307,7 +305,7 @@ void FDeferredShadingSceneRenderer::RenderToonLightPass(FRDGBuilder& GraphBuilde
 
         	View.BeginRenderView();
         	
-            FToonLightPassParameters* PassParameters = GetToonLightPassParameters(GraphBuilder, View, Scene,SceneTextures);
+            FToonLightParameters* PassParameters = GetToonLightPassParameters(GraphBuilder, View, Scene,SceneTextures);
             ParallelMeshPass.BuildRenderingCommands(GraphBuilder, Scene->GPUScene, PassParameters->InstanceCullingDrawParams);
 
             GraphBuilder.AddDispatchPass(

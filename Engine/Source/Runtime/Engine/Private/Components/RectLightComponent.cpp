@@ -344,6 +344,13 @@ void FRectLightSceneProxy::GetLightShaderParameters(FLightRenderParameters& Ligh
 	{
 		GetSceneInterface()->GetRectLightAtlasSlot(this, &LightParameters);
 	}
+	// ----------------------------------YK Engine Start-----------------------------------------
+	// Toon Multiple light sources
+	LightParameters.ToonLightSmooth = ToonLightSmooth;
+	LightParameters.ToonLightOffset = ToonLightOffset;
+	LightParameters.ToonLightFlatten = ToonLightFlatten;
+	LightParameters.FlattenRange = FlattenRange;
+	//-------------------------------------YK Engine End------------------------------------------
 	
 	// Render RectLight approximately as SpotLight if the requester does not support rect light (e.g., translucent light grid or mobile)
 	if (!!(Flags & ELightShaderParameterFlags::RectAsSpotLight))

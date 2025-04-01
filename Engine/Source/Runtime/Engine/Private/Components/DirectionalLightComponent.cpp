@@ -370,6 +370,11 @@ public:
 		
 		ModulatedShadowColor = FLinearColor(Component->ModulatedShadowColor);
 		ShadowAmount = Component->ShadowAmount;
+		
+		// ----------------------------------YK Engine Start-----------------------------------------
+		// Toon Multiple light sources
+		FlattenRange = Component->FlattenOffset;
+		//-------------------------------------YK Engine End------------------------------------------
 	}
 
 	void UpdateLightShaftOverrideDirection_GameThread(const UDirectionalLightComponent* Component)
@@ -420,6 +425,15 @@ public:
 		LightParameters.LightFunctionAtlasLightIndex = GetLightFunctionAtlasLightIndex();
 		LightParameters.bAffectsTranslucentLighting = AffectsTranslucentLighting() ? 1 : 0;
 		LightParameters.InverseExposureBlend = 0.0f;
+
+		// ----------------------------------YK Engine Start-----------------------------------------
+		// Toon Multiple light sources
+		LightParameters.ToonLightSmooth = ToonLightSmooth;
+		LightParameters.ToonLightOffset = ToonLightOffset;
+		LightParameters.ToonLightFlatten = ToonLightFlatten;
+		LightParameters.FlattenRange = FlattenRange;
+		LightParameters.PreserveTexNormal = PreserveTexNormal;
+		//-------------------------------------YK Engine End------------------------------------------
 	}
 
 	virtual float GetLightSourceAngle() const override
@@ -1020,6 +1034,11 @@ UDirectionalLightComponent::UDirectionalLightComponent(const FObjectInitializer&
 	LightSourceAngle = 0.5357f;		// Angle of earth's sun
 	LightSourceSoftAngle = 0.0f;
 	ShadowSourceAngleFactor = 1.0f;
+	
+	// ----------------------------------YK Engine Start-----------------------------------------
+	// Toon Multiple light sources
+	FlattenOffset = 0.0f;
+	//-------------------------------------YK Engine End------------------------------------------
 
 
 	CascadeDistributionExponent = 3.0f;

@@ -8,6 +8,10 @@
 #include "Math/Vector.h"
 #include "UObject/NameTypes.h"
 
+// ----------------------------------YK Engine Start-----------------------------------------
+// Toon Multiple light sources
+enum EFlattenRangeMode : int;
+//-------------------------------------YK Engine End------------------------------------------
 class ULightComponent;
 class FMaterialRenderProxy;
 struct FViewMatrices;
@@ -235,6 +239,11 @@ public:
 	inline bool IsSelected() const { return bSelected; }
 	inline void SetSelected(bool bNewSelected) { bSelected = bNewSelected; }
 
+	// ----------------------------------YK Engine Start-----------------------------------------
+	// Toon Multiple light sources
+	inline EFlattenRangeMode GetRangeMode() const {return RangeMode; }
+	//-------------------------------------YK Engine End------------------------------------------
+	
 	/**
 	 * Use to get the owning actor label (or component name as fallback, if the owner is null or ENABLE_DEBUG_LABELS is off) for diagnostic messages, debug or profiling.
 	 * The actor label is what is shown in the UI (as opposed to the the FName).
@@ -381,6 +390,17 @@ protected:
 	float RayStartOffsetDepthScale;
 
 	const class FStaticShadowDepthMap* StaticShadowDepthMap;
+	// ----------------------------------YK Engine Start-----------------------------------------
+	// Toon Multiple light sources
+	
+	// 与ULightComponent相对应
+	float ToonLightSmooth;
+	float ToonLightOffset;
+	float ToonLightFlatten;
+	EFlattenRangeMode RangeMode;
+	float FlattenRange;
+	float PreserveTexNormal;
+	//-------------------------------------YK Engine End------------------------------------------
 
 	/** Light function parameters. */
 	FVector	LightFunctionScale;

@@ -5,6 +5,7 @@
 #include "SimpleMeshDrawCommandPass.h"
 #include "StaticMeshBatch.h"
 #include "DeferredShadingRenderer.h"
+#include "ClearQuad.h"
 #include "PipelineFileCache.h"
 
 // IMPLEMENT_MATERIAL_SHADER_TYPE接受的参数：
@@ -192,12 +193,50 @@ FToonBasePassParameters* GetToonPassParameters(FRDGBuilder& GraphBuilder, const 
 		SceneTextures.TBufferC = CreateToonBufferTexture(GraphBuilder, Config.Extent, GFastVRamConfig.TBufferC, TEXT("TBufferC"));
 	}
 	// 设置RenderTarget
-    PassParameters->RenderTargets[0] = FRenderTargetBinding(SceneTextures.TBufferA, ERenderTargetLoadAction::EClear);
-    PassParameters->RenderTargets[1] = FRenderTargetBinding(SceneTextures.TBufferB, ERenderTargetLoadAction::EClear);
-    PassParameters->RenderTargets[2] = FRenderTargetBinding(SceneTextures.TBufferC, ERenderTargetLoadAction::EClear);
-    PassParameters->RenderTargets.DepthStencil = FDepthStencilBinding(SceneTextures.Depth.Target, ERenderTargetLoadAction::ELoad, ERenderTargetLoadAction::ELoad, FExclusiveDepthStencil::DepthWrite_StencilWrite);
+	PassParameters->RenderTargets[0] = FRenderTargetBinding(SceneTextures.TBufferA, ERenderTargetLoadAction::ELoad);
+	PassParameters->RenderTargets[1] = FRenderTargetBinding(SceneTextures.TBufferB, ERenderTargetLoadAction::ELoad);
+	PassParameters->RenderTargets[2] = FRenderTargetBinding(SceneTextures.TBufferC, ERenderTargetLoadAction::ELoad);
+	PassParameters->RenderTargets.DepthStencil = FDepthStencilBinding(SceneTextures.Depth.Target, ERenderTargetLoadAction::ELoad, ERenderTargetLoadAction::ELoad, FExclusiveDepthStencil::DepthWrite_StencilWrite);
 
-    return PassParameters;
+	return PassParameters;
+}
+
+// 用于清空TBuffer的函数
+void ClearToonBuffer(FRDGBuilder& GraphBuilder, const FViewInfo& View, FSceneTextures& SceneTextures)
+{
+	if (!HasBeenProduced(SceneTextures.TBufferA))
+	{
+		// 如果ToonBuffer没被创建，在这里创建
+		const FSceneTexturesConfig& Config = View.GetSceneTexturesConfig();
+		SceneTextures.TBufferA = CreateToonBufferTexture(GraphBuilder, Config.Extent, GFastVRamConfig.TBufferA, TEXT("TBufferA"));
+		SceneTextures.TBufferB = CreateToonBufferTexture(GraphBuilder, Config.Extent, GFastVRamConfig.TBufferB, TEXT("TBufferB"));
+		SceneTextures.TBufferC = CreateToonBufferTexture(GraphBuilder, Config.Extent, GFastVRamConfig.TBufferC, TEXT("TBufferC"));
+	}
+	FToonBasePassParameters* PassParameters = GraphBuilder.AllocParameters<FToonBasePassParameters>();
+	PassParameters->RenderTargets[0] = FRenderTargetBinding(SceneTextures.TBufferA, ERenderTargetLoadAction::ENoAction);
+	PassParameters->RenderTargets[1] = FRenderTargetBinding(SceneTextures.TBufferB, ERenderTargetLoadAction::ENoAction);
+	PassParameters->RenderTargets[2] = FRenderTargetBinding(SceneTextures.TBufferC, ERenderTargetLoadAction::ENoAction);
+	
+	GraphBuilder.AddPass(RDG_EVENT_NAME("TBufferClear"), PassParameters, ERDGPassFlags::Raster,
+			[PassParameters](FRHICommandList& RHICmdList)
+		{
+			// If no fast-clear action was used, we need to do an MRT shader clear.
+			const FRenderTargetBindingSlots& RenderTargets = PassParameters->RenderTargets;
+			FLinearColor ClearColors[MaxSimultaneousRenderTargets];
+			FRHITexture* Textures[MaxSimultaneousRenderTargets];
+			int32 TextureIndex = 0;
+
+			RenderTargets.Enumerate([&](const FRenderTargetBinding& RenderTarget)
+			{
+				FRHITexture* TextureRHI = RenderTarget.GetTexture()->GetRHI();
+				ClearColors[TextureIndex] = TextureRHI->GetClearColor();
+				Textures[TextureIndex] = TextureRHI;
+				++TextureIndex;
+			});
+
+			DrawClearQuadMRT(RHICmdList, true, TextureIndex, ClearColors, false, 0, false, 0);
+			
+		});
 }
 
 // 在DeferredShadingSceneRenderer调用这个函数来渲染ToonPass
@@ -217,11 +256,12 @@ void FDeferredShadingSceneRenderer::RenderToonBasePass(FRDGBuilder& GraphBuilder
         const bool bShouldRenderView = View.ShouldRenderView();
         if(bShouldRenderView)
         {
+        	ClearToonBuffer(GraphBuilder, View, SceneTextures);
             FToonBasePassParameters* PassParameters = GetToonPassParameters(GraphBuilder, View, SceneTextures);
 
             View.ParallelMeshDrawCommandPasses[EMeshPass::ToonBasePass].BuildRenderingCommands(GraphBuilder, Scene->GPUScene, PassParameters->InstanceCullingDrawParams);
             GraphBuilder.AddDispatchPass(
-                RDG_EVENT_NAME("ToonPass"),
+                RDG_EVENT_NAME("ToonBasePassParallel"),
                 PassParameters,
                 ERDGPassFlags::Raster | ERDGPassFlags::SkipRenderPass,
                 [&View, PassParameters](FRDGDispatchPassBuilder& DispatchPassBuilder)

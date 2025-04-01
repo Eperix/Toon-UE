@@ -31,6 +31,11 @@
 #include "Math/SHMath.h"
 #include "GlobalRenderResources.h"
 
+
+// ----------------------------------YK Engine Start-----------------------------------------
+// Toon Multiple light sources
+enum EFlattenRangeMode : int;
+//-------------------------------------YK Engine End------------------------------------------
 class FCanvas;
 class FGlobalDynamicIndexBuffer;
 class FGlobalDynamicReadBuffer;
@@ -1278,6 +1283,16 @@ BEGIN_SHADER_PARAMETER_STRUCT(FLightShaderParameters, ENGINE_API)
 	// IES texture slice index
 	SHADER_PARAMETER(float, IESAtlasIndex)
 
+	// ----------------------------------YK Engine Start-----------------------------------------
+	// Toon Multiple light sources
+	// 传递给shader的Toon多光源参数
+	SHADER_PARAMETER(float, ToonLightSmooth)
+	SHADER_PARAMETER(float, ToonLightOffset)
+	SHADER_PARAMETER(float, ToonLightFlatten)
+	SHADER_PARAMETER(float, FlattenRange)
+	SHADER_PARAMETER(float, PreserveTexNormal)
+	//-------------------------------------YK Engine End------------------------------------------
+
 	// Index of the light function in the atlas
 	SHADER_PARAMETER(uint32, LightFunctionAtlasLightIndex)
 
@@ -1366,6 +1381,17 @@ struct FLightRenderParameters
 	uint32 bAffectsTranslucentLighting;
 
 	float InverseExposureBlend;
+	// ----------------------------------YK Engine Start-----------------------------------------
+	// Toon Multiple light sources
+	
+	// FLightRenderParameters里的Toon多光源参数
+	float ToonLightSmooth;
+	float ToonLightOffset;
+	float ToonLightFlatten;
+	float FlattenRange;
+	float PreserveTexNormal;
+	//-------------------------------------YK Engine End------------------------------------------
+	
 
 	// Return Invalid rect light atlas MIP level
 	static float GetRectLightAtlasInvalidMIPLevel() { return 32.f;  }

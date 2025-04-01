@@ -783,6 +783,14 @@ void FGPUScene::InitLightData(const FLightSceneInfoCompact& LightInfoCompact, bo
 	DataOut.InverseExposureBlend = LightParams.InverseExposureBlend;
 	DataOut.IESAtlasIndex = LightParams.IESAtlasIndex;
 	DataOut.LightTypeAndShadowMapChannelMaskPacked = LightInfo.PackLightTypeAndShadowMapChannelMask(bAllowStaticLighting);
+	// ----------------------------------YK Engine Start-----------------------------------------
+	// Toon Multiple light sources
+	DataOut.ToonLightSmooth = LightParams.ToonLightSmooth;
+	DataOut.ToonLightOffset = LightParams.ToonLightOffset;
+	DataOut.ToonLightFlatten = LightParams.ToonLightFlatten;
+	DataOut.FlattenRange = LightParams.FlattenRange;
+	DataOut.PreserveTexNormal = LightParams.PreserveTexNormal;
+	//-------------------------------------YK Engine End------------------------------------------
 }
 
 void FGPUScene::UpdateInternal(FRDGBuilder& GraphBuilder, FSceneUniformBuffer& SceneUB, FRDGExternalAccessQueue& ExternalAccessQueue, const UE::Tasks::FTask& UpdateTaskPrerequisites, const FUpdateFromComputeCommands& UpdatesFromCompute)

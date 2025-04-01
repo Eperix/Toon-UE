@@ -373,6 +373,15 @@ void FLightRenderParameters::MakeShaderParameters(const FViewMatrices& ViewMatri
 	OutShaderParameters.IESAtlasIndex = IESAtlasIndex;
 	OutShaderParameters.LightFunctionAtlasLightIndex = LightFunctionAtlasLightIndex;
 	OutShaderParameters.bAffectsTranslucentLighting = bAffectsTranslucentLighting;
+
+	// ----------------------------------YK Engine Start-----------------------------------------
+	// Toon Multiple light sources
+	OutShaderParameters.ToonLightSmooth = ToonLightSmooth;
+	OutShaderParameters.ToonLightOffset = ToonLightOffset;
+	OutShaderParameters.ToonLightFlatten = ToonLightFlatten;
+	OutShaderParameters.FlattenRange = FlattenRange;
+	OutShaderParameters.PreserveTexNormal = PreserveTexNormal;
+	//-------------------------------------YK Engine End------------------------------------------
 }
 
 // match logic in InverseExposureLerp(...)
@@ -450,6 +459,16 @@ ULightComponent::ULightComponent(const FObjectInitializer& ObjectInitializer)
 	bUseIESBrightness = false;
 	IESBrightnessScale = 1.0f;
 	IESTexture = NULL;
+
+	// ----------------------------------YK Engine Start-----------------------------------------
+	// Toon Multiple light sources
+	// ULightComponent里Toon多光源变量初始化
+	ToonLightSmooth = 0.5f;
+	ToonLightOffset = 0.0f;
+	ToonLightFlatten = 0.0f;
+	bFlatNormal = false;
+	PreserveTexNormal = 0.0f;
+	//-------------------------------------YK Engine End------------------------------------------
 
 	bAffectTranslucentLighting = true;
 	bTransmission = false;

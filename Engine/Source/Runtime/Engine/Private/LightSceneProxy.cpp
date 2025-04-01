@@ -32,6 +32,15 @@ FLightSceneProxy::FLightSceneProxy(const ULightComponent* InLightComponent)
 	, DiffuseScale(InLightComponent->DiffuseScale)
 	, LightGuid(InLightComponent->LightGuid)
 	, RayStartOffsetDepthScale(InLightComponent->RayStartOffsetDepthScale)
+	// ----------------------------------YK Engine Start-----------------------------------------
+	// Toon Multiple light sources
+	, ToonLightSmooth(InLightComponent->ToonLightSmooth)
+	, ToonLightOffset(InLightComponent->ToonLightOffset)
+	, ToonLightFlatten(InLightComponent->bFlatNormal ? InLightComponent->ToonLightFlatten : 0.0f)
+	, RangeMode(EFlattenRangeMode::RelativeDistance)
+	, FlattenRange(0)
+	, PreserveTexNormal(InLightComponent->PreserveTexNormal)
+	//-------------------------------------YK Engine End------------------------------------------
 	, IESTexture(0)
 	, bContactShadowLengthInWS(InLightComponent->ContactShadowLengthInWS ? true : false)
 	, bMovable(InLightComponent->IsMovable())

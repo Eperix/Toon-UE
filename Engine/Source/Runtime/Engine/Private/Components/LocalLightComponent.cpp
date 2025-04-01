@@ -19,6 +19,12 @@ ULocalLightComponent::ULocalLightComponent(const FObjectInitializer& ObjectIniti
 	Radius_DEPRECATED = 1024.0f;
 	AttenuationRadius = 1000;
 	InverseExposureBlend = 0;
+	// ----------------------------------YK Engine Start-----------------------------------------
+	// Toon Multiple light sources
+	RangeMode = EFlattenRangeMode::RelativeDistance;
+	FlattenOffset = 0.0f;
+	FlattenDistance = 200.0f;
+	//-------------------------------------YK Engine End------------------------------------------
 }
 
 void ULocalLightComponent::SetAttenuationRadius(float NewRadius)

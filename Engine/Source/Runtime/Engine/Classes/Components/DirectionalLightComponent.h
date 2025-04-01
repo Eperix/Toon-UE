@@ -300,6 +300,17 @@ class UDirectionalLightComponent : public ULightComponent
 	UFUNCTION(BlueprintCallable, Category = "Rendering|Lighting")
 	ENGINE_API void SetLightSourceSoftAngle(float NewValue);
 
+	// ----------------------------------YK Engine Start-----------------------------------------
+	// Toon Multiple light sources
+	
+	/** 
+	 * Offset Flatten Distance.
+	 * Make sure Toon Actor Pivot is written correctly to get the right effect.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Light|Toon", meta = (ClampMin = 0.0, EditCondition = "bFlatNormal", EditConditionHides, DisplayAfter = "ToonLightFlatten"))
+	float FlattenOffset;
+	//-------------------------------------YK Engine End------------------------------------------
+
 	UFUNCTION(BlueprintCallable, Category = "Rendering|Lighting")
 	ENGINE_API void SetShadowSourceAngleFactor(float NewValue);
 

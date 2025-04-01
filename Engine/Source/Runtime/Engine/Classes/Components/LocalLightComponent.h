@@ -58,6 +58,30 @@ class ULocalLightComponent : public ULightComponent
 	UFUNCTION(BlueprintPure, Category="Rendering|Lighting")
 	static ENGINE_API float GetUnitsConversionFactor(ELightUnits SrcUnits, ELightUnits TargetUnits, float CosHalfConeAngle = -1);
 
+	// ----------------------------------YK Engine Start-----------------------------------------
+	// Toon Multiple light sources
+	
+	/**
+	 * AbsoluteDistance: The falloff distance of ToonLightFlatten
+	 * RelativeDistance: Use the distance to Toon Actor Pivot as falloff distance of ToonLightFlatten
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Light|Toon", meta=( DisplayAfter = "ToonLightFlatten" ))
+	TEnumAsByte<enum EFlattenRangeMode> RangeMode;
+	
+	/**
+	 * The falloff distance of ToonLightFlatten
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Light|Toon", meta = (ClampMin = 0.0, EditCondition = "bFlatNormal && RangeMode == EFlattenRangeMode::AbsoluteDistance", EditConditionHides, DisplayAfter = "RangeMode"))
+	float FlattenDistance;
+	
+	/**
+	 * Offset Flatten Distance.
+	 * Make sure Toon Actor Pivot is written correctly to get the right effect.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Light|Toon", meta = (ClampMin = 0.0, EditCondition = "bFlatNormal && RangeMode == EFlattenRangeMode::RelativeDistance", EditConditionHides, DisplayAfter = "RangeMode"))
+	float FlattenOffset;
+	//-------------------------------------YK Engine End------------------------------------------
+
 protected:
 	//~ Begin UActorComponent Interface
 	ENGINE_API virtual void SendRenderTransform_Concurrent() override;

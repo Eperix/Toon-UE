@@ -18,7 +18,7 @@ void MainPS(
     	
     	// 获取像素的材质参数(此处的材质就是材质辑器编辑出来的材质).
     	FMaterialPixelParameters MaterialParameters = GetMaterialPixelParameters(In.FactoryInterpolants, In.SvPosition);
-    
+	
     	FPixelMaterialInputs PixelMaterialInputs;
     	CalcMaterialParameters(MaterialParameters, PixelMaterialInputs, In.SvPosition, bIsFrontFace);
 	

@@ -2,6 +2,7 @@
 
 #include "DataDrivenShaderPlatformInfo.h"
 #include "MeshPassProcessor.h"
+#include "ShaderParameterStruct.h"
 #include "InstanceCulling/InstanceCullingContext.h"
 
 struct FFastVramConfig;
@@ -75,7 +76,7 @@ public:
     static void ModifyCompilationEnvironment(const FMaterialShaderPermutationParameters& Parameters, FShaderCompilerEnvironment& OutEnvironment)
     {
     	FMeshMaterialShader::ModifyCompilationEnvironment(Parameters, OutEnvironment);
-    	OutEnvironment.SetDefine(TEXT("TOONLIGHTING"), 1);
+    	// OutEnvironment.SetDefine(TEXT("TOONLIGHTING"), 1);
     }
 
 	static bool ShouldCompilePermutation(const FMeshMaterialShaderPermutationParameters& Parameters)
@@ -91,37 +92,32 @@ public:
 class FToonLightPassPS : public FMeshMaterialShader
 {
 	DECLARE_SHADER_TYPE(FToonLightPassPS, MeshMaterial);
-public:
-    FToonLightPassPS() = default;
-    FToonLightPassPS(const ShaderMetaType::CompiledShaderInitializerType& Initializer)
-        : FMeshMaterialShader(Initializer)
-    {
-    }
+	// SHADER_USE_PARAMETER_STRUCT(FToonLightPassPS, FMeshMaterialShader);
 
-    static void ModifyCompilationEnvironment(const FMaterialShaderPermutationParameters& Parameters, FShaderCompilerEnvironment& OutEnvironment)
-    {
-    	FMeshMaterialShader::ModifyCompilationEnvironment(Parameters, OutEnvironment);
-    	OutEnvironment.SetDefine(TEXT("TOONLIGHTING"), 1);
-    }
+	static void ModifyCompilationEnvironment(const FMaterialShaderPermutationParameters& Parameters, FShaderCompilerEnvironment& OutEnvironment)
+	{
+		FMeshMaterialShader::ModifyCompilationEnvironment(Parameters, OutEnvironment);
+		OutEnvironment.SetDefine(TEXT("TOONLIGHTING"), 1);
+	}
 
 	static bool ShouldCompilePermutation(const FMeshMaterialShaderPermutationParameters& Parameters)
-    {
-    	return IsFeatureLevelSupported(Parameters.Platform, ERHIFeatureLevel::SM5) &&
+	{
+		return IsFeatureLevelSupported(Parameters.Platform, ERHIFeatureLevel::SM5) &&
 			(Parameters.VertexFactoryType->GetFName() == FName(TEXT("FLocalVertexFactory")) || 
 				Parameters.VertexFactoryType->GetFName() == FName(TEXT("TGPUSkinVertexFactoryDefault")));
-    }
+	}
 
-    void GetShaderBindings(
-        const FScene* Scene,
-        ERHIFeatureLevel::Type FeatureLevel,
-        const FPrimitiveSceneProxy* PrimitiveSceneProxy,
-        const FMaterialRenderProxy& MaterialRenderProxy,
-        const FMaterial& Material,
-        const FMeshMaterialShaderElementData& ShaderElementData,
-        FMeshDrawSingleShaderBindings& ShaderBindings) const
-    {
-        FMeshMaterialShader::GetShaderBindings(Scene, FeatureLevel, PrimitiveSceneProxy, MaterialRenderProxy, Material, ShaderElementData, ShaderBindings);
-    }
+	void GetShaderBindings(
+		const FScene* Scene,
+		ERHIFeatureLevel::Type FeatureLevel,
+		const FPrimitiveSceneProxy* PrimitiveSceneProxy,
+		const FMaterialRenderProxy& MaterialRenderProxy,
+		const FMaterial& Material,
+		const FMeshMaterialShaderElementData& ShaderElementData,
+		FMeshDrawSingleShaderBindings& ShaderBindings) const
+	{
+		FMeshMaterialShader::GetShaderBindings(Scene, FeatureLevel, PrimitiveSceneProxy, MaterialRenderProxy, Material, ShaderElementData, ShaderBindings);
+	}
 };
 
 FRDGTextureDesc GetToonShadowTextureDesc(FIntPoint Extent, ETextureCreateFlags CreateFlags);

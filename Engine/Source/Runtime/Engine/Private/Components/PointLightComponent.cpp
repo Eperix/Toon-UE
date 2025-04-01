@@ -63,6 +63,14 @@ void FPointLightSceneProxy::GetLightShaderParameters(FLightRenderParameters& Lig
 	{
 		GetSceneInterface()->GetLightIESAtlasSlot(this, &LightParameters);
 	}
+	// ----------------------------------YK Engine Start-----------------------------------------
+	// Toon Multiple light sources
+	LightParameters.ToonLightSmooth = ToonLightSmooth;
+	LightParameters.ToonLightOffset = ToonLightOffset;
+	LightParameters.ToonLightFlatten = ToonLightFlatten;
+	LightParameters.FlattenRange = FlattenRange;
+	LightParameters.PreserveTexNormal = PreserveTexNormal;
+	//-------------------------------------YK Engine End------------------------------------------
 }
 
 /**

@@ -76,6 +76,15 @@ struct FLightSceneData
 	// Extra fields
 	uint LightTypeAndShadowMapChannelMaskPacked;
 
+	// ----------------------------------YK Engine Start-----------------------------------------
+	// Toon Multiple light sources
+	float ToonLightSmooth;
+	float ToonLightOffset;
+	float ToonLightFlatten;
+	float FlattenRange;
+	float PreserveTexNormal;
+	//-------------------------------------YK Engine End------------------------------------------
+	
 	float2 Padding;
 };
 

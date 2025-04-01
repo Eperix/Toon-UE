@@ -38,6 +38,18 @@ public:
 	virtual void InitRHI(FRHICommandListBase& RHICmdList);
 };
 
+// ----------------------------------YK Engine Start-----------------------------------------
+// Toon Multiple light sources
+
+/** Flat mode for light component shading */
+UENUM()
+enum EFlattenRangeMode : int
+{
+	RelativeDistance UMETA(DisplayName="RelativeDistance"),
+	AbsoluteDistance UMETA(DisplayName="AbsoluteDistance"),
+};
+//-------------------------------------YK Engine End------------------------------------------
+
 UCLASS(abstract, HideCategories=(Trigger,Activation,"Components|Activation",Physics), ShowCategories=(Mobility), MinimalAPI)
 class ULightComponent : public ULightComponentBase
 {
@@ -177,7 +189,43 @@ class ULightComponent : public ULightComponentBase
 	 */
 	UPROPERTY(EditAnywhere, AdvancedDisplay, BlueprintReadOnly, Category=Light)
 	FLightingChannels LightingChannels;
+	
+	// ----------------------------------YK Engine Start-----------------------------------------
+	// Toon Multiple light sources
+	
+	/**
+	 * ToonLighting Smoothness
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Light|Toon", meta = (ClampMin = 0.0, ClampMax = 1.0))
+	float ToonLightSmooth;
 
+	/**
+	 * ToonLighting Offset，Increase offset value will increase lighting area
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Light|Toon", meta = (ClampMin = -1.0, ClampMax = 1.0))
+	float ToonLightOffset;
+
+	/**
+	 * Make the shape of Toon Lighting flat
+	 * Reduce ugly Shading effect caused by Normal.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Light|Toon")
+	uint32 bFlatNormal:1;
+	
+	/**
+	 * To flat the shape of Toon Lighting.
+	 * Increase the value, the shape of lighting area will be similar to the falloff of light.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Light|Toon", meta = (ClampMin = 0.0, ClampMax = 1.0, EditCondition = "bFlatNormal", EditConditionHides))
+	float ToonLightFlatten;
+
+	/**
+	 * Flat Mesh Normal, no flat Texture Normal
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Light|Toon", meta = (ClampMin = 0.0, ClampMax = 1.0, EditCondition = "bFlatNormal", EditConditionHides))
+	float PreserveTexNormal;
+
+	//-------------------------------------YK Engine End----------------------------------------
 	/** 
 	 * The light function material to be applied to this light.
 	 * Note that only non-lightmapped lights (UseDirectLightMap=False) can have a light function. 

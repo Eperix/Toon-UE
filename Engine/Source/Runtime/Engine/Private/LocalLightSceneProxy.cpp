@@ -17,6 +17,11 @@ FLocalLightSceneProxy::FLocalLightSceneProxy(const ULocalLightComponent* Compone
 	, FadeRange(Component->MaxDistanceFadeRange)
 	, InverseExposureBlend(Component->InverseExposureBlend)
 {
+	// ----------------------------------YK Engine Start-----------------------------------------
+	// Toon Multiple light sources
+	RangeMode = Component->RangeMode;
+	FlattenRange = Component->RangeMode == RelativeDistance ? Component->FlattenOffset : Component->FlattenDistance;
+	//-------------------------------------YK Engine End------------------------------------------
 	UpdateRadius(Component->AttenuationRadius);
 }
 
