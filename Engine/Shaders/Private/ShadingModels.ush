@@ -992,34 +992,42 @@ float3 ToonSpecularGGX( float Roughness, float3 SpecularColor, BxDFContext Conte
 	return (ToonD * Vis) * F;
 }
 
-// 仅有二值化Diffuse的ToonBxDF
-FDirectLighting ToonDefaultBxDF( FGBufferData GBuffer, half3 N, half3 V, half3 L, float Falloff, float NoL, FAreaLight AreaLight, FShadowTerms Shadow )
+FDirectLighting ToonBxDFInternal(FGBufferData GBuffer, half3 N, half3 V, half3 L, float Falloff, float NoL, FAreaLight AreaLight)
 {
 	FDirectLighting ToonLighting;
 	BxDFContext Context;
+	
+	Init(Context, N, V, L);
+	SphereMaxNoH(Context, AreaLight.SphereSinAlpha, true);
 
+	Context.NoV = saturate(abs( Context.NoV ) + 1e-5);
+
+	ToonLighting.Diffuse = Diffuse_Lambert(GBuffer.DiffuseColor) * Falloff;
+	ToonLighting.Specular = Falloff * ToonSpecularGGX(GBuffer.Roughness, GBuffer.SpecularColor, Context, NoL, AreaLight, GBuffer.ToonBuffer.SpecularOffset, GBuffer.ToonBuffer.SpecularSmoothness);
+
+	FBxDFEnergyTerms EnergyTerms = ComputeGGXSpecEnergyTerms(GBuffer.Roughness, Context.NoV, GBuffer.SpecularColor);
+
+	// Add energy presevation (i.e. attenuation of the specular layer onto the diffuse component
+	ToonLighting.Diffuse *= ComputeEnergyPreservation(EnergyTerms);
+	// Add specular microfacet multiple scattering term (energy-conservation)
+	ToonLighting.Specular *= ComputeEnergyConservation(EnergyTerms);
+	ToonLighting.Transmission = 0;
+
+	return ToonLighting;
+}
+
+FDirectLighting ToonDefaultBxDF(FGBufferData GBuffer, half3 N, half3 V, half3 L, float Falloff, float NoL, FAreaLight AreaLight, FShadowTerms Shadow)
+{
 	float Smoothness = AreaLight.ToonLight.ToonLightSmooth;
 	// 当Smoothness较小时，Smoothness除以FlattenRange来保持软硬度，这样调节ToonLightFlatten时肉眼不会觉得软硬度会发生变化
 	float DistanceSmooth = lerp(Smoothness * rcp(AreaLight.ToonLight.FlattenRange), 1.0f, Smoothness);
 	Smoothness = lerp(Smoothness, DistanceSmooth, AreaLight.ToonLight.ToonLightFlatten);
 	float LightingLevel = 0.5f - AreaLight.ToonLight.ToonLightOffset;
 	float ToonNoL = smoothstep(saturate(LightingLevel - Smoothness * 0.5f), saturate(LightingLevel + Smoothness * 0.5f), NoL);
-
-	Init(Context, N, V, L);
-	SphereMaxNoH(Context, AreaLight.SphereSinAlpha, true);
-
-	Context.NoV = saturate(abs( Context.NoV ) + 1e-5);
 	
-	ToonLighting.Diffuse = Diffuse_Lambert(GBuffer.DiffuseColor) * (Falloff * ToonNoL);
-	ToonLighting.Specular = ToonSpecularGGX(GBuffer.Roughness, GBuffer.SpecularColor, Context, saturate(ToonNoL), AreaLight, GBuffer.ToonBuffer.SpecularOffset, GBuffer.ToonBuffer.SpecularSmoothness) * (Falloff * ToonNoL);
-	
-	FBxDFEnergyTerms EnergyTerms = ComputeGGXSpecEnergyTerms(GBuffer.Roughness, Context.NoV, GBuffer.SpecularColor);
-	
-	// Add energy presevation (i.e. attenuation of the specular layer onto the diffuse component
-	ToonLighting.Diffuse *= ComputeEnergyPreservation(EnergyTerms);
-	// Add specular microfacet multiple scattering term (energy-conservation)
-	ToonLighting.Specular *= ComputeEnergyConservation(EnergyTerms);
-	ToonLighting.Transmission = 0;
+	FDirectLighting ToonLighting = ToonBxDFInternal(GBuffer, N, V, L, Falloff, NoL, AreaLight);
+	ToonLighting.Diffuse *= ToonNoL;
+	ToonLighting.Specular *= ToonNoL;
 
 	return ToonLighting;
 }

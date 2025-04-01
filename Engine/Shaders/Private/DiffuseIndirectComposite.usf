@@ -620,7 +620,7 @@ void MainPS(
 					float3 LerpDiffuse = LAB_2_LinearRGB(float3(LerpL.r, LerpAB));
 
 					// 再添加一个参数来调整Ao强度
-					float ToonOcclusion = lerp(1.0f, Occlusion.DiffuseOcclusion, DiffuseOcclusion);
+					float3 ToonOcclusion = lerp(1.0f, Occlusion.DiffuseOcclusion, DiffuseOcclusion);
 
 					IndirectLighting.Diffuse =  (LerpDiffuse * DiffuseColor + BackfaceDiffuseIndirectLighting) * ToonOcclusion;
 				}

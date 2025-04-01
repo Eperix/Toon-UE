@@ -76,7 +76,7 @@ void FToonBasePassProcessor::AddMeshBatch(
 	    	const EBlendMode BlendMode = Material->GetBlendMode();
 
 	    	bool bResult = true;
-	    	if (BlendMode == BLEND_Opaque)
+	    	if (BlendMode == BLEND_Opaque || BlendMode == SE_BLEND_Masked)
 	    	{
 	    		Process(
 					MeshBatch,
@@ -104,7 +104,7 @@ bool FToonBasePassProcessor::Process(
 {
     const FVertexFactory* VertexFactory = MeshBatch.VertexFactory;
 
-    TMeshProcessorShaders<FToonBasePassVS, FToonBasePassVS> ToonBasePassShaders;
+    TMeshProcessorShaders<FToonBasePassVS, FToonBasePassPS> ToonBasePassShaders;
     {
         FMaterialShaderTypes ShaderTypes;
     	// 指定使用的shader
