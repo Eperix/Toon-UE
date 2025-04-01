@@ -28134,12 +28134,11 @@ UMaterialExpressionToonMaterialOutput::UMaterialExpressionToonMaterialOutput(con
 
 	uint32 UMaterialExpressionToonMaterialOutput::GetInputType(int32 InputIndex)
 {
-	if (InputIndex == 0) { return MCT_Float1; }		// SelfID
-	if (InputIndex == 1) { return MCT_Float1; }		// ObjectID
-	if (InputIndex == 2) { return MCT_Float1; }		// ToonModel
-	if (InputIndex == 3) { return MCT_Float1; }		// ShadowCastFlag
-	if (InputIndex == 4) { return MCT_Float1; }		// HairShadowOffset
 	if(InputIndex < 7)
+	{
+		return MCT_Float1;
+	}
+	if (InputIndex == 7)
 	{
 		return MCT_Float4;
 	}
@@ -28178,9 +28177,13 @@ UMaterialExpressionToonMaterialOutput::UMaterialExpressionToonMaterialOutput(con
 	}
 	if (OutputIndex == 5)
 	{
-		CodeInput = ToonDataB.IsConnected() ? ToonDataB.Compile(Compiler) : Compiler->Constant4(0.f, 0.f, 0.f, 0.f);
+		CodeInput = SpecularSmoothness.IsConnected() ? SpecularSmoothness.Compile(Compiler) : Compiler->Constant(0.5f);
 	}
 	if (OutputIndex == 6)
+	{
+		CodeInput = SpecularOffset.IsConnected() ? SpecularOffset.Compile(Compiler) : Compiler->Constant(0.5f);
+	}
+	if (OutputIndex == 7)
 	{
 		CodeInput = ToonDataC.IsConnected() ? ToonDataC.Compile(Compiler) : Compiler->Constant4(0.f, 0.f, 0.f, 0.f);
 	}
@@ -28197,7 +28200,7 @@ UMaterialExpressionToonMaterialOutput::UMaterialExpressionToonMaterialOutput(con
 
 	int32 UMaterialExpressionToonMaterialOutput::GetNumOutputs() const
 {
-	return 7;
+	return 8;
 }
 
 	FString UMaterialExpressionToonMaterialOutput::GetFunctionName() const

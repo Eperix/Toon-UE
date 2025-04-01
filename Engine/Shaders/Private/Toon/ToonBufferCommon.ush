@@ -24,7 +24,9 @@ struct FToonBuffer
 
 	float HairShadowOffset;		// ToonBufferA.a (8)
 
-	float4 ToonBufferB;
+	float SpecularSmoothness;	// ToonBufferB.r (8)
+	float SpecularOffset;		// ToonBufferB.g (8)
+	
 	float4 ToonBufferC;
 };
 
@@ -64,21 +66,24 @@ uint4 EncodeFloatToUint(float4 Src1, int BitsSrc1 = 8)
 	return saturate(Src1) * GetBitsMaxValue(BitsSrc1);
 }
 
-void EncodeToonBuffer(FToonBuffer ToonBuffer, in out uint4 ToonBufferA, in out uint4 ToonBufferB, in out uint4 ToonBufferC)
+void EncodeToonBuffer(FToonBuffer ToonBuffer, in out uint4 ToonBufferA, in out float4 ToonBufferB, in out float4 ToonBufferC)
 {
 	ToonBufferA.r = ToonBuffer.SelfID & GetBitsMaxValue(8);
 	ToonBufferA.g = ToonBuffer.ObjectID & GetBitsMaxValue(8);
 	ToonBufferA.b = EncodeUint2ToUint(ToonBuffer.ToonModel, ToonBuffer.ShadowCastFlag, 3, 5);
 	ToonBufferA.a = EncodeFloatToUint(ToonBuffer.HairShadowOffset);
+	
+	float SpecularOffset01 = saturate(ToonBuffer.SpecularOffset * 0.5 + 0.5);
+	ToonBufferB = float4(ToonBuffer.SpecularSmoothness, SpecularOffset01, 0.0f, 0.0f);
 
-	ToonBufferB = EncodeUintToFloat(ToonBufferB);
-	ToonBufferC = EncodeUintToFloat(ToonBufferC);
+	ToonBufferC = ToonBuffer.ToonBufferC;
+
 }
 
 // 解码ToonBuffer
-FToonBuffer DecodeToonDataFromBuffer(uint4 ToonBufferA, uint4 ToonBufferB, uint4 ToonBufferC, float4 CustomData)
+FToonBuffer DecodeToonDataFromBuffer(uint4 ToonBufferA, float4 ToonBufferB, float4 ToonBufferC, float4 CustomData)
 {
-	
+
 	FToonBuffer ToonBuffer;
 	
 	ToonBuffer.SelfID = ToonBufferA.r;
@@ -86,7 +91,12 @@ FToonBuffer DecodeToonDataFromBuffer(uint4 ToonBufferA, uint4 ToonBufferB, uint4
 	ToonBuffer.ShadowCastFlag = (ToonBufferA.b >> 0) & GetBitsMaxValue(5);
 	ToonBuffer.ToonModel = (ToonBufferA.b >> 5) & GetBitsMaxValue(3);
 	ToonBuffer.HairShadowOffset = EncodeUintToFloat(ToonBufferA.a);
-	
+
+	ToonBuffer.SpecularSmoothness = ToonBufferB.r;
+	ToonBuffer.SpecularOffset = ToonBufferB.g * 2.0f - 1.0f;
+
+	ToonBuffer.ToonBufferC = ToonBufferC;
+
 	return ToonBuffer;
 }
 

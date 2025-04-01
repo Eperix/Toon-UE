@@ -31,9 +31,12 @@ public:
 	// float 8bit [0 - 1]
 	FExpressionInput HairShadowOffset;
 
-	/** Input for scattering coefficient describing how light bounce is absorbed. Valid range is [0,+inf[. Unit is 1/cm. */
+	// float 8bit [0 - 1]
 	UPROPERTY()
-	FExpressionInput ToonDataB;
+	FExpressionInput SpecularSmoothness;
+	// float 8bit [-1 - 1]
+	UPROPERTY()
+	FExpressionInput SpecularOffset;
 		
 	/** Input for phase function 'g' parameter describing how much forward(g>0) or backward (g<0) light scatter around. Valid range is [-1,1]. */
 	UPROPERTY()

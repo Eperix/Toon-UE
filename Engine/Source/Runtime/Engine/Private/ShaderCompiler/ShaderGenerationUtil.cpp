@@ -1433,8 +1433,8 @@ static FString GBufferDecodeFunctionDirectOverride(const FGBufferInfo& BufferInf
 	}
 	// 参数中加入TBuffer
 	FullStr += TEXT(" \n\tuint4 InTBufferA,");
-	FullStr += TEXT(" \n\tuint4 InTBufferB,");
-	FullStr += TEXT(" \n\tuint4 InTBufferC,");
+	FullStr += TEXT(" \n\tfloat4 InTBufferB,");
+	FullStr += TEXT(" \n\tfloat4 InTBufferC,");
 	FullStr += TEXT(" \n\tfloat CustomNativeDepth");
 	FullStr += TEXT(",\n\tfloat4 AnisotropicData");
 	FullStr += TEXT(",\n\tuint CustomStencil");
@@ -1559,8 +1559,8 @@ static FString CreateGBufferDecodeFunctionVariation(const FGBufferInfo& BufferIn
 		// Start Peky Part
 		// Toon Buffer
 		FullStr += TEXT("\tuint4 TBufferA = SceneTexturesStruct.TBufferATexture.Load(int3(IntUV, 0));\n");
-		FullStr += TEXT("\tuint4 TBufferB = SceneTexturesStruct.TBufferBTexture.Load(int3(IntUV, 0));\n");
-		FullStr += TEXT("\tuint4 TBufferC = SceneTexturesStruct.TBufferCTexture.Load(int3(IntUV, 0));\n");
+		FullStr += TEXT("\tfloat4 TBufferB = SceneTexturesStruct.TBufferBTexture.Load(int3(IntUV, 0));\n");
+		FullStr += TEXT("\tfloat4 TBufferC = SceneTexturesStruct.TBufferCTexture.Load(int3(IntUV, 0));\n");
 		// End Peky Part
 	}
 	else if (DecodeType == CoordUInt)

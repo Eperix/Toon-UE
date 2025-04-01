@@ -18,20 +18,20 @@ IMPLEMENT_MATERIAL_SHADER_TYPE(, FToonBasePassPS, TEXT("/Engine/Private/Toon/Too
 
 //--------------------------------------------Toon Buffer Texture---------------------------------------------
 // Toon Buffer step 5-2
-FRDGTextureDesc GetToonBufferTextureDesc(FIntPoint Extent, ETextureCreateFlags CreateFlags)
+void CreateToonBuffers(FRDGBuilder& GraphBuilder, FSceneTextures& SceneTexture, FIntPoint Extent, const FFastVramConfig& FastVRamConfig)
 {
-	//输入的参数：
-	//Extent：贴图尺寸；PF_B8G8R8A8_UINT：贴图格式，表示RGBA各个通道均为8bit uint
-	//FClearValueBinding::Black:清除值，表示清除贴图时将其清除为黑色
-	//TexCreate_UAV：Unordered Access View，允许在着色器中进行随机读写操作
-	//TexCreate_RenderTargetable：表示纹理可作为渲染目标使用
-	//TexCreate_ShaderResource：表示纹理可作为着色器资源，可以在着色器中进行采样等操作
-	return FRDGTextureDesc(FRDGTextureDesc::Create2D(Extent, PF_R8G8B8A8_UINT, FClearValueBinding::Black, TexCreate_UAV | TexCreate_RenderTargetable | TexCreate_ShaderResource | CreateFlags));
-}
-// Toon Buffer step 5-3
-FRDGTextureRef CreateToonBufferTexture(FRDGBuilder& GraphBuilder, FIntPoint Extent, ETextureCreateFlags CreateFlags, const TCHAR* Name)
-{	
-	return GraphBuilder.CreateTexture(GetToonBufferTextureDesc(Extent, CreateFlags), Name);
+	const FRDGTextureDesc TBufferADesc = FRDGTextureDesc(FRDGTextureDesc::Create2D(Extent, PF_R8G8B8A8_UINT,
+		FClearValueBinding::Black, TexCreate_UAV | TexCreate_RenderTargetable | TexCreate_ShaderResource | FastVRamConfig.TBufferA));
+	SceneTexture.TBufferA = GraphBuilder.CreateTexture(TBufferADesc, TEXT("TBufferA"));
+
+	const FRDGTextureDesc TBufferBDesc = FRDGTextureDesc(FRDGTextureDesc::Create2D(Extent, PF_R8G8B8A8,
+		FClearValueBinding::Black, TexCreate_UAV | TexCreate_RenderTargetable | TexCreate_ShaderResource | FastVRamConfig.TBufferB));
+	SceneTexture.TBufferB = GraphBuilder.CreateTexture(TBufferBDesc, TEXT("TBufferB"));
+
+	const FRDGTextureDesc TBufferCDesc = FRDGTextureDesc(FRDGTextureDesc::Create2D(Extent, PF_R8G8B8A8,
+		FClearValueBinding::Black, TexCreate_UAV | TexCreate_RenderTargetable | TexCreate_ShaderResource | FastVRamConfig.TBufferC));
+	SceneTexture.TBufferC = GraphBuilder.CreateTexture(TBufferCDesc, TEXT("TBufferC"));
+
 }
 
  //------------------------------------------- Mesh Pass Processor-------------------------------------------------
@@ -204,13 +204,11 @@ FToonBasePassParameters* GetToonPassParameters(FRDGBuilder& GraphBuilder, const 
 // 用于清空TBuffer的函数
 void ClearToonBuffer(FRDGBuilder& GraphBuilder, const FViewInfo& View, FSceneTextures& SceneTextures)
 {
-	if (!HasBeenProduced(SceneTextures.TBufferA))
+	if (!HasBeenProduced(SceneTextures.TBufferA) || !HasBeenProduced(SceneTextures.TBufferB) || !HasBeenProduced(SceneTextures.TBufferC))
 	{
 		// 如果ToonBuffer没被创建，在这里创建
 		const FSceneTexturesConfig& Config = View.GetSceneTexturesConfig();
-		SceneTextures.TBufferA = CreateToonBufferTexture(GraphBuilder, Config.Extent, GFastVRamConfig.TBufferA, TEXT("TBufferA"));
-		SceneTextures.TBufferB = CreateToonBufferTexture(GraphBuilder, Config.Extent, GFastVRamConfig.TBufferB, TEXT("TBufferB"));
-		SceneTextures.TBufferC = CreateToonBufferTexture(GraphBuilder, Config.Extent, GFastVRamConfig.TBufferC, TEXT("TBufferC"));
+		CreateToonBuffers(GraphBuilder, SceneTextures, Config.Extent, GFastVRamConfig);
 	}
 	FToonBasePassParameters* PassParameters = GraphBuilder.AllocParameters<FToonBasePassParameters>();
 	PassParameters->RenderTargets[0] = FRenderTargetBinding(SceneTextures.TBufferA, ERenderTargetLoadAction::ENoAction);
