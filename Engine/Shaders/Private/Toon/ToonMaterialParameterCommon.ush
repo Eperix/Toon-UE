@@ -14,19 +14,19 @@ FToonBuffer GetToonBuffer(FMaterialPixelParameters MaterialParameters)
 	ToonBuffer.SpecularSmoothness = 0.5f;
 	ToonBuffer.SpecularOffset = 0.0f;
 	ToonBuffer.ToonBufferC = 0.0f;
-#if	NUM_MATERIAL_OUTPUTS_GETTOONBUFFEROUTPUT
-	ToonBuffer.SelfID = clamp(GetToonBufferOutput0(MaterialParameters), 0.0f, 255.0f);
+#if	NUM_MATERIAL_OUTPUTS_GETTOONMATERIALOUTPUT
+	ToonBuffer.SelfID = clamp(GetToonMaterialOutput0(MaterialParameters), 0.0f, 255.0f);
 
-	ToonBuffer.ObjectID = clamp(GetToonBufferOutput1(MaterialParameters), 0.0f, 255.0f);
+	ToonBuffer.ObjectID = clamp(GetToonMaterialOutput1(MaterialParameters), 0.0f, 255.0f);
 
-	ToonBuffer.ToonModel = clamp(GetToonBufferOutput2(MaterialParameters), 0.0f, 7.0f);
+	ToonBuffer.ToonModel = clamp(GetToonMaterialOutput2(MaterialParameters), 0.0f, 7.0f);
 
-	ToonBuffer.ShadowCastFlag = clamp(GetToonBufferOutput3(MaterialParameters), 0.0f, 32.0f);
+	ToonBuffer.ShadowCastFlag = clamp(GetToonMaterialOutput3(MaterialParameters), 0.0f, 32.0f);
 
-	ToonBuffer.HairShadowOffset = GetToonBufferOutput4(MaterialParameters);
-	ToonBuffer.SpecularSmoothness = GetToonBufferOutput5(MaterialParameters);
-	ToonBuffer.SpecularOffset = GetToonBufferOutput6(MaterialParameters);
-	ToonBuffer.ToonBufferC = GetToonBufferOutput7(MaterialParameters);
+	ToonBuffer.HairShadowOffset = GetToonMaterialOutput4(MaterialParameters);
+	ToonBuffer.SpecularSmoothness = GetToonMaterialOutput5(MaterialParameters);
+	ToonBuffer.SpecularOffset = GetToonMaterialOutput6(MaterialParameters);
+	ToonBuffer.ToonBufferC = GetToonMaterialOutput7(MaterialParameters);
 #endif
 
 	return ToonBuffer;

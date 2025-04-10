@@ -44,8 +44,8 @@ Texture2D GBufferFTexture;
 // Start Peky Part
 // Toon Buffer And Sampler
 Texture2D<uint4> TBufferATexture;
-Texture2D<uint4> TBufferBTexture;
-Texture2D<uint4> TBufferCTexture;
+Texture2D<float4> TBufferBTexture;
+Texture2D<float4> TBufferCTexture;
 
 Texture2D<uint> SceneLightingChannels;
 
@@ -1225,6 +1225,7 @@ uint GetSceneLightingChannel(uint2 PixelCoord)
 FGBufferData GetGBufferData(float2 UV, bool bGetNormalizedNormal = true)
 {
 #if GBUFFER_REFACTOR
+	// 一般走这个分支,这个函数在ShaderGenerationUtils中生成
 	return DecodeGBufferDataUV(UV,bGetNormalizedNormal);
 #else
 	float4 GBufferA = Texture2DSampleLevel(SceneTexturesStruct.GBufferATexture, SceneTexturesStruct_GBufferATextureSampler, UV, 0);
@@ -1241,8 +1242,8 @@ FGBufferData GetGBufferData(float2 UV, bool bGetNormalizedNormal = true)
 	// Start Peky Part
 	// 获取ToonBuffer，但一般不会走这个分支
 	uint4 TBufferA = SceneTexturesStruct.TBufferATexture.Load(int3(IntUV, 0));
-	uint4 TBufferB = SceneTexturesStruct.TBufferBTexture.Load(int3(IntUV, 0));
-	uint4 TBufferC = SceneTexturesStruct.TBufferCTexture.Load(int3(IntUV, 0));
+	float4 TBufferB = SceneTexturesStruct.TBufferBTexture.Load(int3(IntUV, 0));
+	float4 TBufferC = SceneTexturesStruct.TBufferCTexture.Load(int3(IntUV, 0));
 	// End Peky Part
 	#if ALLOW_STATIC_LIGHTING
 		float4 GBufferE = Texture2DSampleLevel(SceneTexturesStruct.GBufferETexture, SceneTexturesStruct_GBufferETextureSampler, UV, 0);

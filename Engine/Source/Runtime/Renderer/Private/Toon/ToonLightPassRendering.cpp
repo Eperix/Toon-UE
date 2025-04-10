@@ -76,7 +76,7 @@ bool ShouldDrawToonLightPass(const FMaterial* Material)
 {
 	const FMaterialShadingModelField ShadingModels = Material->GetShadingModels();
 	const EBlendMode BlendMode = Material->GetBlendMode();
-	//const bool bIsNotTranslucent = BlendMode == BLEND_Opaque || BlendMode == BLEND_Masked;
+	// const bool bIsNotTranslucent = BlendMode == BLEND_Opaque || BlendMode == BLEND_Masked;
 	return ShadingModels.HasShadingModel(MSM_ToonDefault);
 }
 

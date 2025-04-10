@@ -341,6 +341,7 @@ static bool GetMaterialHitShader(const FMaterial& RESTRICT MaterialResource, con
 	// Toon Bind Any Hit Shaders
 	const bool UseAnyHitShader = (MaterialResource.IsMasked() || IsTranslucentOnlyBlendMode(MaterialResource)
 		|| MaterialResource.GetShadingModels().HasShadingModel(MSM_ToonDefault)) && GCompileRayTracingMaterialAHS;
+	// End Peky Part
 	// const bool UseAnyHitShader = (MaterialResource.IsMasked() || IsTranslucentOnlyBlendMode(MaterialResource)) && GCompileRayTracingMaterialAHS;
 
 	GetMaterialHitShader_AnyHit_Intersection_TextureLOD<LightMapPolicyType>(ShaderTypes, UseAnyHitShader, bUseIntersectionShader, UseTextureLod);

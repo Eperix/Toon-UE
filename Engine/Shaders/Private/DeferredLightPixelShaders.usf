@@ -367,11 +367,11 @@ void DeferredLightPixelMain(
 		FDeferredLightData LightData = InitDeferredLightFromUniforms(CURRENT_LIGHT_TYPE);
 		UpdateLightDataColor(LightData.Color, InputParams, DerivedParams);
 
-		// ----------------------------------YK Engine Start-----------------------------------------
+		// Start Peky Part
 		// Toon Multiple light sources
 		LightData.ToonLight.IsToon = ScreenSpaceData.GBuffer.ShadingModelID == SHADINGMODELID_TOON_DEFAULT;
 		LightData.ToonLight.IsDirectionalLight = !LightData.bRadialLight;
-		//-------------------------------------YK Engine End------------------------------------------
+		// End Peky Part
 		
 	 #if USE_HAIR_COMPLEX_TRANSMITTANCE
 		if (ScreenSpaceData.GBuffer.ShadingModelID == SHADINGMODELID_HAIR && ShouldUseHairComplexTransmittance(ScreenSpaceData.GBuffer))
@@ -435,10 +435,12 @@ void DeferredLightPixelMain(
 			Shadow.SurfaceShadow *= step(0, NoL);
 		}
 
+		
 		// Toon Hair Shadow
-		if(ScreenSpaceData.GBuffer.ShadingModelID == SHADINGMODELID_TOON_DEFAULT &&
-			(ScreenSpaceData.GBuffer.ToonBuffer.ToonModel == TOONMODEL_FACE || ScreenSpaceData.GBuffer.ToonBuffer.ToonModel == TOONMODEL_EYE))
+		if(ScreenSpaceData.GBuffer.ShadingModelID == SHADINGMODELID_TOON_DEFAULT 
+			&& (ScreenSpaceData.GBuffer.ToonBuffer.ToonModel == TOONMODEL_EYE || ScreenSpaceData.GBuffer.ToonBuffer.ToonModel == TOONMODEL_FACE))
 		{
+			// HairShadow = 0;
 			HairShadow = GetHairShadow(ScreenSpaceData.GBuffer,  LightData, InputParams.ScreenUV);
 		}
 

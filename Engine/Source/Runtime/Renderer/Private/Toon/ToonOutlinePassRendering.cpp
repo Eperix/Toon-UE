@@ -55,14 +55,8 @@ public:
 class FToonOutlinePS : public FMeshMaterialShader
 {
 	DECLARE_SHADER_TYPE(FToonOutlinePS, MeshMaterial);
+	SHADER_USE_PARAMETER_STRUCT(FToonOutlinePS, FMeshMaterialShader)
 public:
-	FToonOutlinePS() = default;  
-    FToonOutlinePS(const ShaderMetaType::CompiledShaderInitializerType& Initializer)  
-       : FMeshMaterialShader(Initializer)  
-    {  
-       // if we has color bind it here  
-       // OutlineColor.Bind(Initializer.ParameterMap, TEXT("OutlineColor"));  
-    }  
     static void ModifyCompilationEnvironment(const FMaterialShaderPermutationParameters& Parameters, FShaderCompilerEnvironment& OutEnvironment)  
     {       // Set Define in Shader.   
        //OutEnvironment.SetDefine(TEXT("Define"), Value);  
@@ -94,8 +88,31 @@ public:
        // ShaderBindings.Add(OutlineColor, Color);  
     }    
     /** The parameter to use for setting the Mesh OutLine Color. */  
-    // LAYOUT_FIELD(FShaderParameter, OutlineColor); 
+    // LAYOUT_FIELD(FShaderParameter, OutlineColor);
+
+	BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
+	SHADER_PARAMETER_RDG_UNIFORM_BUFFER(FSceneTextureUniformParameters, SceneTextures)
+    SHADER_PARAMETER_STRUCT_REF(FViewUniformShaderParameters, View)
+    SHADER_PARAMETER_STRUCT_INCLUDE(FInstanceCullingDrawParams, InstanceCullingDrawParams)  
+    RENDER_TARGET_BINDING_SLOTS()  
+END_SHADER_PARAMETER_STRUCT()  
 };
+
+static FToonOutlinePS::FParameters* GetOutlinePassParameters(FRDGBuilder& GraphBuilder,
+	const FViewInfo& View, TRDGUniformBufferRef<FSceneTextureUniformParameters> SceneTexturesUniformBuffer,
+	FRDGTextureRef SceneColorTexture,
+	FRDGTextureRef SceneDepthTexture)  
+{  
+	FToonOutlinePS::FParameters* PassParameters = GraphBuilder.AllocParameters<FToonOutlinePS::FParameters>();  
+	PassParameters->View = View.ViewUniformBuffer;  
+
+	PassParameters->SceneTextures = SceneTexturesUniformBuffer;
+	PassParameters->RenderTargets[0] = FRenderTargetBinding( SceneColorTexture, ERenderTargetLoadAction::ELoad);  
+	PassParameters->RenderTargets.DepthStencil = FDepthStencilBinding( SceneDepthTexture, ERenderTargetLoadAction::ELoad, ERenderTargetLoadAction::ELoad, FExclusiveDepthStencil::DepthWrite_StencilWrite);  
+
+	return PassParameters;  
+}
+
 
 IMPLEMENT_MATERIAL_SHADER_TYPE(, FToonOutlineVS, TEXT("/Engine/Private/Toon/ToonOutline.usf"), TEXT("MainVS"), SF_Vertex);
 IMPLEMENT_MATERIAL_SHADER_TYPE(, FToonOutlinePS, TEXT("/Engine/Private/Toon/ToonOutline.usf"), TEXT("MainPS"), SF_Pixel);
@@ -130,7 +147,7 @@ void FToonOutlinePassProcessor::AddMeshBatch(
 	if (Material != nullptr && Material->GetRenderingThreadShaderMap())  
 	{       
 		const FMaterialShadingModelField ShadingModels = Material->GetShadingModels();  
-	   // Only Toon shading model and enable render toon outline can render this pass  
+	   // Only Toon shading model and enable render toon outline can render this pass
 	   if (ShadingModels.HasAnyShadingModel({MSM_ToonDefault, MSM_ToonHair}))
 	   {          
 			const EBlendMode BlendMode = Material->GetBlendMode();  
@@ -245,23 +262,6 @@ FRegisterPassProcessorCreateFunction RegisterToonOutlineMeshPass(
  
 DECLARE_CYCLE_STAT(TEXT("ToonOutlinePass"), STAT_CLP_ToonOutlinePass, STATGROUP_SceneRendering);  
 
-BEGIN_SHADER_PARAMETER_STRUCT(FToonOutlineMeshPassParameters, )  
-    SHADER_PARAMETER_STRUCT_REF(FViewUniformShaderParameters, View)  
-    SHADER_PARAMETER_STRUCT_INCLUDE(FInstanceCullingDrawParams, InstanceCullingDrawParams)  
-    RENDER_TARGET_BINDING_SLOTS()  
-END_SHADER_PARAMETER_STRUCT()  
-
-FToonOutlineMeshPassParameters* GetOutlinePassParameters(FRDGBuilder& GraphBuilder, const FViewInfo& View, FSceneTextures& SceneTextures)  
-{  
-    FToonOutlineMeshPassParameters* PassParameters = GraphBuilder.AllocParameters<FToonOutlineMeshPassParameters>();  
-    PassParameters->View = View.ViewUniformBuffer;  
-
-    PassParameters->RenderTargets[0] = FRenderTargetBinding(SceneTextures.Color.Target, ERenderTargetLoadAction::ELoad);  
-    PassParameters->RenderTargets.DepthStencil = FDepthStencilBinding(SceneTextures.Depth.Target, ERenderTargetLoadAction::ELoad, ERenderTargetLoadAction::ELoad, FExclusiveDepthStencil::DepthWrite_StencilWrite);  
-
-    return PassParameters;  
-}  
-
 void FDeferredShadingSceneRenderer::RenderToonOutlinePass(FRDGBuilder& GraphBuilder, FSceneTextures& SceneTextures)  
 {  
     RDG_EVENT_SCOPE(GraphBuilder, "ToonOutlinePass");  
@@ -278,7 +278,7 @@ void FDeferredShadingSceneRenderer::RenderToonOutlinePass(FRDGBuilder& GraphBuil
         const bool bShouldRenderView = View.ShouldRenderView();  
         if(bShouldRenderView)  
         {          
-            FToonOutlineMeshPassParameters* PassParameters = GetOutlinePassParameters(GraphBuilder, View, SceneTextures);  
+            FParameters* PassParameters = GetOutlinePassParameters(GraphBuilder, View, SceneTextures.UniformBuffer, SceneTextures.Color.Target, SceneTextures.Depth.Target);  
 
             View.ParallelMeshDrawCommandPasses[EMeshPass::ToonOutlinePass].BuildRenderingCommands(GraphBuilder, Scene->GPUScene, PassParameters->InstanceCullingDrawParams);  
             GraphBuilder.AddDispatchPass(  
@@ -286,7 +286,7 @@ void FDeferredShadingSceneRenderer::RenderToonOutlinePass(FRDGBuilder& GraphBuil
                  PassParameters,             
                  ERDGPassFlags::Raster | ERDGPassFlags::SkipRenderPass,  
                  [&View, PassParameters](FRDGDispatchPassBuilder& DispatchPassBuilder)  
-            {             
+            {
                 View.ParallelMeshDrawCommandPasses[EMeshPass::ToonOutlinePass].Dispatch(DispatchPassBuilder, &PassParameters->InstanceCullingDrawParams);
             });
         }    

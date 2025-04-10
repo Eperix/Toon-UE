@@ -154,10 +154,10 @@ FRayTracingMaskAndFlags BuildRayTracingInstanceMaskAndFlags(TArrayView<const FMe
 			const bool bSegmentCastsShadow = MeshBatch.CastRayTracedShadow && Material.CastsRayTracedShadows() && BlendMode != BLEND_Additive;
 
 			Result.Mask |= BlendModeToRayTracingInstanceMask(BlendMode, bSegmentCastsShadow, MaskMode);
-			// ----------------------------------YK Engine Start-----------------------------------------
+			// Start Peky Part
 			// Toon RayTracing Shadow
 			bAllSegmentsOpaque &= BlendMode == BLEND_Opaque && !Material.GetShadingModels().HasShadingModel(MSM_ToonDefault);
-			// ----------------------------------YK Engine End----------------------------------
+			// End Peky Part
 			bAnySegmentsCastShadow |= bSegmentCastsShadow;
 			bAllSegmentsCastShadow &= bSegmentCastsShadow;
 			bAnySegmentsDecal |= Material.IsDeferredDecal();

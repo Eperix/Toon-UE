@@ -2845,14 +2845,22 @@ void FDeferredShadingSceneRenderer::Render(FRDGBuilder& GraphBuilder)
 
 			const FSortedLightSetSceneInfo& SortedLightSet = *GatherAndSortLightsTask.GetResult();
 
+			// Start Peky Part
+			
+			// End Peky Part
 			RenderLights(GraphBuilder, SceneTextures, TranslucencyLightingVolumeTextures, LightingChannelsTexture, SortedLightSet);
 
 			// Start Peky Part
 			// Outline Pass And Light Pass
 			{
 				RenderToonLightPass(GraphBuilder, SceneTextures);
-				RenderToonOutlinePass(GraphBuilder, SceneTextures);
+
+				// SceneTextures.SetupMode = ESceneTextureSetupMode::TBuffers | ESceneTextureSetupMode::SceneDepth | ESceneTextureSetupMode::SceneColor;
+				// SceneTextures.UniformBuffer = CreateSceneTextureUniformBuffer(GraphBuilder, &SceneTextures, FeatureLevel, SceneTextures.SetupMode);
+				// RenderToonOutlinePass(GraphBuilder, SceneTextures);
 			}
+			// SceneTextures.SetupMode = ESceneTextureSetupMode::All;
+			// SceneTextures.UniformBuffer = CreateSceneTextureUniformBuffer(GraphBuilder, &SceneTextures, FeatureLevel, SceneTextures.SetupMode);
 			// End Peky Part
 			if (SortedLightSet.MegaLightsLightStart < SortedLightSet.SortedLights.Num())
 			{

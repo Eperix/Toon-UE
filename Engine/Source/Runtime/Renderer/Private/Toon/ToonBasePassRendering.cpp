@@ -1,11 +1,13 @@
 ﻿#include "ToonBasePassRendering.h"
 
+#include "BasePassRendering.h"
 #include "ScenePrivate.h"
 #include "MeshPassProcessor.inl"
 #include "SimpleMeshDrawCommandPass.h"
 #include "StaticMeshBatch.h"
 #include "DeferredShadingRenderer.h"
 #include "ClearQuad.h"
+#include "ToonLightPassRendering.h"
 #include "PipelineFileCache.h"
 
 // IMPLEMENT_MATERIAL_SHADER_TYPE接受的参数：
@@ -175,24 +177,15 @@ FRegisterPassProcessorCreateFunction RegisterToonPass(&CreateToonBasePassProcess
 DECLARE_CYCLE_STAT(TEXT("ToonBasePass"), STAT_CLP_ToonBasePass, STATGROUP_SceneRendering);
 
 BEGIN_SHADER_PARAMETER_STRUCT(FToonBasePassParameters, )
-    SHADER_PARAMETER_STRUCT_REF(FViewUniformShaderParameters, View)
-    SHADER_PARAMETER_STRUCT_INCLUDE(FInstanceCullingDrawParams, InstanceCullingDrawParams)
-    RENDER_TARGET_BINDING_SLOTS()
+	SHADER_PARAMETER_STRUCT_REF(FViewUniformShaderParameters, View)
+	SHADER_PARAMETER_STRUCT_INCLUDE(FInstanceCullingDrawParams, InstanceCullingDrawParams)
+	RENDER_TARGET_BINDING_SLOTS()
 END_SHADER_PARAMETER_STRUCT()
 
 FToonBasePassParameters* GetToonPassParameters(FRDGBuilder& GraphBuilder, const FViewInfo& View, FSceneTextures& SceneTextures)
 {
-    FToonBasePassParameters* PassParameters = GraphBuilder.AllocParameters<FToonBasePassParameters>();
-    PassParameters->View = View.ViewUniformBuffer;
-
-	if (!HasBeenProduced(SceneTextures.TBufferA))
-	{
-		const FSceneTexturesConfig& Config = View.GetSceneTexturesConfig();
-		SceneTextures.TBufferA = CreateToonBufferTexture(GraphBuilder, Config.Extent, GFastVRamConfig.TBufferA, TEXT("TBufferA"));
-		SceneTextures.TBufferB = CreateToonBufferTexture(GraphBuilder, Config.Extent, GFastVRamConfig.TBufferB, TEXT("TBufferB"));
-		SceneTextures.TBufferC = CreateToonBufferTexture(GraphBuilder, Config.Extent, GFastVRamConfig.TBufferC, TEXT("TBufferC"));
-	}
-	// 设置RenderTarget
+	FToonBasePassParameters* PassParameters = GraphBuilder.AllocParameters<FToonBasePassParameters>();
+	PassParameters->View = View.ViewUniformBuffer;
 	PassParameters->RenderTargets[0] = FRenderTargetBinding(SceneTextures.TBufferA, ERenderTargetLoadAction::ELoad);
 	PassParameters->RenderTargets[1] = FRenderTargetBinding(SceneTextures.TBufferB, ERenderTargetLoadAction::ELoad);
 	PassParameters->RenderTargets[2] = FRenderTargetBinding(SceneTextures.TBufferC, ERenderTargetLoadAction::ELoad);
@@ -231,9 +224,7 @@ void ClearToonBuffer(FRDGBuilder& GraphBuilder, const FViewInfo& View, FSceneTex
 				Textures[TextureIndex] = TextureRHI;
 				++TextureIndex;
 			});
-
 			DrawClearQuadMRT(RHICmdList, true, TextureIndex, ClearColors, false, 0, false, 0);
-			
 		});
 }
 

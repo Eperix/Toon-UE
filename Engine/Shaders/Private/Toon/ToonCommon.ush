@@ -123,6 +123,7 @@ float GetHairShadow(FGBufferData GBuffer, FDeferredLightData LightData, float2 S
 	
 	FGBufferData OffsetedGBuffer = GetGBufferData(OffsetedUV);
 
+	// 向光源反向偏移一段距离，如果此处是头发，那么原Texel在阴影下
 	if (OffsetedGBuffer.ToonBuffer.ToonModel == TOONMODEL_HAIR
 		&& OffsetedGBuffer.Depth < GBuffer.Depth
 		&& OffsetedGBuffer.ToonBuffer.ObjectID == GBuffer.ToonBuffer.ObjectID)
